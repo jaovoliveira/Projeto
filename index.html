@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Meu primeiro projeto Babylon.js</title>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="renderCanvas"></canvas>
+
+    <script>
+
+        // Pegando o canvas
+        const canvas = document.getElementById("renderCanvas");
+
+        // Criando o motor 3D
+        const engine = new BABYLON.Engine(canvas, true);
+
+        // Criando a cena
+        const scene = new BABYLON.Scene(engine);
+
+        // Criando a câmera
+        const camera = new BABYLON.ArcRotateCamera(
+            "camera",
+            Math.PI / 2,
+            Math.PI / 3,
+            8,
+            BABYLON.Vector3.Zero(),
+            scene
+        );
+
+        camera.attachControl(canvas, true);
+
+        // Criando uma luz
+        const light = new BABYLON.HemisphericLight(
+            "light",
+            new BABYLON.Vector3(0, 1, 0),
+            scene
+        );
+
+        // Criando um cubo
+        const cube = BABYLON.MeshBuilder.CreateBox(
+            "cubo",
+            { size: 2 },
+            scene
+        );
+
+        // Criando o chão
+        const ground = BABYLON.MeshBuilder.CreateGround(
+            "chao",
+            { width: 10, height: 10 },
+            scene
+        );
+
+        // Loop de renderização
+        engine.runRenderLoop(() => {
+            scene.render();
+        });
+
+        // Ajusta quando a janela muda de tamanho
+        window.addEventListener("resize", () => {
+            engine.resize();
+        });
+
+    </script>
+
+</body>
+</html>
