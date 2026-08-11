@@ -3,173 +3,843 @@
 <html lang="pt-BR">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Simulação VR - TCC Mecatrônica</title>
 
-    <!-- A-Frame -->
+    <!-- A-FRAME -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- Componente de movimentação -->
+    <!-- Movimento VR -->
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+
+    <style>
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* TELA INICIAL */
+
+        #inicio {
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    rgba(0, 40, 80, 0.65),
+                    rgba(0, 0, 0, 0.75)
+                );
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 9999;
+
+            color: white;
+
+            text-align: center;
+        }
+
+        #painel {
+
+            background: rgba(0,0,0,0.65);
+
+            padding: 45px;
+
+            border-radius: 25px;
+
+            backdrop-filter: blur(12px);
+
+            box-shadow:
+                0 0 40px rgba(0,0,0,0.5);
+
+            max-width: 500px;
+        }
+
+        #painel h1 {
+
+            font-size: 38px;
+
+            margin-bottom: 10px;
+        }
+
+        #painel p {
+
+            font-size: 18px;
+
+            line-height: 1.5;
+
+            opacity: 0.9;
+        }
+
+        #entrarVR {
+
+            margin-top: 25px;
+
+            padding: 18px 35px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #1683ff;
+
+            color: white;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        #entrarVR:hover {
+
+            transform: scale(1.05);
+
+            background: #3c9aff;
+        }
+
+    </style>
 
 </head>
 
+
 <body>
 
-<a-scene>
 
-    <!-- ================================= -->
+<!-- ============================================ -->
+<!-- TELA INICIAL -->
+<!-- ============================================ -->
+
+<div id="inicio">
+
+    <div id="painel">
+
+        <h1>🥽 Simulação VR</h1>
+
+        <p>
+            Bem-vindo ao ambiente virtual do
+            projeto de Mecatrônica.
+        </p>
+
+        <p>
+            Coloque o headset VR e utilize os
+            controles para explorar o ambiente.
+        </p>
+
+        <button id="entrarVR">
+            ENTRAR NO MODO VR
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- ============================================ -->
+<!-- CENA -->
+<!-- ============================================ -->
+
+<a-scene
+
+    renderer="
+        antialias: true;
+        colorManagement: true;
+        physicallyCorrectLights: true;
+    "
+
+    shadow="type: pcfsoft"
+
+    background="color: #87CEEB">
+
+
+    <!-- ======================================== -->
     <!-- CÉU -->
-    <!-- ================================= -->
+    <!-- ======================================== -->
 
-    <a-sky color="#5DADE2"></a-sky>
+    <a-sky
+        color="#72C7F5">
+    </a-sky>
 
 
-    <!-- ================================= -->
-    <!-- ILUMINAÇÃO -->
-    <!-- ================================= -->
+
+    <!-- ======================================== -->
+    <!-- LUZ DO SOL -->
+    <!-- ======================================== -->
 
     <a-light
         type="ambient"
-        color="#FFFFFF"
-        intensity="1.5">
+        intensity="1.2"
+        color="#FFFFFF">
     </a-light>
+
 
     <a-light
         type="directional"
-        position="-5 10 5"
-        intensity="2">
+
+        position="-20 30 10"
+
+        intensity="3"
+
+        cast-shadow="true"
+
+        shadow-map-width="2048"
+
+        shadow-map-height="2048"
+
+        shadow-camera-left="-30"
+
+        shadow-camera-right="30"
+
+        shadow-camera-top="30"
+
+        shadow-camera-bottom="-30">
+
     </a-light>
 
 
-    <!-- ================================= -->
-    <!-- CHÃO -->
-    <!-- ================================= -->
+
+    <!-- ======================================== -->
+    <!-- TERRENO -->
+    <!-- ======================================== -->
 
     <a-plane
+
         position="0 0 0"
+
         rotation="-90 0 0"
-        width="50"
-        height="50"
-        color="#4CAF50">
+
+        width="100"
+
+        height="100"
+
+        color="#4F9D45"
+
+        material="
+            roughness: 1;
+        "
+
+        shadow="receive: true">
+
     </a-plane>
 
 
-    <!-- ================================= -->
-    <!-- OBJETOS DO CENÁRIO -->
-    <!-- ================================= -->
+
+    <!-- ======================================== -->
+    <!-- CAMINHO ATÉ A CASA -->
+    <!-- ======================================== -->
+
+    <a-plane
+
+        position="0 0.01 8"
+
+        rotation="-90 0 0"
+
+        width="5"
+
+        height="20"
+
+        color="#B8A58A">
+
+    </a-plane>
+
+
+
+    <!-- ======================================== -->
+    <!-- CASA -->
+    <!-- ======================================== -->
+
+    <!-- PAREDES -->
 
     <a-box
-        position="0 1 -5"
-        width="2"
-        height="2"
-        depth="2"
-        color="#FF5733">
+
+        position="0 2 -5"
+
+        width="10"
+
+        height="4"
+
+        depth="8"
+
+        color="#E8D7B8"
+
+        shadow="cast: true; receive: true">
+
     </a-box>
+
+
+
+    <!-- TELHADO ESQUERDO -->
 
     <a-box
-        position="5 1 -8"
-        width="2"
-        height="2"
-        depth="2"
-        color="#3498DB">
+
+        position="-2.7 4.7 -5"
+
+        rotation="0 0 -35"
+
+        width="6.2"
+
+        height="0.5"
+
+        depth="8.5"
+
+        color="#7B2D26"
+
+        shadow="cast: true">
+
     </a-box>
+
+
+
+    <!-- TELHADO DIREITO -->
 
     <a-box
-        position="-5 1 -10"
-        width="2"
-        height="2"
-        depth="2"
-        color="#F1C40F">
+
+        position="2.7 4.7 -5"
+
+        rotation="0 0 35"
+
+        width="6.2"
+
+        height="0.5"
+
+        depth="8.5"
+
+        color="#7B2D26"
+
+        shadow="cast: true">
+
     </a-box>
 
 
-    <!-- ================================= -->
-    <!-- CILINDROS -->
-    <!-- ================================= -->
 
-    <a-cylinder
-        position="5 1 -3"
-        radius="1"
-        height="2"
-        color="#9B59B6">
-    </a-cylinder>
+    <!-- PORTA -->
 
-    <a-cylinder
-        position="-5 1 -6"
-        radius="1"
-        height="2"
-        color="#E67E22">
-    </a-cylinder>
+    <a-box
+
+        position="0 1.4 -9.05"
+
+        width="1.8"
+
+        height="2.8"
+
+        depth="0.2"
+
+        color="#5B3820">
+
+    </a-box>
 
 
-    <!-- ================================= -->
+
+    <!-- MAÇANETA -->
+
+    <a-sphere
+
+        position="0.55 1.4 -9.2"
+
+        radius="0.12"
+
+        color="#D4AF37">
+
+    </a-sphere>
+
+
+
+    <!-- JANELA ESQUERDA -->
+
+    <a-box
+
+        position="-3 2.3 -9.1"
+
+        width="2"
+
+        height="1.8"
+
+        depth="0.2"
+
+        color="#5FC8FF">
+
+    </a-box>
+
+
+
+    <!-- JANELA DIREITA -->
+
+    <a-box
+
+        position="3 2.3 -9.1"
+
+        width="2"
+
+        height="1.8"
+
+        depth="0.2"
+
+        color="#5FC8FF">
+
+    </a-box>
+
+
+
+    <!-- DIVISÃO DAS JANELAS -->
+
+    <a-box
+
+        position="-3 2.3 -9.25"
+
+        width="0.12"
+
+        height="1.8"
+
+        depth="0.1"
+
+        color="#FFFFFF">
+
+    </a-box>
+
+
+    <a-box
+
+        position="3 2.3 -9.25"
+
+        width="0.12"
+
+        height="1.8"
+
+        depth="0.1"
+
+        color="#FFFFFF">
+
+    </a-box>
+
+
+
+    <!-- ======================================== -->
+    <!-- CHAMINÉ -->
+    <!-- ======================================== -->
+
+    <a-box
+
+        position="3.2 6 -5"
+
+        width="1"
+
+        height="3"
+
+        depth="1"
+
+        color="#8B4513"
+
+        shadow="cast: true">
+
+    </a-box>
+
+
+
+    <!-- ======================================== -->
     <!-- ÁRVORES -->
-    <!-- ================================= -->
+    <!-- ======================================== -->
+
+    <!-- ÁRVORE 1 -->
 
     <a-cylinder
-        position="8 2 -10"
-        radius="0.5"
+
+        position="-10 2 -10"
+
+        radius="0.7"
+
         height="4"
-        color="#8B4513">
+
+        color="#654321">
+
     </a-cylinder>
 
+
     <a-sphere
-        position="8 4.5 -10"
-        radius="2"
-        color="#228B22">
+
+        position="-10 5 -10"
+
+        radius="3"
+
+        color="#287A32"
+
+        shadow="cast: true">
+
     </a-sphere>
 
 
+
+    <!-- ÁRVORE 2 -->
+
     <a-cylinder
-        position="-8 2 -12"
-        radius="0.5"
+
+        position="12 2 -12"
+
+        radius="0.7"
+
         height="4"
-        color="#8B4513">
+
+        color="#654321">
+
     </a-cylinder>
 
+
     <a-sphere
-        position="-8 4.5 -12"
-        radius="2"
-        color="#228B22">
+
+        position="12 5 -12"
+
+        radius="3"
+
+        color="#287A32"
+
+        shadow="cast: true">
+
     </a-sphere>
 
 
-    <!-- ================================= -->
-    <!-- JOGADOR -->
-    <!-- ================================= -->
+
+    <!-- ÁRVORE 3 -->
+
+    <a-cylinder
+
+        position="-12 2 4"
+
+        radius="0.7"
+
+        height="4"
+
+        color="#654321">
+
+    </a-cylinder>
+
+
+    <a-sphere
+
+        position="-12 5 4"
+
+        radius="3"
+
+        color="#287A32"
+
+        shadow="cast: true">
+
+    </a-sphere>
+
+
+
+    <!-- ======================================== -->
+    <!-- NUVENS -->
+    <!-- ======================================== -->
 
     <a-entity
-        id="player"
-        position="0 0 5"
-        movement-controls="speed: 0.15">
 
-        <!-- Câmera VR -->
-        <a-camera
-            position="0 1.6 0">
-        </a-camera>
+        id="nuvem1"
 
-        <!-- Controle esquerdo -->
-        <a-entity
-            laser-controls="hand: left">
-        </a-entity>
+        position="-20 15 -25"
 
-        <!-- Controle direito -->
-        <a-entity
-            laser-controls="hand: right">
-        </a-entity>
+        animation="
+            property: position;
+            to: 25 15 -25;
+            dur: 60000;
+            loop: true;
+            easing: linear;
+        ">
+
+        <a-sphere
+            position="0 0 0"
+            radius="3"
+            color="#FFFFFF">
+        </a-sphere>
+
+        <a-sphere
+            position="3 0.5 0"
+            radius="2.5"
+            color="#FFFFFF">
+        </a-sphere>
+
+        <a-sphere
+            position="-3 0.3 0"
+            radius="2.2"
+            color="#FFFFFF">
+        </a-sphere>
 
     </a-entity>
 
 
-    <!-- ================================= -->
-    <!-- BOTÃO VR -->
-    <!-- ================================= -->
+
+    <a-entity
+
+        id="nuvem2"
+
+        position="20 18 -35"
+
+        animation="
+            property: position;
+            to: -25 18 -35;
+            dur: 80000;
+            loop: true;
+            easing: linear;
+        ">
+
+        <a-sphere
+            position="0 0 0"
+            radius="4"
+            color="#FFFFFF">
+        </a-sphere>
+
+        <a-sphere
+            position="4 0.4 0"
+            radius="3"
+            color="#FFFFFF">
+        </a-sphere>
+
+        <a-sphere
+            position="-4 0.2 0"
+            radius="2.8"
+            color="#FFFFFF">
+        </a-sphere>
+
+    </a-entity>
+
+
+
+    <!-- ======================================== -->
+    <!-- OBJETOS DE TESTE -->
+    <!-- ======================================== -->
+
+    <a-box
+
+        position="8 1 -5"
+
+        width="2"
+
+        height="2"
+
+        depth="2"
+
+        color="#D35400"
+
+        shadow="cast: true">
+
+    </a-box>
+
+
+    <a-cylinder
+
+        position="-8 1 -6"
+
+        radius="1"
+
+        height="2"
+
+        color="#2980B9"
+
+        shadow="cast: true">
+
+    </a-cylinder>
+
+
+
+    <!-- ======================================== -->
+    <!-- JOGADOR -->
+    <!-- ======================================== -->
+
+    <a-entity
+
+        id="player"
+
+        position="0 0 15"
+
+        movement-controls="
+            speed: 0.12;
+            fly: false;
+        ">
+
+
+        <!-- CÂMERA -->
+
+        <a-camera
+
+            position="0 1.6 0"
+
+            look-controls>
+
+        </a-camera>
+
+
+
+        <!-- ==================================== -->
+        <!-- MÃO ESQUERDA -->
+        <!-- ==================================== -->
+
+        <a-entity
+
+            hand-controls="
+                hand: left;
+                handModelStyle: lowPoly;
+                color: #F2C6A0;
+            "
+
+            laser-controls="
+                hand: left;
+            ">
+
+        </a-entity>
+
+
+
+        <!-- ==================================== -->
+        <!-- MÃO DIREITA -->
+        <!-- ==================================== -->
+
+        <a-entity
+
+            hand-controls="
+                hand: right;
+                handModelStyle: lowPoly;
+                color: #F2C6A0;
+            "
+
+            laser-controls="
+                hand: right;
+            ">
+
+        </a-entity>
+
+
+    </a-entity>
+
+
+
+    <!-- ======================================== -->
+    <!-- PLACA DE INFORMAÇÃO -->
+    <!-- ======================================== -->
+
+    <a-entity
+
+        position="0 3 10"
+
+        rotation="0 180 0">
+
+        <a-plane
+
+            width="6"
+
+            height="2.5"
+
+            color="#111111"
+
+            opacity="0.85">
+
+        </a-plane>
+
+
+        <a-text
+
+            value="SIMULAÇÃO VR\n\nUse os controles para explorar"
+
+            align="center"
+
+            color="#FFFFFF"
+
+            width="5"
+
+            position="0 0 0.05">
+
+        </a-text>
+
+    </a-entity>
+
 
 </a-scene>
 
+
+
+<!-- ============================================ -->
+<!-- SCRIPT DO BOTÃO VR -->
+<!-- ============================================ -->
+
+<script>
+
+    const telaInicio =
+        document.getElementById("inicio");
+
+    const botao =
+        document.getElementById("entrarVR");
+
+    const cena =
+        document.querySelector("a-scene");
+
+
+    botao.addEventListener("click", async () => {
+
+        /*
+         * Esconde a tela inicial
+         */
+
+        telaInicio.style.display = "none";
+
+
+        /*
+         * Tenta entrar no modo VR
+         */
+
+        try {
+
+            if (cena.enterVR) {
+
+                await cena.enterVR();
+
+            }
+
+        } catch (erro) {
+
+            console.log(
+                "Não foi possível entrar automaticamente no VR:",
+                erro
+            );
+
+        }
+
+    });
+
+
+    /*
+     * Quando o usuário entra no VR,
+     * garantimos que a tela desapareça.
+     */
+
+    cena.addEventListener(
+        "enter-vr",
+        () => {
+
+            telaInicio.style.display = "none";
+
+        }
+    );
+
+
+</script>
+
+
 </body>
+
 </html>
 ```
