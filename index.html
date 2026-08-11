@@ -7,88 +7,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mundo VR - TCC Mecatrônica</title>
+<title>Nexus Atlas - Mundo VR</title>
 
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<!-- A-FRAME -->
+<script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+
 
 <style>
+
+/* =========================================================
+   CONFIGURAÇÕES GERAIS
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
     overflow: hidden;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-/* =========================================
-   TELA INICIAL
-========================================= */
 
-#inicio {
+/* =========================================================
+   INTRODUÇÃO
+========================================================= */
+
+#intro {
 
     position: fixed;
 
     inset: 0;
 
-    background:
-        linear-gradient(
-            rgba(5,35,70,0.65),
-            rgba(0,0,0,0.85)
-        );
+    z-index: 99999;
 
     display: flex;
 
-    justify-content: center;
-
     align-items: center;
 
-    z-index: 10000;
+    justify-content: center;
+
+    text-align: center;
 
     color: white;
 
-    text-align: center;
+    background:
+
+        radial-gradient(
+            circle at center,
+            rgba(20,100,170,0.25),
+            rgba(0,0,0,0.92)
+        );
+
+    backdrop-filter: blur(8px);
+
 }
 
-#painelInicio {
 
-    width: min(90%, 550px);
+#introBox {
 
-    padding: 45px;
+    width: min(90%, 650px);
 
-    border-radius: 25px;
+    padding: 55px 40px;
 
-    background: rgba(10,10,20,0.75);
+    border-radius: 30px;
 
-    backdrop-filter: blur(15px);
+    background:
+
+        linear-gradient(
+            145deg,
+            rgba(20,30,45,0.92),
+            rgba(5,10,20,0.92)
+        );
+
+    border:
+
+        1px solid
+        rgba(255,255,255,0.15);
 
     box-shadow:
-        0 20px 60px rgba(0,0,0,0.6);
+
+        0 30px 100px
+        rgba(0,0,0,0.8);
+
 }
 
-#painelInicio h1 {
 
-    font-size: 40px;
+#logo {
 
-    margin-bottom: 10px;
+    font-size: 58px;
+
+    font-weight: 900;
+
+    letter-spacing: 7px;
+
+    margin-bottom: 5px;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            #6dcfff,
+            #ffffff,
+            #76ffca
+        );
+
+    -webkit-background-clip: text;
+
+    color: transparent;
+
 }
 
-#painelInicio p {
+
+#subtitulo {
 
     font-size: 18px;
 
-    line-height: 1.6;
+    letter-spacing: 3px;
+
+    opacity: .75;
+
+    margin-bottom: 35px;
+
 }
+
+
+#introText {
+
+    font-size: 18px;
+
+    line-height: 1.7;
+
+    opacity: .9;
+
+}
+
 
 #entrarVR {
 
-    margin-top: 20px;
+    margin-top: 30px;
 
-    padding: 18px 40px;
+    padding: 18px 45px;
 
     border: none;
 
-    border-radius: 12px;
-
-    background: #1683ff;
+    border-radius: 14px;
 
     color: white;
 
@@ -96,68 +160,96 @@ body {
 
     font-weight: bold;
 
+    letter-spacing: 1px;
+
     cursor: pointer;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #168cff,
+            #24c8ff
+        );
+
+    box-shadow:
+
+        0 10px 35px
+        rgba(0,150,255,.35);
+
+    transition: .2s;
+
 }
+
 
 #entrarVR:hover {
 
-    background: #3d9cff;
+    transform: translateY(-3px) scale(1.03);
 
-    transform: scale(1.04);
 }
 
 
-/* =========================================
+/* =========================================================
    DIÁLOGO
-========================================= */
+========================================================= */
 
 #dialogo {
+
+    display: none;
 
     position: fixed;
 
     left: 50%;
 
-    bottom: 40px;
+    bottom: 35px;
 
     transform: translateX(-50%);
 
-    width: min(800px, 85%);
+    width: min(850px, 90%);
 
-    padding: 20px 25px;
-
-    border-radius: 18px;
-
-    background: rgba(0,0,0,0.82);
-
-    color: white;
+    padding: 22px 28px;
 
     z-index: 9998;
 
-    display: none;
+    color: white;
 
-    backdrop-filter: blur(10px);
+    border-radius: 18px;
 
-    box-shadow:
-        0 10px 40px rgba(0,0,0,0.6);
+    background:
+
+        rgba(5,10,18,.88);
+
+    border:
+
+        1px solid
+        rgba(255,255,255,.15);
+
+    backdrop-filter: blur(12px);
+
 }
+
 
 #nomeNPC {
 
-    color: #5db7ff;
-
-    font-size: 22px;
+    font-size: 23px;
 
     font-weight: bold;
 
+    color: #64c8ff;
+
     margin-bottom: 8px;
+
 }
+
 
 #falaNPC {
 
-    font-size: 18px;
+    font-size: 17px;
 
-    line-height: 1.5;
+    line-height: 1.6;
+
 }
+
 
 #fecharDialogo {
 
@@ -170,6 +262,36 @@ body {
     border-radius: 8px;
 
     cursor: pointer;
+
+}
+
+
+/* =========================================================
+   INDICADOR DE INTERAÇÃO
+========================================================= */
+
+#interacao {
+
+    display: none;
+
+    position: fixed;
+
+    left: 50%;
+
+    bottom: 125px;
+
+    transform: translateX(-50%);
+
+    z-index: 9997;
+
+    padding: 10px 18px;
+
+    border-radius: 12px;
+
+    color: white;
+
+    background: rgba(0,0,0,.7);
+
 }
 
 </style>
@@ -180,33 +302,42 @@ body {
 <body>
 
 
-<!-- =========================================
-     TELA INICIAL
-========================================= -->
+<!-- =======================================================
+     INTRO
+======================================================= -->
 
-<div id="inicio">
+<div id="intro">
 
-    <div id="painelInicio">
+    <div id="introBox">
 
-        <h1>🥽 MUNDO VR</h1>
+        <div id="logo">
+            NEXUS ATLAS
+        </div>
 
-        <p>
-            Ambiente virtual do projeto
-            de Mecatrônica.
-        </p>
+        <div id="subtitulo">
+            REALIDADE VIRTUAL • ROBÓTICA • MECATRÔNICA
+        </div>
 
-        <p>
-            Utilize os controles do headset
-            para andar e explorar o ambiente.
-        </p>
+        <div id="introText">
 
-        <p>
-            Aproxime-se dos personagens para
-            conversar com eles.
-        </p>
+            Bem-vindo ao ambiente virtual
+            desenvolvido para o projeto.
+
+            <br><br>
+
+            Explore a cidade, converse com
+            personagens e prepare-se para
+            controlar o braço robótico.
+
+            <br><br>
+
+            Coloque seu headset VR e
+            entre na experiência.
+
+        </div>
 
         <button id="entrarVR">
-            ENTRAR NO MODO VR
+            🥽 ENTRAR NO MODO VR
         </button>
 
     </div>
@@ -214,9 +345,9 @@ body {
 </div>
 
 
-<!-- =========================================
-     SISTEMA DE DIÁLOGO
-========================================= -->
+<!-- =======================================================
+     DIÁLOGO
+======================================================= -->
 
 <div id="dialogo">
 
@@ -235,443 +366,1024 @@ body {
 </div>
 
 
-<!-- =========================================
+<div id="interacao">
+    🎮 Pressione A para conversar
+</div>
+
+
+<!-- =======================================================
      CENA
-========================================= -->
+======================================================= -->
 
 <a-scene
-    background="color: #75CFF5"
+
     renderer="
         antialias: true;
         colorManagement: true;
         physicallyCorrectLights: true;
     "
-    shadow="type: pcfsoft">
+
+    background="
+        color: #73C9F5
+    "
+
+    shadow="
+        type: pcfsoft
+    "
+
+    fog="
+        type: exponential;
+        color: #A9DDF5;
+        density: 0.002;
+    ">
 
 
-<!-- =========================================
+<!-- =======================================================
      CÉU
-========================================= -->
+======================================================= -->
 
-<a-sky color="#72C8F5"></a-sky>
+<a-sky
+    color="#70C8F5">
+</a-sky>
 
 
-<!-- =========================================
-     LUZ DO SOL
-========================================= -->
+<!-- =======================================================
+     SOL
+======================================================= -->
 
 <a-light
+
     type="ambient"
-    intensity="1.1"
+
+    intensity="1.15"
+
     color="#FFFFFF">
+
 </a-light>
+
 
 <a-light
+
     type="directional"
-    position="-30 40 20"
-    intensity="3"
+
+    position="-40 60 25"
+
+    intensity="3.2"
+
     cast-shadow="true"
-    shadow-map-width="2048"
-    shadow-map-height="2048">
+
+    shadow-map-width="4096"
+
+    shadow-map-height="4096"
+
+    shadow-camera-left="-100"
+
+    shadow-camera-right="100"
+
+    shadow-camera-top="100"
+
+    shadow-camera-bottom="-100">
+
 </a-light>
 
 
-<!-- =========================================
-     TERRENO GRANDE
-========================================= -->
+<!-- =======================================================
+     TERRENO
+======================================================= -->
 
 <a-plane
-    position="0 0 0"
+
+    position="0 -0.03 0"
+
     rotation="-90 0 0"
-    width="200"
-    height="200"
-    color="#4C963F"
-    shadow="receive: true">
+
+    width="300"
+
+    height="300"
+
+    color="#477F38"
+
+    shadow="receive:true">
+
 </a-plane>
 
 
-<!-- =========================================
-     ESTRADA
-========================================= -->
+<!-- =======================================================
+     GRAMA — FOLHAS
+======================================================= -->
+
+<!-- vários grupos de grama com animação -->
+
+<a-entity id="grama">
+
+    <a-cone
+        position="-15 .3 -15"
+        radius-bottom=".12"
+        radius-top="0"
+        height=".6"
+        color="#3D7E35"
+        animation="
+            property:rotation;
+            from:0 0 -2;
+            to:0 0 2;
+            dur:1200;
+            direction:alternate;
+            loop:true;
+        ">
+    </a-cone>
+
+    <a-cone
+        position="-12 .25 -18"
+        radius-bottom=".1"
+        radius-top="0"
+        height=".5"
+        color="#579A43"
+        animation="
+            property:rotation;
+            from:0 0 2;
+            to:0 0 -2;
+            dur:1000;
+            direction:alternate;
+            loop:true;
+        ">
+    </a-cone>
+
+    <a-cone
+        position="14 .3 -12"
+        radius-bottom=".12"
+        radius-top="0"
+        height=".6"
+        color="#3D7E35"
+        animation="
+            property:rotation;
+            from:0 0 -2;
+            to:0 0 2;
+            dur:1300;
+            direction:alternate;
+            loop:true;
+        ">
+    </a-cone>
+
+</a-entity>
+
+
+<!-- =======================================================
+     RUA PRINCIPAL
+======================================================= -->
 
 <a-plane
-    position="0 0.01 25"
+
+    position="0 .01 0"
+
     rotation="-90 0 0"
-    width="8"
-    height="50"
-    color="#9B8A73">
+
+    width="14"
+
+    height="300"
+
+    color="#4C4C4C">
+
 </a-plane>
 
 
-<!-- =========================================
-     CASA PRINCIPAL
-========================================= -->
+<!-- =======================================================
+     CALÇADAS
+======================================================= -->
 
-<a-entity id="casa">
+<a-plane
+
+    position="-10 .02 0"
+
+    rotation="-90 0 0"
+
+    width="5"
+
+    height="300"
+
+    color="#A9A9A9">
+
+</a-plane>
+
+
+<a-plane
+
+    position="10 .02 0"
+
+    rotation="-90 0 0"
+
+    width="5"
+
+    height="300"
+
+    color="#A9A9A9">
+
+</a-plane>
+
+
+<!-- =======================================================
+     FAIXA CENTRAL
+======================================================= -->
+
+<a-box
+
+    position="0 .04 0"
+
+    width=".25"
+
+    height=".02"
+
+    depth="300"
+
+    color="#F5D76E">
+
+</a-box>
+
+
+<!-- =======================================================
+     RUAS LATERAIS
+======================================================= -->
+
+<a-plane
+    position="50 .01 -55"
+    rotation="-90 0 0"
+    width="100"
+    height="12"
+    color="#4C4C4C">
+</a-plane>
+
+
+<a-plane
+    position="-50 .01 -55"
+    rotation="-90 0 0"
+    width="100"
+    height="12"
+    color="#4C4C4C">
+</a-plane>
+
+
+<!-- =======================================================
+     CASA CENTRAL
+======================================================= -->
+
+<a-entity id="casaPrincipal">
 
 
     <!-- PISO -->
 
     <a-box
-        position="0 0.15 -5"
-        width="18"
-        height="0.3"
-        depth="14"
-        color="#C7A77A">
+
+        position="0 .25 -35"
+
+        width="20"
+
+        height=".5"
+
+        depth="16"
+
+        color="#C49B6C"
+
+        shadow="cast:true">
+
     </a-box>
 
 
     <!-- PAREDE TRASEIRA -->
 
     <a-box
-        position="0 3 -11.5"
-        width="18"
-        height="6"
-        depth="0.4"
-        color="#E8D7B8"
-        shadow="cast: true">
+
+        position="0 4 -42.8"
+
+        width="20"
+
+        height="8"
+
+        depth=".5"
+
+        color="#E5D2B4">
+
     </a-box>
 
 
     <!-- PAREDE ESQUERDA -->
 
     <a-box
-        position="-8.8 3 -5"
-        width="0.4"
-        height="6"
-        depth="13"
-        color="#E8D7B8">
+
+        position="-9.75 4 -35"
+
+        width=".5"
+
+        height="8"
+
+        depth="16"
+
+        color="#E5D2B4">
+
     </a-box>
 
 
     <!-- PAREDE DIREITA -->
 
     <a-box
-        position="8.8 3 -5"
-        width="0.4"
-        height="6"
-        depth="13"
-        color="#E8D7B8">
+
+        position="9.75 4 -35"
+
+        width=".5"
+
+        height="8"
+
+        depth="16"
+
+        color="#E5D2B4">
+
     </a-box>
 
 
-    <!-- PAREDE FRONTAL ESQUERDA -->
+    <!-- FRENTE ESQUERDA -->
 
     <a-box
-        position="-5 3 1.5"
-        width="7.5"
-        height="6"
-        depth="0.4"
-        color="#E8D7B8">
+
+        position="-5.5 4 -27.2"
+
+        width="8.5"
+
+        height="8"
+
+        depth=".5"
+
+        color="#E5D2B4">
+
     </a-box>
 
 
-    <!-- PAREDE FRONTAL DIREITA -->
+    <!-- FRENTE DIREITA -->
 
     <a-box
-        position="5 3 1.5"
-        width="7.5"
-        height="6"
-        depth="0.4"
-        color="#E8D7B8">
+
+        position="5.5 4 -27.2"
+
+        width="8.5"
+
+        height="8"
+
+        depth=".5"
+
+        color="#E5D2B4">
+
     </a-box>
 
 
-    <!-- =====================================
-         TELHADO
-    ====================================== -->
+    <!-- ===================================================
+         TELHADO CORRETO
+         
+         O problema anterior era a orientação.
+         
+         Agora usamos dois painéis inclinados
+         formando um telhado de duas águas.
+    ==================================================== -->
 
     <a-box
-        position="-4.5 6.4 -5"
-        rotation="0 0 -28"
-        width="10"
-        height="0.5"
-        depth="15"
-        color="#6E2722"
-        shadow="cast: true">
+
+        position="-5 8.5 -35"
+
+        rotation="0 0 -30"
+
+        width="11.5"
+
+        height=".65"
+
+        depth="17"
+
+        color="#71342D"
+
+        shadow="cast:true">
+
     </a-box>
+
 
     <a-box
-        position="4.5 6.4 -5"
-        rotation="0 0 28"
-        width="10"
-        height="0.5"
-        depth="15"
-        color="#6E2722"
-        shadow="cast: true">
+
+        position="5 8.5 -35"
+
+        rotation="0 0 30"
+
+        width="11.5"
+
+        height=".65"
+
+        depth="17"
+
+        color="#71342D"
+
+        shadow="cast:true">
+
     </a-box>
 
 
-    <!-- =====================================
+    <!-- CUME DO TELHADO -->
+
+    <a-box
+
+        position="0 11.3 -35"
+
+        width="1"
+
+        height=".5"
+
+        depth="17"
+
+        color="#54221E">
+
+    </a-box>
+
+
+    <!-- ===================================================
          PORTA
-    ====================================== -->
+    ==================================================== -->
 
     <a-box
-        position="0 1.7 1.25"
-        width="2.4"
-        height="3.4"
-        depth="0.3"
-        color="#55351F">
+
+        position="0 2.1 -26.9"
+
+        width="2.5"
+
+        height="4.2"
+
+        depth=".3"
+
+        color="#55321F">
+
     </a-box>
+
 
     <a-sphere
-        position="0.75 1.7 1.45"
-        radius="0.12"
-        color="#D6B45B">
+
+        position=".75 2.1 -27.1"
+
+        radius=".12"
+
+        color="#D7B24C">
+
     </a-sphere>
 
 
-    <!-- =====================================
+    <!-- ===================================================
          JANELAS
-    ====================================== -->
+    ==================================================== -->
 
     <a-box
-        position="-6 3 1.25"
-        width="2.8"
-        height="2.2"
-        depth="0.2"
-        color="#6FC9E8">
-    </a-box>
-
-    <a-box
-        position="6 3 1.25"
-        width="2.8"
-        height="2.2"
-        depth="0.2"
-        color="#6FC9E8">
-    </a-box>
-
-
-    <!-- DIVISÕES -->
-
-    <a-box
-        position="-6 3 1.15"
-        width="0.12"
-        height="2.2"
-        depth="0.15"
-        color="#FFFFFF">
-    </a-box>
-
-    <a-box
-        position="6 3 1.15"
-        width="0.12"
-        height="2.2"
-        depth="0.15"
-        color="#FFFFFF">
-    </a-box>
-
-
-    <!-- =====================================
-         SALA
-    ====================================== -->
-
-
-    <!-- SOFÁ -->
-
-    <a-box
-        position="-4 1 -5"
-        width="5"
-        height="1"
-        depth="2"
-        color="#43566B">
-    </a-box>
-
-    <a-box
-        position="-4 2 -5.8"
-        width="5"
-        height="2"
-        depth="0.5"
-        color="#43566B">
-    </a-box>
-
-
-    <!-- MESA DE CENTRO -->
-
-    <a-box
-        position="-4 0.7 -2.5"
+        position="-6 4 -27.1"
         width="3"
-        height="0.5"
-        depth="1.5"
-        color="#754C29">
+        height="2.5"
+        depth=".15"
+        color="#67C9EA">
     </a-box>
-
-
-    <!-- TAPETE -->
 
     <a-box
-        position="-4 0.4 -4"
-        width="7"
-        height="0.1"
-        depth="5"
-        color="#9B8064">
+        position="6 4 -27.1"
+        width="3"
+        height="2.5"
+        depth=".15"
+        color="#67C9EA">
     </a-box>
 
 
-    <!-- =====================================
+    <!-- ===================================================
+         SOFÁ
+    ==================================================== -->
+
+    <a-box
+
+        position="-5 1.2 -34"
+
+        width="6"
+
+        height="1.2"
+
+        depth="2"
+
+        color="#465D72"
+
+        shadow="cast:true">
+
+    </a-box>
+
+
+    <a-box
+
+        position="-5 2.4 -35"
+
+        width="6"
+
+        height="2.2"
+
+        depth=".5"
+
+        color="#465D72">
+
+    </a-box>
+
+
+    <!-- ===================================================
+         MESA
+    ==================================================== -->
+
+    <a-box
+
+        position="-4 1 -30"
+
+        width="3"
+
+        height=".3"
+
+        depth="1.7"
+
+        color="#76502E">
+
+    </a-box>
+
+
+    <a-cylinder
+
+        position="-5 0.5 -30"
+
+        radius=".15"
+
+        height="1"
+
+        color="#4C301C">
+
+    </a-cylinder>
+
+
+    <a-cylinder
+
+        position="-3 0.5 -30"
+
+        radius=".15"
+
+        height="1"
+
+        color="#4C301C">
+
+    </a-cylinder>
+
+
+    <!-- ===================================================
+         TELEVISÃO
+    ==================================================== -->
+
+    <a-box
+
+        position="-5 2.7 -42.4"
+
+        width="4"
+
+        height="2.3"
+
+        depth=".2"
+
+        color="#111111">
+
+    </a-box>
+
+
+    <a-plane
+
+        position="-5 2.7 -42.55"
+
+        width="3.5"
+
+        height="1.8"
+
+        color="#263B52">
+
+    </a-plane>
+
+
+    <!-- ===================================================
          COZINHA
-    ====================================== -->
+    ==================================================== -->
 
     <a-box
-        position="5 1 -7"
+
+        position="5 1.4 -34"
+
         width="6"
-        height="2"
+
+        height="2.5"
+
         depth="1"
+
         color="#D8D8D8">
+
     </a-box>
 
-    <!-- ARMÁRIO -->
 
     <a-box
-        position="5 3 -7"
+
+        position="5 3.8 -34"
+
         width="6"
+
         height="2"
-        depth="0.8"
-        color="#8C6A4A">
+
+        depth=".8"
+
+        color="#886644">
+
     </a-box>
 
 
     <!-- GELADEIRA -->
 
     <a-box
-        position="7 2.2 -4"
+
+        position="7.5 2.5 -30"
+
         width="1.5"
-        height="4.4"
+
+        height="5"
+
         depth="1.5"
-        color="#DADDE0">
+
+        color="#DCE1E4">
+
     </a-box>
 
 
-    <!-- MESA -->
-
-    <a-cylinder
-        position="4 1 -3"
-        radius="2"
-        height="0.25"
-        color="#754C29">
-    </a-cylinder>
-
-
-    <!-- PÉS DA MESA -->
-
-    <a-cylinder
-        position="4 0.5 -3"
-        radius="0.15"
-        height="1"
-        color="#4A2F1A">
-    </a-cylinder>
-
-
-    <!-- =====================================
-         QUARTO
-    ====================================== -->
-
-    <!-- CAMA -->
+    <!-- ===================================================
+         CAMA
+    ==================================================== -->
 
     <a-box
-        position="4 1 -10"
-        width="4"
-        height="0.7"
+
+        position="5 1 -39"
+
+        width="4.5"
+
+        height=".6"
+
         depth="6"
-        color="#E7E7E7">
+
+        color="#DDD">
+
     </a-box>
 
-    <!-- COLCHÃO -->
 
     <a-box
-        position="4 1.5 -10"
-        width="3.8"
-        height="0.5"
-        depth="5.8"
-        color="#F4F4F4">
+
+        position="5 1.5 -39"
+
+        width="4.2"
+
+        height=".6"
+
+        depth="5.7"
+
+        color="#F7F7F7">
+
     </a-box>
 
-
-    <!-- CABECEIRA -->
 
     <a-box
-        position="4 2.3 -12.5"
-        width="4"
-        height="2"
-        depth="0.3"
-        color="#754C29">
+
+        position="5 3 -41.7"
+
+        width="4.5"
+
+        height="3"
+
+        depth=".3"
+
+        color="#79512F">
+
     </a-box>
 
 
-    <!-- CRIADO MUDO -->
+    <!-- ===================================================
+         LUZES INTERNAS
+    ==================================================== -->
 
-    <a-box
-        position="7 1 -12"
-        width="1"
-        height="2"
-        depth="1"
-        color="#754C29">
-    </a-box>
+    <a-light
+
+        type="point"
+
+        position="-4 5 -34"
+
+        intensity="1.5"
+
+        distance="10"
+
+        color="#FFE6B0">
+
+    </a-light>
+
+
+    <a-light
+
+        type="point"
+
+        position="5 5 -36"
+
+        intensity="1.5"
+
+        distance="10"
+
+        color="#FFF2D0">
+
+    </a-light>
 
 
 </a-entity>
 
 
-<!-- =========================================
-     MÓVEIS EXTERNOS
-========================================= -->
+<!-- =======================================================
+     MAIS CASAS
+======================================================= -->
+
+
+<!-- CASA 2 -->
+
+<a-entity position="-35 0 -25">
+
+    <a-box
+        position="0 2.5 0"
+        width="14"
+        height="5"
+        depth="12"
+        color="#D9C4A8">
+    </a-box>
+
+    <a-box
+        position="-3 6 0"
+        rotation="0 0 -30"
+        width="8"
+        height=".6"
+        depth="13"
+        color="#4F3430">
+    </a-box>
+
+    <a-box
+        position="3 6 0"
+        rotation="0 0 30"
+        width="8"
+        height=".6"
+        depth="13"
+        color="#4F3430">
+    </a-box>
+
+    <a-box
+        position="0 1.7 6.1"
+        width="2"
+        height="3.4"
+        depth=".3"
+        color="#55321F">
+    </a-box>
+
+    <a-box
+        position="-4 3 6"
+        width="2.5"
+        height="2"
+        depth=".2"
+        color="#6EC9E8">
+    </a-box>
+
+</a-entity>
+
+
+<!-- CASA 3 -->
+
+<a-entity position="35 0 -25">
+
+    <a-box
+        position="0 2.5 0"
+        width="14"
+        height="5"
+        depth="12"
+        color="#D2B48C">
+    </a-box>
+
+    <a-box
+        position="-3 6 0"
+        rotation="0 0 -30"
+        width="8"
+        height=".6"
+        depth="13"
+        color="#7B3F32">
+    </a-box>
+
+    <a-box
+        position="3 6 0"
+        rotation="0 0 30"
+        width="8"
+        height=".6"
+        depth="13"
+        color="#7B3F32">
+    </a-box>
+
+    <a-box
+        position="0 1.7 6.1"
+        width="2"
+        height="3.4"
+        depth=".3"
+        color="#50301E">
+    </a-box>
+
+</a-entity>
+
+
+<!-- CASA 4 -->
+
+<a-entity position="-35 0 35">
+
+    <a-box
+        position="0 3 0"
+        width="16"
+        height="6"
+        depth="13"
+        color="#C9D2D9">
+    </a-box>
+
+    <a-box
+        position="-3.5 7 0"
+        rotation="0 0 -30"
+        width="9"
+        height=".6"
+        depth="14"
+        color="#34495E">
+    </a-box>
+
+    <a-box
+        position="3.5 7 0"
+        rotation="0 0 30"
+        width="9"
+        height=".6"
+        depth="14"
+        color="#34495E">
+    </a-box>
+
+</a-entity>
+
+
+<!-- CASA 5 -->
+
+<a-entity position="35 0 35">
+
+    <a-box
+        position="0 3 0"
+        width="16"
+        height="6"
+        depth="13"
+        color="#E1C16E">
+    </a-box>
+
+    <a-box
+        position="-3.5 7 0"
+        rotation="0 0 -30"
+        width="9"
+        height=".6"
+        depth="14"
+        color="#8B4513">
+    </a-box>
+
+    <a-box
+        position="3.5 7 0"
+        rotation="0 0 30"
+        width="9"
+        height=".6"
+        depth="14"
+        color="#8B4513">
+    </a-box>
+
+</a-entity>
+
+
+<!-- =======================================================
+     POSTES
+======================================================= -->
 
 <a-cylinder
-    position="0 1 12"
-    radius="3"
-    height="0.25"
-    color="#754C29">
+    position="-12 3 10"
+    radius=".12"
+    height="6"
+    color="#333">
 </a-cylinder>
+
+<a-sphere
+    position="-12 6.3 10"
+    radius=".35"
+    color="#FFF4C0">
+</a-sphere>
+
 
 <a-cylinder
-    position="0 0.5 12"
-    radius="0.2"
-    height="1"
-    color="#4A2F1A">
+    position="12 3 10"
+    radius=".12"
+    height="6"
+    color="#333">
 </a-cylinder>
 
+<a-sphere
+    position="12 6.3 10"
+    radius=".35"
+    color="#FFF4C0">
+</a-sphere>
 
-<!-- =========================================
+
+<!-- =======================================================
+     ÁRVORES
+======================================================= -->
+
+<a-entity position="-18 0 -5">
+
+    <a-cylinder
+        position="0 3 0"
+        radius=".65"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="3.2"
+        color="#347A38"
+        shadow="cast:true">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity position="18 0 -8">
+
+    <a-cylinder
+        position="0 3 0"
+        radius=".65"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="3.2"
+        color="#347A38"
+        shadow="cast:true">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity position="-20 0 45">
+
+    <a-cylinder
+        position="0 3 0"
+        radius=".65"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="3.2"
+        color="#347A38"
+        shadow="cast:true">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity position="20 0 45">
+
+    <a-cylinder
+        position="0 3 0"
+        radius=".65"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="3.2"
+        color="#347A38"
+        shadow="cast:true">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =======================================================
      NUVENS
-========================================= -->
+======================================================= -->
 
 <a-entity
-    position="-40 20 -45"
+
+    position="-70 25 -80"
+
     animation="
-        property: position;
-        to: 40 20 -45;
-        dur: 90000;
-        loop: true;
-        easing: linear;
-    ">
-
-    <a-sphere
-        radius="5"
-        color="#FFFFFF">
-    </a-sphere>
-
-    <a-sphere
-        position="5 0.5 0"
-        radius="4"
-        color="#FFFFFF">
-    </a-sphere>
-
-    <a-sphere
-        position="-5 0.3 0"
-        radius="4"
-        color="#FFFFFF">
-    </a-sphere>
-
-</a-entity>
-
-
-<a-entity
-    position="40 25 -70"
-    animation="
-        property: position;
-        to: -40 25 -70;
-        dur: 120000;
-        loop: true;
-        easing: linear;
+        property:position;
+        to:70 25 -80;
+        dur:120000;
+        easing:linear;
+        loop:true;
     ">
 
     <a-sphere
@@ -680,322 +1392,282 @@ body {
     </a-sphere>
 
     <a-sphere
-        position="6 0.5 0"
+        position="6 .5 0"
         radius="4"
         color="#FFFFFF">
     </a-sphere>
 
     <a-sphere
-        position="-6 0.5 0"
-        radius="4"
+        position="-6 .3 0"
+        radius="4.5"
         color="#FFFFFF">
     </a-sphere>
 
 </a-entity>
 
-
-<!-- =========================================
-     ÁRVORES
-========================================= -->
-
-<a-entity position="-20 0 -15">
-
-    <a-cylinder
-        position="0 3 0"
-        radius="1"
-        height="6"
-        color="#604020">
-    </a-cylinder>
-
-    <a-sphere
-        position="0 7 0"
-        radius="4"
-        color="#286E35"
-        shadow="cast: true">
-    </a-sphere>
-
-</a-entity>
-
-
-<a-entity position="20 0 -20">
-
-    <a-cylinder
-        position="0 3 0"
-        radius="1"
-        height="6"
-        color="#604020">
-    </a-cylinder>
-
-    <a-sphere
-        position="0 7 0"
-        radius="4"
-        color="#286E35"
-        shadow="cast: true">
-    </a-sphere>
-
-</a-entity>
-
-
-<a-entity position="-25 0 20">
-
-    <a-cylinder
-        position="0 3 0"
-        radius="1"
-        height="6"
-        color="#604020">
-    </a-cylinder>
-
-    <a-sphere
-        position="0 7 0"
-        radius="4"
-        color="#286E35"
-        shadow="cast: true">
-    </a-sphere>
-
-</a-entity>
-
-
-<!-- =========================================
-     NPC 1 - ENGENHEIRA
-========================================= -->
 
 <a-entity
-    id="npcEngenheira"
-    position="-15 0 5"
+
+    position="70 30 -100"
+
+    animation="
+        property:position;
+        to:-70 30 -100;
+        dur:160000;
+        easing:linear;
+        loop:true;
+    ">
+
+    <a-sphere
+        radius="7"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="7 .5 0"
+        radius="5"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="-7 .5 0"
+        radius="4"
+        color="#FFFFFF">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =======================================================
+     NPC 1
+======================================================= -->
+
+<a-entity
+    id="npcAna"
+    position="-20 0 15"
     class="npc">
 
 
     <!-- CORPO -->
 
     <a-cylinder
-        position="0 1.2 0"
-        radius="0.55"
+        position="0 1.1 0"
+        radius=".55"
         height="1.5"
-        color="#2468A2">
+        color="#315E87">
     </a-cylinder>
 
 
-    <!-- CABEÇA -->
+    <!-- PESCOÇO -->
+
+    <a-cylinder
+        position="0 2 0"
+        radius=".2"
+        height=".3"
+        color="#D59B78">
+    </a-cylinder>
+
+
+    <!-- ROSTO -->
 
     <a-sphere
-        position="0 2.3 0"
-        radius="0.55"
-        color="#E0AA86">
+        position="0 2.5 0"
+        radius=".58"
+        color="#D59B78">
     </a-sphere>
 
 
     <!-- CABELO -->
 
     <a-sphere
-        position="0 2.55 0"
-        radius="0.58"
-        color="#3A2418">
+        position="0 2.75 0"
+        radius=".6"
+        color="#3A2116">
     </a-sphere>
+
+
+    <!-- OLHOS -->
+
+    <a-sphere
+        position="-.2 2.53 -.5"
+        radius=".07"
+        color="#111">
+    </a-sphere>
+
+    <a-sphere
+        position=".2 2.53 -.5"
+        radius=".07"
+        color="#111">
+    </a-sphere>
+
+
+    <!-- NARIZ -->
+
+    <a-cone
+        position="0 2.42 -.55"
+        radius-bottom=".08"
+        radius-top="0"
+        height=".18"
+        rotation="90 0 0"
+        color="#C58465">
+    </a-cone>
+
+
+    <!-- BOCA -->
+
+    <a-box
+        position="0 2.28 -.54"
+        width=".22"
+        height=".04"
+        depth=".02"
+        color="#8B3A3A">
+    </a-box>
 
 
     <!-- NOME -->
 
     <a-text
-        value="Engenheira Ana"
+        value="Ana - Engenheira"
         align="center"
+        width="5"
         color="#FFFFFF"
-        width="4"
-        position="0 3.2 0">
+        position="0 3.5 0">
     </a-text>
 
-
-    <!-- INDICADOR -->
-
-    <a-sphere
-        position="0 3.6 0"
-        radius="0.15"
-        color="#00FF88"
-        animation="
-            property: scale;
-            to: 1.5 1.5 1.5;
-            dur: 700;
-            direction: alternate;
-            loop: true;
-        ">
-    </a-sphere>
 
 </a-entity>
 
 
-<!-- =========================================
-     NPC 2 - AVENTUREIRO
-========================================= -->
+<!-- =======================================================
+     NPC 2
+======================================================= -->
 
 <a-entity
-    id="npcAventureiro"
-    position="18 0 8"
+    id="npcLeo"
+    position="20 0 20"
     class="npc">
 
 
     <a-cylinder
-        position="0 1.2 0"
-        radius="0.6"
+        position="0 1.1 0"
+        radius=".6"
         height="1.6"
-        color="#6D3B22">
+        color="#754C29">
     </a-cylinder>
 
 
     <a-sphere
-        position="0 2.4 0"
-        radius="0.58"
-        color="#C88E67">
+        position="0 2.5 0"
+        radius=".6"
+        color="#B97856">
     </a-sphere>
 
 
-    <!-- CHAPÉU -->
-
-    <a-cylinder
-        position="0 2.85 0"
-        radius="0.75"
-        height="0.25"
-        color="#4A2A17">
-    </a-cylinder>
-
-
-    <a-text
-        value="Capitão Leo"
-        align="center"
-        color="#FFFFFF"
-        width="4"
-        position="0 3.4 0">
-    </a-text>
-
+    <!-- CABELO -->
 
     <a-sphere
-        position="0 3.8 0"
-        radius="0.15"
-        color="#FFD700"
-        animation="
-            property: scale;
-            to: 1.5 1.5 1.5;
-            dur: 700;
-            direction: alternate;
-            loop: true;
-        ">
+        position="0 2.8 0"
+        radius=".62"
+        color="#21150F">
     </a-sphere>
 
-</a-entity>
 
-
-<!-- =========================================
-     NPC 3 - CIENTISTA
-========================================= -->
-
-<a-entity
-    id="npcCientista"
-    position="25 0 -20"
-    class="npc">
-
-
-    <a-cylinder
-        position="0 1.2 0"
-        radius="0.55"
-        height="1.5"
-        color="#FFFFFF">
-    </a-cylinder>
-
+    <!-- OLHOS -->
 
     <a-sphere
-        position="0 2.3 0"
-        radius="0.55"
-        color="#D6A17A">
+        position="-.2 2.52 -.53"
+        radius=".07"
+        color="#151515">
     </a-sphere>
 
+    <a-sphere
+        position=".2 2.52 -.53"
+        radius=".07"
+        color="#151515">
+    </a-sphere>
+
+
+    <!-- BOCA -->
 
     <a-box
-        position="-0.25 2.35 -0.5"
-        width="0.3"
-        height="0.3"
-        depth="0.1"
-        color="#222222">
-    </a-box>
-
-
-    <a-box
-        position="0.25 2.35 -0.5"
-        width="0.3"
-        height="0.3"
-        depth="0.1"
-        color="#222222">
+        position="0 2.27 -.56"
+        width=".25"
+        height=".04"
+        depth=".02"
+        color="#722F2F">
     </a-box>
 
 
     <a-text
-        value="Dr. Marcos"
+        value="Leo - Explorador"
         align="center"
+        width="5"
         color="#FFFFFF"
-        width="4"
-        position="0 3.2 0">
+        position="0 3.5 0">
     </a-text>
 
-
-    <a-sphere
-        position="0 3.6 0"
-        radius="0.15"
-        color="#FF55FF"
-        animation="
-            property: scale;
-            to: 1.5 1.5 1.5;
-            dur: 700;
-            direction: alternate;
-            loop: true;
-        ">
-    </a-sphere>
 
 </a-entity>
 
 
-<!-- =========================================
+<!-- =======================================================
      JOGADOR
-========================================= -->
+======================================================= -->
 
 <a-entity
+
     id="player"
-    position="0 0 30">
+
+    position="0 0 35">
 
 
     <!-- CÂMERA -->
 
     <a-camera
+
         id="camera"
-        position="0 1.6 0"
-        look-controls>
+
+        position="0 1.65 0"
+
+        look-controls="
+            pointerLockEnabled: false;
+            magicWindowTrackingEnabled: true;
+        ">
+
     </a-camera>
 
 
-    <!-- =====================================
-         CONTROLE ESQUERDO
-         MOVIMENTAÇÃO
-    ====================================== -->
+    <!-- CONTROLE ESQUERDO -->
 
     <a-entity
-        id="controleEsquerdo"
-        laser-controls="hand: left"
+
+        id="leftHand"
+
+        laser-controls="hand:left"
+
         hand-controls="
-            hand: left;
-            handModelStyle: lowPoly;
+            hand:left;
+            handModelStyle:lowPoly;
         ">
+
     </a-entity>
 
 
-    <!-- =====================================
-         CONTROLE DIREITO
-         ROTAÇÃO
-    ====================================== -->
+    <!-- CONTROLE DIREITO -->
 
     <a-entity
-        id="controleDireito"
-        laser-controls="hand: right"
+
+        id="rightHand"
+
+        laser-controls="hand:right"
+
         hand-controls="
-            hand: right;
-            handModelStyle: lowPoly;
+            hand:right;
+            handModelStyle:lowPoly;
         ">
+
     </a-entity>
+
 
 </a-entity>
 
@@ -1005,372 +1677,30 @@ body {
 
 <script>
 
-/* =====================================================
-   REFERÊNCIAS
-===================================================== */
+/* =========================================================
+   ELEMENTOS
+========================================================= */
 
-const cena = document.querySelector("a-scene");
+const scene =
+    document.querySelector("a-scene");
 
-const player = document.querySelector("#player");
+const player =
+    document.querySelector("#player");
 
-const camera = document.querySelector("#camera");
+const camera =
+    document.querySelector("#camera");
 
-const esquerda =
-    document.querySelector("#controleEsquerdo");
+const leftHand =
+    document.querySelector("#leftHand");
 
-const direita =
-    document.querySelector("#controleDireito");
+const rightHand =
+    document.querySelector("#rightHand");
 
+const intro =
+    document.querySelector("#intro");
 
-/* =====================================================
-   TELA INICIAL
-===================================================== */
-
-const inicio =
-    document.querySelector("#inicio");
-
-const botaoVR =
+const entrar =
     document.querySelector("#entrarVR");
-
-
-botaoVR.addEventListener("click", async () => {
-
-    inicio.style.display = "none";
-
-    try {
-
-        if (cena.enterVR) {
-
-            await cena.enterVR();
-
-        }
-
-    } catch (erro) {
-
-        console.log(
-            "VR não disponível:",
-            erro
-        );
-
-    }
-
-});
-
-
-cena.addEventListener("enter-vr", () => {
-
-    inicio.style.display = "none";
-
-});
-
-
-/* =====================================================
-   MOVIMENTAÇÃO MANUAL
-=====================================================
-
-   IMPORTANTE:
-
-   Não usamos movement-controls.
-
-   O jogador só se movimenta quando
-   o analógico realmente é movimentado.
-===================================================== */
-
-const velocidade = 0.08;
-
-const velocidadeRotacao = 1.5;
-
-
-function atualizarMovimento() {
-
-    if (!esquerda.object3D) {
-
-        requestAnimationFrame(
-            atualizarMovimento
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * A-Frame registra os eixos do
-     * controle através de axis.
-     */
-
-    const eixo =
-        esquerda.components[
-            "tracked-controls"
-        ];
-
-
-    /*
-     * Alguns controles utilizam
-     * thumbstick- events.
-     */
-
-    const joystick =
-        esquerda.components[
-            "tracked-controls"
-        ];
-
-
-    /*
-     * Leitura direta do gamepad.
-     */
-
-    const gamepads =
-        navigator.getGamepads
-        ? navigator.getGamepads()
-        : [];
-
-
-    let controle = null;
-
-
-    for (let i = 0; i < gamepads.length; i++) {
-
-        if (
-            gamepads[i] &&
-            gamepads[i].connected
-        ) {
-
-            controle = gamepads[i];
-
-            break;
-
-        }
-
-    }
-
-
-    if (controle) {
-
-        const x =
-            controle.axes[2] ||
-            controle.axes[0] ||
-            0;
-
-        const y =
-            controle.axes[3] ||
-            controle.axes[1] ||
-            0;
-
-
-        /*
-         * DEADZONE
-         *
-         * Evita que o personagem
-         * ande sozinho quando o
-         * analógico está levemente
-         * deslocado.
-         */
-
-        const deadzone = 0.15;
-
-
-        const movimentoX =
-            Math.abs(x) > deadzone
-            ? x
-            : 0;
-
-
-        const movimentoY =
-            Math.abs(y) > deadzone
-            ? y
-            : 0;
-
-
-        /*
-         * DIREÇÃO DA CÂMERA
-         */
-
-        const rotacao =
-            camera.object3D.rotation.y;
-
-
-        /*
-         * Movimento para frente/trás
-         */
-
-        const frenteX =
-            -Math.sin(rotacao) *
-            movimentoY *
-            velocidade;
-
-
-        const frenteZ =
-            -Math.cos(rotacao) *
-            movimentoY *
-            velocidade;
-
-
-        /*
-         * Movimento lateral
-         */
-
-        const lateralX =
-            Math.cos(rotacao) *
-            movimentoX *
-            velocidade;
-
-
-        const lateralZ =
-            -Math.sin(rotacao) *
-            movimentoX *
-            velocidade;
-
-
-        player.object3D.position.x +=
-            frenteX + lateralX;
-
-
-        player.object3D.position.z +=
-            frenteZ + lateralZ;
-
-    }
-
-
-    requestAnimationFrame(
-        atualizarMovimento
-    );
-
-}
-
-
-atualizarMovimento();
-
-
-/* =====================================================
-   ROTAÇÃO MANUAL
-===================================================== */
-
-function atualizarRotacao() {
-
-    const gamepads =
-        navigator.getGamepads
-        ? navigator.getGamepads()
-        : [];
-
-
-    let controle = null;
-
-
-    for (let i = 0; i < gamepads.length; i++) {
-
-        if (
-            gamepads[i] &&
-            gamepads[i].connected
-        ) {
-
-            controle = gamepads[i];
-
-            break;
-
-        }
-
-    }
-
-
-    if (controle) {
-
-        /*
-         * Dependendo do headset,
-         * os eixos podem variar.
-         */
-
-        const x =
-            controle.axes[2] ||
-            controle.axes[0] ||
-            0;
-
-
-        const deadzone = 0.18;
-
-
-        if (
-            Math.abs(x) >
-            deadzone
-        ) {
-
-            player.object3D.rotation.y -=
-                x *
-                velocidadeRotacao *
-                0.01;
-
-        }
-
-    }
-
-
-    requestAnimationFrame(
-        atualizarRotacao
-    );
-
-}
-
-
-atualizarRotacao();
-
-
-/* =====================================================
-   NPCs
-===================================================== */
-
-const npcs = [
-
-    {
-
-        elemento:
-            document.querySelector(
-                "#npcEngenheira"
-            ),
-
-        nome:
-            "Engenheira Ana",
-
-        fala:
-            "Olá! Este ambiente foi criado para testar a interação entre realidade virtual e robótica. No futuro, poderemos controlar um braço robótico daqui."
-
-    },
-
-    {
-
-        elemento:
-            document.querySelector(
-                "#npcAventureiro"
-            ),
-
-        nome:
-            "Capitão Leo",
-
-        fala:
-            "Explore o mapa! Existem diferentes áreas para testar a movimentação e a interação virtual."
-
-    },
-
-    {
-
-        elemento:
-            document.querySelector(
-                "#npcCientista"
-            ),
-
-        nome:
-            "Dr. Marcos",
-
-        fala:
-            "A ideia mais interessante é conectar este mundo virtual ao ESP32. Assim, os movimentos virtuais podem controlar o braço físico."
-
-    }
-
-];
-
-
-/* =====================================================
-   SISTEMA DE DIÁLOGO
-===================================================== */
 
 const dialogo =
     document.querySelector("#dialogo");
@@ -1381,9 +1711,464 @@ const nomeNPC =
 const falaNPC =
     document.querySelector("#falaNPC");
 
+const interacao =
+    document.querySelector("#interacao");
+
 const fechar =
     document.querySelector("#fecharDialogo");
 
+
+/* =========================================================
+   ENTRAR NO VR
+========================================================= */
+
+entrar.addEventListener(
+    "click",
+    async () => {
+
+        intro.style.display =
+            "none";
+
+        try {
+
+            if (scene.enterVR) {
+
+                await scene.enterVR();
+
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Não foi possível iniciar VR:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+scene.addEventListener(
+    "enter-vr",
+    () => {
+
+        intro.style.display =
+            "none";
+
+    }
+);
+
+
+/* =========================================================
+   GAMEPAD
+========================================================= */
+
+function pegarGamepads() {
+
+    if (!navigator.getGamepads) {
+
+        return [];
+
+    }
+
+    return Array.from(
+        navigator.getGamepads()
+    ).filter(
+        gamepad =>
+            gamepad &&
+            gamepad.connected
+    );
+
+}
+
+
+/* =========================================================
+   MOVIMENTAÇÃO MANUAL
+========================================================= */
+
+const velocidade =
+    0.08;
+
+const velocidadeRotacao =
+    0.035;
+
+const deadzone =
+    0.18;
+
+
+function aplicarDeadzone(valor) {
+
+    if (
+        Math.abs(valor)
+        < deadzone
+    ) {
+
+        return 0;
+
+    }
+
+    return valor;
+
+}
+
+
+function atualizarVR() {
+
+    const gamepads =
+        pegarGamepads();
+
+
+    /*
+     * Procuramos os controles
+     * esquerda/direita.
+     */
+
+    let left =
+        null;
+
+    let right =
+        null;
+
+
+    gamepads.forEach(
+        gamepad => {
+
+            if (
+                gamepad.hand === "left"
+            ) {
+
+                left = gamepad;
+
+            }
+
+            if (
+                gamepad.hand === "right"
+            ) {
+
+                right = gamepad;
+
+            }
+
+        }
+    );
+
+
+    /*
+     * FALLBACK
+     *
+     * Alguns headsets não informam
+     * gamepad.hand.
+     */
+
+    if (
+        !left &&
+        gamepads.length >= 1
+    ) {
+
+        left =
+            gamepads[0];
+
+    }
+
+
+    if (
+        !right &&
+        gamepads.length >= 2
+    ) {
+
+        right =
+            gamepads[1];
+
+    }
+
+
+    /* =====================================================
+       MOVIMENTO
+    ===================================================== */
+
+    if (left) {
+
+        let eixoX =
+            aplicarDeadzone(
+                left.axes[2] ??
+                left.axes[0] ??
+                0
+            );
+
+        let eixoY =
+            aplicarDeadzone(
+                left.axes[3] ??
+                left.axes[1] ??
+                0
+            );
+
+
+        /*
+         * Pegamos somente a rotação
+         * horizontal do jogador.
+         */
+
+        const rotacao =
+            player.object3D.rotation.y;
+
+
+        /*
+         * Frente / trás
+         */
+
+        const frenteX =
+            -Math.sin(rotacao)
+            * eixoY
+            * velocidade;
+
+
+        const frenteZ =
+            -Math.cos(rotacao)
+            * eixoY
+            * velocidade;
+
+
+        /*
+         * Lateral
+         */
+
+        const lateralX =
+            Math.cos(rotacao)
+            * eixoX
+            * velocidade;
+
+
+        const lateralZ =
+            -Math.sin(rotacao)
+            * eixoX
+            * velocidade;
+
+
+        player.object3D.position.x +=
+            frenteX +
+            lateralX;
+
+
+        player.object3D.position.z +=
+            frenteZ +
+            lateralZ;
+
+    }
+
+
+    /* =====================================================
+       ROTAÇÃO
+    ===================================================== */
+
+    if (right) {
+
+        let eixoRotacao =
+            aplicarDeadzone(
+                right.axes[2] ??
+                right.axes[0] ??
+                0
+            );
+
+
+        player.object3D.rotation.y -=
+            eixoRotacao *
+            velocidadeRotacao;
+
+    }
+
+
+    /* =====================================================
+       LIMITES DO MAPA
+    ===================================================== */
+
+    player.object3D.position.x =
+        Math.max(
+            -140,
+            Math.min(
+                140,
+                player.object3D.position.x
+            )
+        );
+
+
+    player.object3D.position.z =
+        Math.max(
+            -140,
+            Math.min(
+                140,
+                player.object3D.position.z
+            )
+        );
+
+
+    requestAnimationFrame(
+        atualizarVR
+    );
+
+}
+
+
+atualizarVR();
+
+
+/* =========================================================
+   PULO
+========================================================= */
+
+let noChao =
+    true;
+
+let velocidadeY =
+    0;
+
+const gravidade =
+    0.018;
+
+const forcaPulo =
+    0.22;
+
+
+function pular() {
+
+    if (!noChao) {
+
+        return;
+
+    }
+
+    noChao =
+        false;
+
+    velocidadeY =
+        forcaPulo;
+
+}
+
+
+function atualizarPulo() {
+
+    velocidadeY -=
+        gravidade;
+
+
+    player.object3D.position.y +=
+        velocidadeY;
+
+
+    if (
+        player.object3D.position.y
+        <= 0
+    ) {
+
+        player.object3D.position.y =
+            0;
+
+        velocidadeY =
+            0;
+
+        noChao =
+            true;
+
+    }
+
+
+    requestAnimationFrame(
+        atualizarPulo
+    );
+
+}
+
+
+atualizarPulo();
+
+
+/* =========================================================
+   BOTÃO DE PULO
+========================================================= */
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.code ===
+            "Space"
+        ) {
+
+            pular();
+
+        }
+
+    }
+);
+
+
+/*
+ * Controle VR:
+ * tentamos usar o botão A/B/X/Y.
+ */
+
+window.addEventListener(
+    "gamepadbuttondown",
+    event => {
+
+        if (
+            event.button === 0 ||
+            event.button === 1
+        ) {
+
+            pular();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   NPCs
+========================================================= */
+
+const npcs = [
+
+    {
+
+        elemento:
+            document.querySelector(
+                "#npcAna"
+            ),
+
+        nome:
+            "Ana — Engenheira",
+
+        fala:
+            "Bem-vindo ao Nexus Atlas! Este ambiente foi criado para testar a integração entre realidade virtual e robótica."
+
+    },
+
+    {
+
+        elemento:
+            document.querySelector(
+                "#npcLeo"
+            ),
+
+        nome:
+            "Leo — Explorador",
+
+        fala:
+            "Explore a cidade. No futuro, diferentes áreas poderão representar ambientes industriais onde o braço robótico será utilizado."
+
+    }
+
+];
+
+
+/* =========================================================
+   DIÁLOGO
+========================================================= */
 
 function abrirDialogo(npc) {
 
@@ -1410,91 +2195,209 @@ fechar.addEventListener(
 );
 
 
-/* =====================================================
-   INTERAÇÃO COM NPC
-===================================================== */
+/* =========================================================
+   DISTÂNCIA DOS NPCs
+========================================================= */
 
-function verificarNPCs() {
+let ultimoBotao =
+    false;
+
+
+function verificarNPC() {
 
     const posicao =
         player.object3D.position;
 
 
-    npcs.forEach(npc => {
-
-        const posNPC =
-            npc.elemento.object3D.position;
+    let npcProximo =
+        null;
 
 
-        const distancia =
-            posicao.distanceTo(
-                posNPC
-            );
+    npcs.forEach(
+        npc => {
+
+            const npcPos =
+                npc.elemento
+                .object3D
+                .position;
 
 
-        /*
-         * Se estiver perto do NPC
-         */
-
-        if (distancia < 4) {
-
-            /*
-             * Botão A / X
-             * geralmente buttons[4]
-             */
-
-            const gamepads =
-                navigator.getGamepads
-                ? navigator.getGamepads()
-                : [];
+            const dx =
+                posicao.x -
+                npcPos.x;
 
 
-            for (
-                let i = 0;
-                i < gamepads.length;
-                i++
+            const dz =
+                posicao.z -
+                npcPos.z;
+
+
+            const distancia =
+                Math.sqrt(
+                    dx * dx +
+                    dz * dz
+                );
+
+
+            if (
+                distancia < 5
             ) {
 
-                const gamepad =
-                    gamepads[i];
-
-
-                if (
-                    gamepad &&
-                    gamepad.connected
-                ) {
-
-                    if (
-                        gamepad.buttons[4] &&
-                        gamepad.buttons[4].pressed
-                    ) {
-
-                        abrirDialogo(
-                            npc
-                        );
-
-                    }
-
-                }
+                npcProximo =
+                    npc;
 
             }
 
         }
+    );
 
-    });
+
+    if (npcProximo) {
+
+        interacao.style.display =
+            "block";
+
+
+        const gamepads =
+            pegarGamepads();
+
+
+        let apertou =
+            false;
+
+
+        gamepads.forEach(
+            gamepad => {
+
+                gamepad.buttons.forEach(
+                    button => {
+
+                        if (
+                            button.pressed
+                        ) {
+
+                            apertou =
+                                true;
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        /*
+         * Só abre uma vez por pressão.
+         */
+
+        if (
+            apertou &&
+            !ultimoBotao
+        ) {
+
+            abrirDialogo(
+                npcProximo
+            );
+
+        }
+
+
+        ultimoBotao =
+            apertou;
+
+    } else {
+
+        interacao.style.display =
+            "none";
+
+        ultimoBotao =
+            false;
+
+    }
 
 
     requestAnimationFrame(
-        verificarNPCs
+        verificarNPC
     );
 
 }
 
 
-verificarNPCs();
+verificarNPC();
 
+
+/* =========================================================
+   GRAMA / VENTO
+========================================================= */
+
+const gramas =
+    document.querySelectorAll(
+        "#grama a-cone"
+    );
+
+
+/*
+ * Criamos pequenas variações
+ * para dar aparência de vento.
+ */
+
+gramas.forEach(
+    (grama, index) => {
+
+        const duracao =
+            900 +
+            Math.random() *
+            800;
+
+
+        grama.setAttribute(
+            "animation",
+            `
+            property: rotation;
+            from: 0 0 -2;
+            to: 0 0 2;
+            dur: ${duracao};
+            direction: alternate;
+            loop: true;
+            easing: easeInOutSine;
+            `
+        );
+
+    }
+);
+
+
+/* =========================================================
+   ORIENTAÇÃO DA CÂMERA
+========================================================= */
+
+/*
+ * O look-controls do A-Frame já utiliza
+ * o movimento do headset para olhar
+ * para cima, baixo, esquerda e direita.
+ *
+ * Portanto não devemos sobrescrever
+ * a rotação da câmera manualmente.
+ */
+
+
+/* =========================================================
+   DEBUG
+========================================================= */
+
+console.log(
+    "Nexus Atlas VR iniciado."
+);
+
+console.log(
+    "Controles detectados:",
+    pegarGamepads()
+);
 
 </script>
+
 
 </body>
 
