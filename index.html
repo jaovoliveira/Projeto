@@ -1,87 +1,172 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-    <title>Meu primeiro projeto Babylon.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <title>Simulação VR - TCC Mecatrônica</title>
 
-    <style>
-        html, body {
-            width: 100%;
-            height: 90%;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        #renderCanvas {
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-        }
-    </style>
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 </head>
 
 <body>
 
-    <canvas id="renderCanvas"></canvas>
+<a-scene>
 
-    <script>
+    <!-- ========================= -->
+    <!-- CÉU -->
+    <!-- ========================= -->
 
-        // Pegando o canvas
-        const canvas = document.getElementById("renderCanvas");
+    <a-sky color="#5DADE2"></a-sky>
 
-        // Criando o motor 3D
-        const engine = new BABYLON.Engine(canvas, true);
 
-        // Criando a cena
-        const scene = new BABYLON.Scene(engine);
+    <!-- ========================= -->
+    <!-- LUZ -->
+    <!-- ========================= -->
 
-        // Criando a câmera
-        const camera = new BABYLON.ArcRotateCamera(
-            "camera",
-            Math.PI / 2,
-            Math.PI / 3,
-            8,
-            BABYLON.Vector3.Zero(),
-            scene
-        );
+    <a-light
+        type="ambient"
+        color="#FFFFFF"
+        intensity="1.5">
+    </a-light>
 
-        camera.attachControl(canvas, true);
+    <a-light
+        type="directional"
+        position="-5 10 5"
+        intensity="2">
+    </a-light>
 
-        // Criando uma luz
-        const light = new BABYLON.HemisphericLight(
-            "light",
-            new BABYLON.Vector3(0, 1, 0),
-            scene
-        );
 
-        // Criando um cubo
-        const cube = BABYLON.MeshBuilder.CreateBox(
-            "cubo",
-            { size: 2 },
-            scene
-        );
+    <!-- ========================= -->
+    <!-- CHÃO -->
+    <!-- ========================= -->
 
-        // Criando o chão
-        const ground = BABYLON.MeshBuilder.CreateGround(
-            "chao",
-            { width: 10, height: 10 },
-            scene
-        );
+    <a-plane
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="50"
+        height="50"
+        color="#4CAF50">
+    </a-plane>
 
-        // Loop de renderização
-        engine.runRenderLoop(() => {
-            scene.render();
-        });
 
-        // Ajusta quando a janela muda de tamanho
-        window.addEventListener("resize", () => {
-            engine.resize();
-        });
+    <!-- ========================= -->
+    <!-- OBJETOS DO CENÁRIO -->
+    <!-- ========================= -->
 
-    </script>
+    <!-- Caixa 1 -->
+    <a-box
+        position="0 1 -5"
+        width="2"
+        height="2"
+        depth="2"
+        color="#FF5733">
+    </a-box>
+
+    <!-- Caixa 2 -->
+    <a-box
+        position="5 1 -8"
+        width="2"
+        height="2"
+        depth="2"
+        color="#3498DB">
+    </a-box>
+
+    <!-- Caixa 3 -->
+    <a-box
+        position="-5 1 -10"
+        width="2"
+        height="2"
+        depth="2"
+        color="#F1C40F">
+    </a-box>
+
+
+    <!-- ========================= -->
+    <!-- CILINDROS -->
+    <!-- ========================= -->
+
+    <a-cylinder
+        position="5 1 -3"
+        radius="1"
+        height="2"
+        color="#9B59B6">
+    </a-cylinder>
+
+    <a-cylinder
+        position="-5 1 -6"
+        radius="1"
+        height="2"
+        color="#E67E22">
+    </a-cylinder>
+
+
+    <!-- ========================= -->
+    <!-- ÁRVORE SIMPLES -->
+    <!-- ========================= -->
+
+    <a-cylinder
+        position="8 2 -10"
+        radius="0.5"
+        height="4"
+        color="#8B4513">
+    </a-cylinder>
+
+    <a-sphere
+        position="8 4.5 -10"
+        radius="2"
+        color="#228B22">
+    </a-sphere>
+
+
+    <!-- ========================= -->
+    <!-- OUTRA ÁRVORE -->
+    <!-- ========================= -->
+
+    <a-cylinder
+        position="-8 2 -12"
+        radius="0.5"
+        height="4"
+        color="#8B4513">
+    </a-cylinder>
+
+    <a-sphere
+        position="-8 4.5 -12"
+        radius="2"
+        color="#228B22">
+    </a-sphere>
+
+
+    <!-- ========================= -->
+    <!-- CÂMERA / JOGADOR -->
+    <!-- ========================= -->
+
+    <a-entity
+        id="player"
+        position="0 1.6 5">
+
+        <a-camera></a-camera>
+
+    </a-entity>
+
+
+    <!-- ========================= -->
+    <!-- CONTROLES VR -->
+    <!-- ========================= -->
+
+    <a-entity
+        laser-controls="hand: left">
+    </a-entity>
+
+    <a-entity
+        laser-controls="hand: right">
+    </a-entity>
+
+
+</a-scene>
 
 </body>
 </html>
+```
