@@ -4,118 +4,175 @@
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Simulação VR - TCC Mecatrônica</title>
+<title>Mundo VR - TCC Mecatrônica</title>
 
-    <!-- A-FRAME -->
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- Movimento VR -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+<style>
 
-    <style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
 
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+/* =========================================
+   TELA INICIAL
+========================================= */
 
-        /* TELA INICIAL */
+#inicio {
 
-        #inicio {
-            position: fixed;
+    position: fixed;
 
-            top: 0;
-            left: 0;
+    inset: 0;
 
-            width: 100%;
-            height: 100%;
+    background:
+        linear-gradient(
+            rgba(5,35,70,0.65),
+            rgba(0,0,0,0.85)
+        );
 
-            background:
-                linear-gradient(
-                    rgba(0, 40, 80, 0.65),
-                    rgba(0, 0, 0, 0.75)
-                );
+    display: flex;
 
-            display: flex;
+    justify-content: center;
 
-            align-items: center;
-            justify-content: center;
+    align-items: center;
 
-            z-index: 9999;
+    z-index: 10000;
 
-            color: white;
+    color: white;
 
-            text-align: center;
-        }
+    text-align: center;
+}
 
-        #painel {
+#painelInicio {
 
-            background: rgba(0,0,0,0.65);
+    width: min(90%, 550px);
 
-            padding: 45px;
+    padding: 45px;
 
-            border-radius: 25px;
+    border-radius: 25px;
 
-            backdrop-filter: blur(12px);
+    background: rgba(10,10,20,0.75);
 
-            box-shadow:
-                0 0 40px rgba(0,0,0,0.5);
+    backdrop-filter: blur(15px);
 
-            max-width: 500px;
-        }
+    box-shadow:
+        0 20px 60px rgba(0,0,0,0.6);
+}
 
-        #painel h1 {
+#painelInicio h1 {
 
-            font-size: 38px;
+    font-size: 40px;
 
-            margin-bottom: 10px;
-        }
+    margin-bottom: 10px;
+}
 
-        #painel p {
+#painelInicio p {
 
-            font-size: 18px;
+    font-size: 18px;
 
-            line-height: 1.5;
+    line-height: 1.6;
+}
 
-            opacity: 0.9;
-        }
+#entrarVR {
 
-        #entrarVR {
+    margin-top: 20px;
 
-            margin-top: 25px;
+    padding: 18px 40px;
 
-            padding: 18px 35px;
+    border: none;
 
-            border: none;
+    border-radius: 12px;
 
-            border-radius: 12px;
+    background: #1683ff;
 
-            background: #1683ff;
+    color: white;
 
-            color: white;
+    font-size: 18px;
 
-            font-size: 18px;
+    font-weight: bold;
 
-            font-weight: bold;
+    cursor: pointer;
+}
 
-            cursor: pointer;
+#entrarVR:hover {
 
-            transition: 0.2s;
-        }
+    background: #3d9cff;
 
-        #entrarVR:hover {
+    transform: scale(1.04);
+}
 
-            transform: scale(1.05);
 
-            background: #3c9aff;
-        }
+/* =========================================
+   DIÁLOGO
+========================================= */
 
-    </style>
+#dialogo {
+
+    position: fixed;
+
+    left: 50%;
+
+    bottom: 40px;
+
+    transform: translateX(-50%);
+
+    width: min(800px, 85%);
+
+    padding: 20px 25px;
+
+    border-radius: 18px;
+
+    background: rgba(0,0,0,0.82);
+
+    color: white;
+
+    z-index: 9998;
+
+    display: none;
+
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+        0 10px 40px rgba(0,0,0,0.6);
+}
+
+#nomeNPC {
+
+    color: #5db7ff;
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+#falaNPC {
+
+    font-size: 18px;
+
+    line-height: 1.5;
+}
+
+#fecharDialogo {
+
+    margin-top: 12px;
+
+    padding: 8px 18px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+</style>
 
 </head>
 
@@ -123,24 +180,29 @@
 <body>
 
 
-<!-- ============================================ -->
-<!-- TELA INICIAL -->
-<!-- ============================================ -->
+<!-- =========================================
+     TELA INICIAL
+========================================= -->
 
 <div id="inicio">
 
-    <div id="painel">
+    <div id="painelInicio">
 
-        <h1>🥽 Simulação VR</h1>
+        <h1>🥽 MUNDO VR</h1>
 
         <p>
-            Bem-vindo ao ambiente virtual do
-            projeto de Mecatrônica.
+            Ambiente virtual do projeto
+            de Mecatrônica.
         </p>
 
         <p>
-            Coloque o headset VR e utilize os
-            controles para explorar o ambiente.
+            Utilize os controles do headset
+            para andar e explorar o ambiente.
+        </p>
+
+        <p>
+            Aproxime-se dos personagens para
+            conversar com eles.
         </p>
 
         <button id="entrarVR">
@@ -152,692 +214,1287 @@
 </div>
 
 
+<!-- =========================================
+     SISTEMA DE DIÁLOGO
+========================================= -->
 
-<!-- ============================================ -->
-<!-- CENA -->
-<!-- ============================================ -->
+<div id="dialogo">
+
+    <div id="nomeNPC">
+        NPC
+    </div>
+
+    <div id="falaNPC">
+        Olá!
+    </div>
+
+    <button id="fecharDialogo">
+        Fechar
+    </button>
+
+</div>
+
+
+<!-- =========================================
+     CENA
+========================================= -->
 
 <a-scene
-
+    background="color: #75CFF5"
     renderer="
         antialias: true;
         colorManagement: true;
         physicallyCorrectLights: true;
     "
-
-    shadow="type: pcfsoft"
-
-    background="color: #87CEEB">
+    shadow="type: pcfsoft">
 
 
-    <!-- ======================================== -->
-    <!-- CÉU -->
-    <!-- ======================================== -->
+<!-- =========================================
+     CÉU
+========================================= -->
 
-    <a-sky
-        color="#72C7F5">
-    </a-sky>
+<a-sky color="#72C8F5"></a-sky>
 
 
+<!-- =========================================
+     LUZ DO SOL
+========================================= -->
 
-    <!-- ======================================== -->
-    <!-- LUZ DO SOL -->
-    <!-- ======================================== -->
+<a-light
+    type="ambient"
+    intensity="1.1"
+    color="#FFFFFF">
+</a-light>
 
-    <a-light
-        type="ambient"
-        intensity="1.2"
-        color="#FFFFFF">
-    </a-light>
-
-
-    <a-light
-        type="directional"
-
-        position="-20 30 10"
-
-        intensity="3"
-
-        cast-shadow="true"
-
-        shadow-map-width="2048"
-
-        shadow-map-height="2048"
-
-        shadow-camera-left="-30"
-
-        shadow-camera-right="30"
-
-        shadow-camera-top="30"
-
-        shadow-camera-bottom="-30">
-
-    </a-light>
+<a-light
+    type="directional"
+    position="-30 40 20"
+    intensity="3"
+    cast-shadow="true"
+    shadow-map-width="2048"
+    shadow-map-height="2048">
+</a-light>
 
 
+<!-- =========================================
+     TERRENO GRANDE
+========================================= -->
 
-    <!-- ======================================== -->
-    <!-- TERRENO -->
-    <!-- ======================================== -->
-
-    <a-plane
-
-        position="0 0 0"
-
-        rotation="-90 0 0"
-
-        width="100"
-
-        height="100"
-
-        color="#4F9D45"
-
-        material="
-            roughness: 1;
-        "
-
-        shadow="receive: true">
-
-    </a-plane>
+<a-plane
+    position="0 0 0"
+    rotation="-90 0 0"
+    width="200"
+    height="200"
+    color="#4C963F"
+    shadow="receive: true">
+</a-plane>
 
 
+<!-- =========================================
+     ESTRADA
+========================================= -->
 
-    <!-- ======================================== -->
-    <!-- CAMINHO ATÉ A CASA -->
-    <!-- ======================================== -->
-
-    <a-plane
-
-        position="0 0.01 8"
-
-        rotation="-90 0 0"
-
-        width="5"
-
-        height="20"
-
-        color="#B8A58A">
-
-    </a-plane>
+<a-plane
+    position="0 0.01 25"
+    rotation="-90 0 0"
+    width="8"
+    height="50"
+    color="#9B8A73">
+</a-plane>
 
 
+<!-- =========================================
+     CASA PRINCIPAL
+========================================= -->
 
-    <!-- ======================================== -->
-    <!-- CASA -->
-    <!-- ======================================== -->
+<a-entity id="casa">
 
-    <!-- PAREDES -->
+
+    <!-- PISO -->
 
     <a-box
+        position="0 0.15 -5"
+        width="18"
+        height="0.3"
+        depth="14"
+        color="#C7A77A">
+    </a-box>
 
-        position="0 2 -5"
 
-        width="10"
+    <!-- PAREDE TRASEIRA -->
 
-        height="4"
-
-        depth="8"
-
+    <a-box
+        position="0 3 -11.5"
+        width="18"
+        height="6"
+        depth="0.4"
         color="#E8D7B8"
-
-        shadow="cast: true; receive: true">
-
-    </a-box>
-
-
-
-    <!-- TELHADO ESQUERDO -->
-
-    <a-box
-
-        position="-2.7 4.7 -5"
-
-        rotation="0 0 -35"
-
-        width="6.2"
-
-        height="0.5"
-
-        depth="8.5"
-
-        color="#7B2D26"
-
         shadow="cast: true">
-
     </a-box>
 
 
-
-    <!-- TELHADO DIREITO -->
+    <!-- PAREDE ESQUERDA -->
 
     <a-box
+        position="-8.8 3 -5"
+        width="0.4"
+        height="6"
+        depth="13"
+        color="#E8D7B8">
+    </a-box>
 
-        position="2.7 4.7 -5"
 
-        rotation="0 0 35"
+    <!-- PAREDE DIREITA -->
 
-        width="6.2"
+    <a-box
+        position="8.8 3 -5"
+        width="0.4"
+        height="6"
+        depth="13"
+        color="#E8D7B8">
+    </a-box>
 
+
+    <!-- PAREDE FRONTAL ESQUERDA -->
+
+    <a-box
+        position="-5 3 1.5"
+        width="7.5"
+        height="6"
+        depth="0.4"
+        color="#E8D7B8">
+    </a-box>
+
+
+    <!-- PAREDE FRONTAL DIREITA -->
+
+    <a-box
+        position="5 3 1.5"
+        width="7.5"
+        height="6"
+        depth="0.4"
+        color="#E8D7B8">
+    </a-box>
+
+
+    <!-- =====================================
+         TELHADO
+    ====================================== -->
+
+    <a-box
+        position="-4.5 6.4 -5"
+        rotation="0 0 -28"
+        width="10"
         height="0.5"
-
-        depth="8.5"
-
-        color="#7B2D26"
-
+        depth="15"
+        color="#6E2722"
         shadow="cast: true">
-
     </a-box>
-
-
-
-    <!-- PORTA -->
 
     <a-box
-
-        position="0 1.4 -9.05"
-
-        width="1.8"
-
-        height="2.8"
-
-        depth="0.2"
-
-        color="#5B3820">
-
+        position="4.5 6.4 -5"
+        rotation="0 0 28"
+        width="10"
+        height="0.5"
+        depth="15"
+        color="#6E2722"
+        shadow="cast: true">
     </a-box>
 
 
+    <!-- =====================================
+         PORTA
+    ====================================== -->
 
-    <!-- MAÇANETA -->
+    <a-box
+        position="0 1.7 1.25"
+        width="2.4"
+        height="3.4"
+        depth="0.3"
+        color="#55351F">
+    </a-box>
 
     <a-sphere
-
-        position="0.55 1.4 -9.2"
-
+        position="0.75 1.7 1.45"
         radius="0.12"
-
-        color="#D4AF37">
-
+        color="#D6B45B">
     </a-sphere>
 
 
-
-    <!-- JANELA ESQUERDA -->
+    <!-- =====================================
+         JANELAS
+    ====================================== -->
 
     <a-box
-
-        position="-3 2.3 -9.1"
-
-        width="2"
-
-        height="1.8"
-
+        position="-6 3 1.25"
+        width="2.8"
+        height="2.2"
         depth="0.2"
-
-        color="#5FC8FF">
-
+        color="#6FC9E8">
     </a-box>
 
-
-
-    <!-- JANELA DIREITA -->
-
     <a-box
-
-        position="3 2.3 -9.1"
-
-        width="2"
-
-        height="1.8"
-
+        position="6 3 1.25"
+        width="2.8"
+        height="2.2"
         depth="0.2"
-
-        color="#5FC8FF">
-
+        color="#6FC9E8">
     </a-box>
 
 
-
-    <!-- DIVISÃO DAS JANELAS -->
+    <!-- DIVISÕES -->
 
     <a-box
-
-        position="-3 2.3 -9.25"
-
+        position="-6 3 1.15"
         width="0.12"
-
-        height="1.8"
-
-        depth="0.1"
-
+        height="2.2"
+        depth="0.15"
         color="#FFFFFF">
-
     </a-box>
 
-
     <a-box
-
-        position="3 2.3 -9.25"
-
+        position="6 3 1.15"
         width="0.12"
-
-        height="1.8"
-
-        depth="0.1"
-
+        height="2.2"
+        depth="0.15"
         color="#FFFFFF">
-
     </a-box>
 
 
+    <!-- =====================================
+         SALA
+    ====================================== -->
 
-    <!-- ======================================== -->
-    <!-- CHAMINÉ -->
-    <!-- ======================================== -->
+
+    <!-- SOFÁ -->
 
     <a-box
-
-        position="3.2 6 -5"
-
-        width="1"
-
-        height="3"
-
-        depth="1"
-
-        color="#8B4513"
-
-        shadow="cast: true">
-
-    </a-box>
-
-
-
-    <!-- ======================================== -->
-    <!-- ÁRVORES -->
-    <!-- ======================================== -->
-
-    <!-- ÁRVORE 1 -->
-
-    <a-cylinder
-
-        position="-10 2 -10"
-
-        radius="0.7"
-
-        height="4"
-
-        color="#654321">
-
-    </a-cylinder>
-
-
-    <a-sphere
-
-        position="-10 5 -10"
-
-        radius="3"
-
-        color="#287A32"
-
-        shadow="cast: true">
-
-    </a-sphere>
-
-
-
-    <!-- ÁRVORE 2 -->
-
-    <a-cylinder
-
-        position="12 2 -12"
-
-        radius="0.7"
-
-        height="4"
-
-        color="#654321">
-
-    </a-cylinder>
-
-
-    <a-sphere
-
-        position="12 5 -12"
-
-        radius="3"
-
-        color="#287A32"
-
-        shadow="cast: true">
-
-    </a-sphere>
-
-
-
-    <!-- ÁRVORE 3 -->
-
-    <a-cylinder
-
-        position="-12 2 4"
-
-        radius="0.7"
-
-        height="4"
-
-        color="#654321">
-
-    </a-cylinder>
-
-
-    <a-sphere
-
-        position="-12 5 4"
-
-        radius="3"
-
-        color="#287A32"
-
-        shadow="cast: true">
-
-    </a-sphere>
-
-
-
-    <!-- ======================================== -->
-    <!-- NUVENS -->
-    <!-- ======================================== -->
-
-    <a-entity
-
-        id="nuvem1"
-
-        position="-20 15 -25"
-
-        animation="
-            property: position;
-            to: 25 15 -25;
-            dur: 60000;
-            loop: true;
-            easing: linear;
-        ">
-
-        <a-sphere
-            position="0 0 0"
-            radius="3"
-            color="#FFFFFF">
-        </a-sphere>
-
-        <a-sphere
-            position="3 0.5 0"
-            radius="2.5"
-            color="#FFFFFF">
-        </a-sphere>
-
-        <a-sphere
-            position="-3 0.3 0"
-            radius="2.2"
-            color="#FFFFFF">
-        </a-sphere>
-
-    </a-entity>
-
-
-
-    <a-entity
-
-        id="nuvem2"
-
-        position="20 18 -35"
-
-        animation="
-            property: position;
-            to: -25 18 -35;
-            dur: 80000;
-            loop: true;
-            easing: linear;
-        ">
-
-        <a-sphere
-            position="0 0 0"
-            radius="4"
-            color="#FFFFFF">
-        </a-sphere>
-
-        <a-sphere
-            position="4 0.4 0"
-            radius="3"
-            color="#FFFFFF">
-        </a-sphere>
-
-        <a-sphere
-            position="-4 0.2 0"
-            radius="2.8"
-            color="#FFFFFF">
-        </a-sphere>
-
-    </a-entity>
-
-
-
-    <!-- ======================================== -->
-    <!-- OBJETOS DE TESTE -->
-    <!-- ======================================== -->
-
-    <a-box
-
-        position="8 1 -5"
-
-        width="2"
-
-        height="2"
-
+        position="-4 1 -5"
+        width="5"
+        height="1"
         depth="2"
+        color="#43566B">
+    </a-box>
 
-        color="#D35400"
-
-        shadow="cast: true">
-
+    <a-box
+        position="-4 2 -5.8"
+        width="5"
+        height="2"
+        depth="0.5"
+        color="#43566B">
     </a-box>
 
 
-    <a-cylinder
+    <!-- MESA DE CENTRO -->
 
-        position="-8 1 -6"
+    <a-box
+        position="-4 0.7 -2.5"
+        width="3"
+        height="0.5"
+        depth="1.5"
+        color="#754C29">
+    </a-box>
 
-        radius="1"
 
+    <!-- TAPETE -->
+
+    <a-box
+        position="-4 0.4 -4"
+        width="7"
+        height="0.1"
+        depth="5"
+        color="#9B8064">
+    </a-box>
+
+
+    <!-- =====================================
+         COZINHA
+    ====================================== -->
+
+    <a-box
+        position="5 1 -7"
+        width="6"
         height="2"
+        depth="1"
+        color="#D8D8D8">
+    </a-box>
 
-        color="#2980B9"
+    <!-- ARMÁRIO -->
 
-        shadow="cast: true">
+    <a-box
+        position="5 3 -7"
+        width="6"
+        height="2"
+        depth="0.8"
+        color="#8C6A4A">
+    </a-box>
 
+
+    <!-- GELADEIRA -->
+
+    <a-box
+        position="7 2.2 -4"
+        width="1.5"
+        height="4.4"
+        depth="1.5"
+        color="#DADDE0">
+    </a-box>
+
+
+    <!-- MESA -->
+
+    <a-cylinder
+        position="4 1 -3"
+        radius="2"
+        height="0.25"
+        color="#754C29">
     </a-cylinder>
 
 
+    <!-- PÉS DA MESA -->
 
-    <!-- ======================================== -->
-    <!-- JOGADOR -->
-    <!-- ======================================== -->
+    <a-cylinder
+        position="4 0.5 -3"
+        radius="0.15"
+        height="1"
+        color="#4A2F1A">
+    </a-cylinder>
 
-    <a-entity
 
-        id="player"
+    <!-- =====================================
+         QUARTO
+    ====================================== -->
 
-        position="0 0 15"
+    <!-- CAMA -->
 
-        movement-controls="
-            speed: 0.12;
-            fly: false;
+    <a-box
+        position="4 1 -10"
+        width="4"
+        height="0.7"
+        depth="6"
+        color="#E7E7E7">
+    </a-box>
+
+    <!-- COLCHÃO -->
+
+    <a-box
+        position="4 1.5 -10"
+        width="3.8"
+        height="0.5"
+        depth="5.8"
+        color="#F4F4F4">
+    </a-box>
+
+
+    <!-- CABECEIRA -->
+
+    <a-box
+        position="4 2.3 -12.5"
+        width="4"
+        height="2"
+        depth="0.3"
+        color="#754C29">
+    </a-box>
+
+
+    <!-- CRIADO MUDO -->
+
+    <a-box
+        position="7 1 -12"
+        width="1"
+        height="2"
+        depth="1"
+        color="#754C29">
+    </a-box>
+
+
+</a-entity>
+
+
+<!-- =========================================
+     MÓVEIS EXTERNOS
+========================================= -->
+
+<a-cylinder
+    position="0 1 12"
+    radius="3"
+    height="0.25"
+    color="#754C29">
+</a-cylinder>
+
+<a-cylinder
+    position="0 0.5 12"
+    radius="0.2"
+    height="1"
+    color="#4A2F1A">
+</a-cylinder>
+
+
+<!-- =========================================
+     NUVENS
+========================================= -->
+
+<a-entity
+    position="-40 20 -45"
+    animation="
+        property: position;
+        to: 40 20 -45;
+        dur: 90000;
+        loop: true;
+        easing: linear;
+    ">
+
+    <a-sphere
+        radius="5"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="5 0.5 0"
+        radius="4"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="-5 0.3 0"
+        radius="4"
+        color="#FFFFFF">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity
+    position="40 25 -70"
+    animation="
+        property: position;
+        to: -40 25 -70;
+        dur: 120000;
+        loop: true;
+        easing: linear;
+    ">
+
+    <a-sphere
+        radius="6"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="6 0.5 0"
+        radius="4"
+        color="#FFFFFF">
+    </a-sphere>
+
+    <a-sphere
+        position="-6 0.5 0"
+        radius="4"
+        color="#FFFFFF">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =========================================
+     ÁRVORES
+========================================= -->
+
+<a-entity position="-20 0 -15">
+
+    <a-cylinder
+        position="0 3 0"
+        radius="1"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="4"
+        color="#286E35"
+        shadow="cast: true">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity position="20 0 -20">
+
+    <a-cylinder
+        position="0 3 0"
+        radius="1"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="4"
+        color="#286E35"
+        shadow="cast: true">
+    </a-sphere>
+
+</a-entity>
+
+
+<a-entity position="-25 0 20">
+
+    <a-cylinder
+        position="0 3 0"
+        radius="1"
+        height="6"
+        color="#604020">
+    </a-cylinder>
+
+    <a-sphere
+        position="0 7 0"
+        radius="4"
+        color="#286E35"
+        shadow="cast: true">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =========================================
+     NPC 1 - ENGENHEIRA
+========================================= -->
+
+<a-entity
+    id="npcEngenheira"
+    position="-15 0 5"
+    class="npc">
+
+
+    <!-- CORPO -->
+
+    <a-cylinder
+        position="0 1.2 0"
+        radius="0.55"
+        height="1.5"
+        color="#2468A2">
+    </a-cylinder>
+
+
+    <!-- CABEÇA -->
+
+    <a-sphere
+        position="0 2.3 0"
+        radius="0.55"
+        color="#E0AA86">
+    </a-sphere>
+
+
+    <!-- CABELO -->
+
+    <a-sphere
+        position="0 2.55 0"
+        radius="0.58"
+        color="#3A2418">
+    </a-sphere>
+
+
+    <!-- NOME -->
+
+    <a-text
+        value="Engenheira Ana"
+        align="center"
+        color="#FFFFFF"
+        width="4"
+        position="0 3.2 0">
+    </a-text>
+
+
+    <!-- INDICADOR -->
+
+    <a-sphere
+        position="0 3.6 0"
+        radius="0.15"
+        color="#00FF88"
+        animation="
+            property: scale;
+            to: 1.5 1.5 1.5;
+            dur: 700;
+            direction: alternate;
+            loop: true;
         ">
+    </a-sphere>
+
+</a-entity>
 
 
-        <!-- CÂMERA -->
+<!-- =========================================
+     NPC 2 - AVENTUREIRO
+========================================= -->
 
-        <a-camera
-
-            position="0 1.6 0"
-
-            look-controls>
-
-        </a-camera>
-
+<a-entity
+    id="npcAventureiro"
+    position="18 0 8"
+    class="npc">
 
 
-        <!-- ==================================== -->
-        <!-- MÃO ESQUERDA -->
-        <!-- ==================================== -->
-
-        <a-entity
-
-            hand-controls="
-                hand: left;
-                handModelStyle: lowPoly;
-                color: #F2C6A0;
-            "
-
-            laser-controls="
-                hand: left;
-            ">
-
-        </a-entity>
+    <a-cylinder
+        position="0 1.2 0"
+        radius="0.6"
+        height="1.6"
+        color="#6D3B22">
+    </a-cylinder>
 
 
-
-        <!-- ==================================== -->
-        <!-- MÃO DIREITA -->
-        <!-- ==================================== -->
-
-        <a-entity
-
-            hand-controls="
-                hand: right;
-                handModelStyle: lowPoly;
-                color: #F2C6A0;
-            "
-
-            laser-controls="
-                hand: right;
-            ">
-
-        </a-entity>
+    <a-sphere
+        position="0 2.4 0"
+        radius="0.58"
+        color="#C88E67">
+    </a-sphere>
 
 
-    </a-entity>
+    <!-- CHAPÉU -->
+
+    <a-cylinder
+        position="0 2.85 0"
+        radius="0.75"
+        height="0.25"
+        color="#4A2A17">
+    </a-cylinder>
 
 
+    <a-text
+        value="Capitão Leo"
+        align="center"
+        color="#FFFFFF"
+        width="4"
+        position="0 3.4 0">
+    </a-text>
 
-    <!-- ======================================== -->
-    <!-- PLACA DE INFORMAÇÃO -->
-    <!-- ======================================== -->
+
+    <a-sphere
+        position="0 3.8 0"
+        radius="0.15"
+        color="#FFD700"
+        animation="
+            property: scale;
+            to: 1.5 1.5 1.5;
+            dur: 700;
+            direction: alternate;
+            loop: true;
+        ">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =========================================
+     NPC 3 - CIENTISTA
+========================================= -->
+
+<a-entity
+    id="npcCientista"
+    position="25 0 -20"
+    class="npc">
+
+
+    <a-cylinder
+        position="0 1.2 0"
+        radius="0.55"
+        height="1.5"
+        color="#FFFFFF">
+    </a-cylinder>
+
+
+    <a-sphere
+        position="0 2.3 0"
+        radius="0.55"
+        color="#D6A17A">
+    </a-sphere>
+
+
+    <a-box
+        position="-0.25 2.35 -0.5"
+        width="0.3"
+        height="0.3"
+        depth="0.1"
+        color="#222222">
+    </a-box>
+
+
+    <a-box
+        position="0.25 2.35 -0.5"
+        width="0.3"
+        height="0.3"
+        depth="0.1"
+        color="#222222">
+    </a-box>
+
+
+    <a-text
+        value="Dr. Marcos"
+        align="center"
+        color="#FFFFFF"
+        width="4"
+        position="0 3.2 0">
+    </a-text>
+
+
+    <a-sphere
+        position="0 3.6 0"
+        radius="0.15"
+        color="#FF55FF"
+        animation="
+            property: scale;
+            to: 1.5 1.5 1.5;
+            dur: 700;
+            direction: alternate;
+            loop: true;
+        ">
+    </a-sphere>
+
+</a-entity>
+
+
+<!-- =========================================
+     JOGADOR
+========================================= -->
+
+<a-entity
+    id="player"
+    position="0 0 30">
+
+
+    <!-- CÂMERA -->
+
+    <a-camera
+        id="camera"
+        position="0 1.6 0"
+        look-controls>
+    </a-camera>
+
+
+    <!-- =====================================
+         CONTROLE ESQUERDO
+         MOVIMENTAÇÃO
+    ====================================== -->
 
     <a-entity
-
-        position="0 3 10"
-
-        rotation="0 180 0">
-
-        <a-plane
-
-            width="6"
-
-            height="2.5"
-
-            color="#111111"
-
-            opacity="0.85">
-
-        </a-plane>
-
-
-        <a-text
-
-            value="SIMULAÇÃO VR\n\nUse os controles para explorar"
-
-            align="center"
-
-            color="#FFFFFF"
-
-            width="5"
-
-            position="0 0 0.05">
-
-        </a-text>
-
+        id="controleEsquerdo"
+        laser-controls="hand: left"
+        hand-controls="
+            hand: left;
+            handModelStyle: lowPoly;
+        ">
     </a-entity>
+
+
+    <!-- =====================================
+         CONTROLE DIREITO
+         ROTAÇÃO
+    ====================================== -->
+
+    <a-entity
+        id="controleDireito"
+        laser-controls="hand: right"
+        hand-controls="
+            hand: right;
+            handModelStyle: lowPoly;
+        ">
+    </a-entity>
+
+</a-entity>
 
 
 </a-scene>
 
 
-
-<!-- ============================================ -->
-<!-- SCRIPT DO BOTÃO VR -->
-<!-- ============================================ -->
-
 <script>
 
-    const telaInicio =
-        document.getElementById("inicio");
+/* =====================================================
+   REFERÊNCIAS
+===================================================== */
 
-    const botao =
-        document.getElementById("entrarVR");
+const cena = document.querySelector("a-scene");
 
-    const cena =
-        document.querySelector("a-scene");
+const player = document.querySelector("#player");
+
+const camera = document.querySelector("#camera");
+
+const esquerda =
+    document.querySelector("#controleEsquerdo");
+
+const direita =
+    document.querySelector("#controleDireito");
 
 
-    botao.addEventListener("click", async () => {
+/* =====================================================
+   TELA INICIAL
+===================================================== */
+
+const inicio =
+    document.querySelector("#inicio");
+
+const botaoVR =
+    document.querySelector("#entrarVR");
+
+
+botaoVR.addEventListener("click", async () => {
+
+    inicio.style.display = "none";
+
+    try {
+
+        if (cena.enterVR) {
+
+            await cena.enterVR();
+
+        }
+
+    } catch (erro) {
+
+        console.log(
+            "VR não disponível:",
+            erro
+        );
+
+    }
+
+});
+
+
+cena.addEventListener("enter-vr", () => {
+
+    inicio.style.display = "none";
+
+});
+
+
+/* =====================================================
+   MOVIMENTAÇÃO MANUAL
+=====================================================
+
+   IMPORTANTE:
+
+   Não usamos movement-controls.
+
+   O jogador só se movimenta quando
+   o analógico realmente é movimentado.
+===================================================== */
+
+const velocidade = 0.08;
+
+const velocidadeRotacao = 1.5;
+
+
+function atualizarMovimento() {
+
+    if (!esquerda.object3D) {
+
+        requestAnimationFrame(
+            atualizarMovimento
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * A-Frame registra os eixos do
+     * controle através de axis.
+     */
+
+    const eixo =
+        esquerda.components[
+            "tracked-controls"
+        ];
+
+
+    /*
+     * Alguns controles utilizam
+     * thumbstick- events.
+     */
+
+    const joystick =
+        esquerda.components[
+            "tracked-controls"
+        ];
+
+
+    /*
+     * Leitura direta do gamepad.
+     */
+
+    const gamepads =
+        navigator.getGamepads
+        ? navigator.getGamepads()
+        : [];
+
+
+    let controle = null;
+
+
+    for (let i = 0; i < gamepads.length; i++) {
+
+        if (
+            gamepads[i] &&
+            gamepads[i].connected
+        ) {
+
+            controle = gamepads[i];
+
+            break;
+
+        }
+
+    }
+
+
+    if (controle) {
+
+        const x =
+            controle.axes[2] ||
+            controle.axes[0] ||
+            0;
+
+        const y =
+            controle.axes[3] ||
+            controle.axes[1] ||
+            0;
+
 
         /*
-         * Esconde a tela inicial
+         * DEADZONE
+         *
+         * Evita que o personagem
+         * ande sozinho quando o
+         * analógico está levemente
+         * deslocado.
          */
 
-        telaInicio.style.display = "none";
+        const deadzone = 0.15;
+
+
+        const movimentoX =
+            Math.abs(x) > deadzone
+            ? x
+            : 0;
+
+
+        const movimentoY =
+            Math.abs(y) > deadzone
+            ? y
+            : 0;
 
 
         /*
-         * Tenta entrar no modo VR
+         * DIREÇÃO DA CÂMERA
          */
 
-        try {
+        const rotacao =
+            camera.object3D.rotation.y;
 
-            if (cena.enterVR) {
 
-                await cena.enterVR();
+        /*
+         * Movimento para frente/trás
+         */
+
+        const frenteX =
+            -Math.sin(rotacao) *
+            movimentoY *
+            velocidade;
+
+
+        const frenteZ =
+            -Math.cos(rotacao) *
+            movimentoY *
+            velocidade;
+
+
+        /*
+         * Movimento lateral
+         */
+
+        const lateralX =
+            Math.cos(rotacao) *
+            movimentoX *
+            velocidade;
+
+
+        const lateralZ =
+            -Math.sin(rotacao) *
+            movimentoX *
+            velocidade;
+
+
+        player.object3D.position.x +=
+            frenteX + lateralX;
+
+
+        player.object3D.position.z +=
+            frenteZ + lateralZ;
+
+    }
+
+
+    requestAnimationFrame(
+        atualizarMovimento
+    );
+
+}
+
+
+atualizarMovimento();
+
+
+/* =====================================================
+   ROTAÇÃO MANUAL
+===================================================== */
+
+function atualizarRotacao() {
+
+    const gamepads =
+        navigator.getGamepads
+        ? navigator.getGamepads()
+        : [];
+
+
+    let controle = null;
+
+
+    for (let i = 0; i < gamepads.length; i++) {
+
+        if (
+            gamepads[i] &&
+            gamepads[i].connected
+        ) {
+
+            controle = gamepads[i];
+
+            break;
+
+        }
+
+    }
+
+
+    if (controle) {
+
+        /*
+         * Dependendo do headset,
+         * os eixos podem variar.
+         */
+
+        const x =
+            controle.axes[2] ||
+            controle.axes[0] ||
+            0;
+
+
+        const deadzone = 0.18;
+
+
+        if (
+            Math.abs(x) >
+            deadzone
+        ) {
+
+            player.object3D.rotation.y -=
+                x *
+                velocidadeRotacao *
+                0.01;
+
+        }
+
+    }
+
+
+    requestAnimationFrame(
+        atualizarRotacao
+    );
+
+}
+
+
+atualizarRotacao();
+
+
+/* =====================================================
+   NPCs
+===================================================== */
+
+const npcs = [
+
+    {
+
+        elemento:
+            document.querySelector(
+                "#npcEngenheira"
+            ),
+
+        nome:
+            "Engenheira Ana",
+
+        fala:
+            "Olá! Este ambiente foi criado para testar a interação entre realidade virtual e robótica. No futuro, poderemos controlar um braço robótico daqui."
+
+    },
+
+    {
+
+        elemento:
+            document.querySelector(
+                "#npcAventureiro"
+            ),
+
+        nome:
+            "Capitão Leo",
+
+        fala:
+            "Explore o mapa! Existem diferentes áreas para testar a movimentação e a interação virtual."
+
+    },
+
+    {
+
+        elemento:
+            document.querySelector(
+                "#npcCientista"
+            ),
+
+        nome:
+            "Dr. Marcos",
+
+        fala:
+            "A ideia mais interessante é conectar este mundo virtual ao ESP32. Assim, os movimentos virtuais podem controlar o braço físico."
+
+    }
+
+];
+
+
+/* =====================================================
+   SISTEMA DE DIÁLOGO
+===================================================== */
+
+const dialogo =
+    document.querySelector("#dialogo");
+
+const nomeNPC =
+    document.querySelector("#nomeNPC");
+
+const falaNPC =
+    document.querySelector("#falaNPC");
+
+const fechar =
+    document.querySelector("#fecharDialogo");
+
+
+function abrirDialogo(npc) {
+
+    nomeNPC.textContent =
+        npc.nome;
+
+    falaNPC.textContent =
+        npc.fala;
+
+    dialogo.style.display =
+        "block";
+
+}
+
+
+fechar.addEventListener(
+    "click",
+    () => {
+
+        dialogo.style.display =
+            "none";
+
+    }
+);
+
+
+/* =====================================================
+   INTERAÇÃO COM NPC
+===================================================== */
+
+function verificarNPCs() {
+
+    const posicao =
+        player.object3D.position;
+
+
+    npcs.forEach(npc => {
+
+        const posNPC =
+            npc.elemento.object3D.position;
+
+
+        const distancia =
+            posicao.distanceTo(
+                posNPC
+            );
+
+
+        /*
+         * Se estiver perto do NPC
+         */
+
+        if (distancia < 4) {
+
+            /*
+             * Botão A / X
+             * geralmente buttons[4]
+             */
+
+            const gamepads =
+                navigator.getGamepads
+                ? navigator.getGamepads()
+                : [];
+
+
+            for (
+                let i = 0;
+                i < gamepads.length;
+                i++
+            ) {
+
+                const gamepad =
+                    gamepads[i];
+
+
+                if (
+                    gamepad &&
+                    gamepad.connected
+                ) {
+
+                    if (
+                        gamepad.buttons[4] &&
+                        gamepad.buttons[4].pressed
+                    ) {
+
+                        abrirDialogo(
+                            npc
+                        );
+
+                    }
+
+                }
 
             }
-
-        } catch (erro) {
-
-            console.log(
-                "Não foi possível entrar automaticamente no VR:",
-                erro
-            );
 
         }
 
     });
 
 
-    /*
-     * Quando o usuário entra no VR,
-     * garantimos que a tela desapareça.
-     */
-
-    cena.addEventListener(
-        "enter-vr",
-        () => {
-
-            telaInicio.style.display = "none";
-
-        }
+    requestAnimationFrame(
+        verificarNPCs
     );
+
+}
+
+
+verificarNPCs();
 
 
 </script>
-
 
 </body>
 
