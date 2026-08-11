@@ -1,6 +1,7 @@
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,22 +10,26 @@
 
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+    <!-- Componente de movimentação -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+
 </head>
 
 <body>
 
 <a-scene>
 
-    <!-- ========================= -->
+    <!-- ================================= -->
     <!-- CÉU -->
-    <!-- ========================= -->
+    <!-- ================================= -->
 
     <a-sky color="#5DADE2"></a-sky>
 
 
-    <!-- ========================= -->
-    <!-- LUZ -->
-    <!-- ========================= -->
+    <!-- ================================= -->
+    <!-- ILUMINAÇÃO -->
+    <!-- ================================= -->
 
     <a-light
         type="ambient"
@@ -39,9 +44,9 @@
     </a-light>
 
 
-    <!-- ========================= -->
+    <!-- ================================= -->
     <!-- CHÃO -->
-    <!-- ========================= -->
+    <!-- ================================= -->
 
     <a-plane
         position="0 0 0"
@@ -52,11 +57,10 @@
     </a-plane>
 
 
-    <!-- ========================= -->
+    <!-- ================================= -->
     <!-- OBJETOS DO CENÁRIO -->
-    <!-- ========================= -->
+    <!-- ================================= -->
 
-    <!-- Caixa 1 -->
     <a-box
         position="0 1 -5"
         width="2"
@@ -65,7 +69,6 @@
         color="#FF5733">
     </a-box>
 
-    <!-- Caixa 2 -->
     <a-box
         position="5 1 -8"
         width="2"
@@ -74,7 +77,6 @@
         color="#3498DB">
     </a-box>
 
-    <!-- Caixa 3 -->
     <a-box
         position="-5 1 -10"
         width="2"
@@ -84,9 +86,9 @@
     </a-box>
 
 
-    <!-- ========================= -->
+    <!-- ================================= -->
     <!-- CILINDROS -->
-    <!-- ========================= -->
+    <!-- ================================= -->
 
     <a-cylinder
         position="5 1 -3"
@@ -103,9 +105,9 @@
     </a-cylinder>
 
 
-    <!-- ========================= -->
-    <!-- ÁRVORE SIMPLES -->
-    <!-- ========================= -->
+    <!-- ================================= -->
+    <!-- ÁRVORES -->
+    <!-- ================================= -->
 
     <a-cylinder
         position="8 2 -10"
@@ -121,10 +123,6 @@
     </a-sphere>
 
 
-    <!-- ========================= -->
-    <!-- OUTRA ÁRVORE -->
-    <!-- ========================= -->
-
     <a-cylinder
         position="-8 2 -12"
         radius="0.5"
@@ -139,31 +137,36 @@
     </a-sphere>
 
 
-    <!-- ========================= -->
-    <!-- CÂMERA / JOGADOR -->
-    <!-- ========================= -->
+    <!-- ================================= -->
+    <!-- JOGADOR -->
+    <!-- ================================= -->
 
     <a-entity
         id="player"
-        position="0 1.6 5">
+        position="0 0 5"
+        movement-controls="speed: 0.15">
 
-        <a-camera></a-camera>
+        <!-- Câmera VR -->
+        <a-camera
+            position="0 1.6 0">
+        </a-camera>
+
+        <!-- Controle esquerdo -->
+        <a-entity
+            laser-controls="hand: left">
+        </a-entity>
+
+        <!-- Controle direito -->
+        <a-entity
+            laser-controls="hand: right">
+        </a-entity>
 
     </a-entity>
 
 
-    <!-- ========================= -->
-    <!-- CONTROLES VR -->
-    <!-- ========================= -->
-
-    <a-entity
-        laser-controls="hand: left">
-    </a-entity>
-
-    <a-entity
-        laser-controls="hand: right">
-    </a-entity>
-
+    <!-- ================================= -->
+    <!-- BOTÃO VR -->
+    <!-- ================================= -->
 
 </a-scene>
 
