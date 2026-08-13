@@ -33,7 +33,7 @@
 </head>
 <body>
 
-  <div id="loading">Carregando braço robótico...</div>
+  <div id="loading">Carregando modelo 3D...</div>
   <div id="canvas-container"></div>
 
   <script>
@@ -72,15 +72,15 @@
     dirLight2.position.set(-10, -10, -10);
     scene.add(dirLight2);
 
-    // 4. Grade de Chão Virtual (Substitui a mesa visualmente de forma limpa)
+    // 4. Grade de Chão Virtual
     const gridHelper = new THREE.GridHelper(20, 20, 0x00b4d8, 0x48cae4);
     scene.add(gridHelper);
 
-    // 5. Carregamento do Arquivo GLB do Braço Robótico
+    // 5. Carregamento do Arquivo GLB
     const loader = new THREE.GLTFLoader();
     
-    // Nome exato do seu arquivo GLB local (ajuste se o seu arquivo tiver outro nome)
-    const NOME_DO_ARQUIVO = 'braco_robotico.glb'; 
+    // NOME EXATO DO SEU ARQUIVO NA PASTA:
+    const NOME_DO_ARQUIVO = 'barco_robotico.glb'; 
 
     loader.load(
       NOME_DO_ARQUIVO,
@@ -88,16 +88,13 @@
         const model = gltf.scene;
         scene.add(model);
 
-        // --- ENQUADRAMENTO AUTOMÁTICO DA CÂMERA ---
-        // Calcula a caixa delimitadora do modelo para centralizar a câmera
+        // Enquadramento automático da câmera
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
-        // Reposiciona o chão de grade para ficar logo abaixo da base do robô
         gridHelper.position.y = box.min.y;
 
-        // Ajusta os controles e a câmera com base no tamanho do robô
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.5;
@@ -106,30 +103,28 @@
         controls.target.copy(center);
         controls.update();
 
-        // Esconde a mensagem de carregamento
         document.getElementById('loading').style.display = 'none';
       },
       (xhr) => {
-        // Progresso do carregamento
         if (xhr.lengthComputable) {
           const percent = Math.round((xhr.loaded / xhr.total) * 100);
-          document.getElementById('loading').innerText = `Carregando braço robótico: ${percent}%`;
+          document.getElementById('loading').innerText = `Carregando: ${percent}%`;
         }
       },
       (error) => {
         console.error('Erro ao carregar o arquivo GLB:', error);
-        document.getElementById('loading').innerText = 'Erro ao carregar o arquivo .glb. Verifique o nome do arquivo na mesma pasta.';
+        document.getElementById('loading').innerText = 'Erro ao carregar o arquivo. Verifique o console.';
       }
     );
 
-    // 6. Redimensionamento da Janela
+    // 6. Redimensionamento
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // 7. Loop de Animação
+    // 7. Animação
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
