@@ -296,6 +296,51 @@
       }
     });
 
+
+    // Coloca automaticamente a base do braço sobre o tampo da mesa.
+    // Isso é mais confiável que usar apenas position="0 0.9 0",
+    // porque cada arquivo GLB pode ter uma origem diferente.
+    AFRAME.registerComponent('arm-on-table', {
+      schema: {
+        tableY: { type: 'number', default: 1.09 },
+        scale: { type: 'number', default: 0.78 }
+      },
+
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const model = this.el.getObject3D('mesh');
+          if (!model) return;
+
+          model.scale.set(
+            this.data.scale,
+            this.data.scale,
+            this.data.scale
+          );
+
+          model.updateMatrixWorld(true);
+
+          const box = new THREE.Box3().setFromObject(model);
+
+          // Faz o ponto mais baixo do GLB tocar o suporte da mesa.
+          model.position.y += this.data.tableY - box.min.y;
+
+          model.updateMatrixWorld(true);
+
+          // Centraliza o braço na estação de trabalho.
+          const centeredBox =
+            new THREE.Box3().setFromObject(model);
+
+          const center =
+            centeredBox.getCenter(new THREE.Vector3());
+
+          model.position.x -= center.x;
+          model.position.z -= center.z;
+
+          model.updateMatrixWorld(true);
+        });
+      }
+    });
+
     function enterExperience() {
       var introScreen = document.getElementById('intro-screen');
       introScreen.classList.add('fade-out');
@@ -328,7 +373,7 @@
       <h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
 
       <p>
-        Laboratório Virtual de testes. O modelo do <strong>Braço Robótico (.GLB)</strong> já está carregado sobre a mesa central de testes.
+        Laboratório Virtual de testes. O <strong>Braço Robótico (.GLB)</strong> está exposto sobre a estação central para a futura manipulação através dos controles VR.
       </p>
 
       <button class="btn-enter-vr" onclick="enterExperience()">
@@ -360,7 +405,6 @@
     <!-- CARREGAMENTO DOS ARQUIVOS .GLB (MODELOS 3D) -->
     <a-assets>
       <a-asset-item id="modelo-braco" src="braco_robotico.glb"></a-asset-item>
-      <a-asset-item id="modelo-mesa" src="mesa.gltf"></a-asset-item>
     </a-assets>
 
     <!-- CÂMERA E CONTROLES -->
@@ -371,7 +415,7 @@
     </a-entity>
 
     <!-- ILUMINAÇÃO DA SALA -->
-    <a-light type="ambient" color="#0f172a" intensity="1.2"></a-light>
+    <a-light type="ambient" color="#cbd5e1" intensity="0.72"></a-light>
     <a-light type="point" position="0 4.2 1.5" color="#e0f2fe" intensity="1.8" distance="12"></a-light>
     <a-light type="point" position="0 4.2 -2.5" color="#38bdf8" intensity="1.5" distance="12"></a-light>
     <a-light type="spot" position="0 4.4 0" target="#worktable" color="#ffffff" intensity="2.5" angle="45" penumbra="0.5"></a-light>
@@ -393,34 +437,108 @@
       <a-plane width="4.2" height="2.2" position="0 0 0.06" senai-texture-generator></a-plane>
     </a-entity>
 
-    <!-- MESA CENTRAL COM O BRAÇO ROBÓTICO -->
+    <!-- MESA CENTRAL / ESTAÇÃO DE TRABALHO -->
     <a-entity id="worktable" position="0 0 0">
-      <!-- Tampo da Mesa -->
-      <a-box position="0 0.85 0" width="2.4" height="0.1" depth="1.4" color="#1e293b" roughness="0.3" metalness="0.7"></a-box>
-      <a-box position="0 0.86 0" width="2.2" height="0.09" depth="1.2" color="#0f172a"></a-box>
-      <a-box position="0 0.87 0" width="2.0" height="0.01" depth="0.02" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.9"></a-box>
-      
-      <!-- Pés da Mesa -->
-      <a-box position="-1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
-      <a-box position="1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
-      <a-box position="-1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
-      <a-box position="1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
-      
-      <!-- MODELO 3D DA MESA (OPCIONAL/ADICIONAL) -->
-      <a-gltf-model 
-        src="#modelo-mesa" 
-        position="0 0 0" 
-        rotation="0 0 0" 
-        scale="1 1 1">
-      </a-gltf-model>
 
-      <!-- BRAÇO ROBÓTICO POSITIONADO EM CIMA DA MESA -->
-      <a-gltf-model 
-        src="#modelo-braco" 
-        position="0 0.9 0" 
-        rotation="0 0 0" 
-        scale="1 1 1">
-      </a-gltf-model>
+      <!-- Tampo principal -->
+      <a-box
+        position="0 0.88 0"
+        width="3.4"
+        height="0.16"
+        depth="2.0"
+        color="#1e293b"
+        roughness="0.28"
+        metalness="0.72"
+        shadow="cast: true; receive: true">
+      </a-box>
+
+      <!-- Superfície superior -->
+      <a-box
+        position="0 0.98 0"
+        width="3.15"
+        height="0.035"
+        depth="1.75"
+        color="#0b1220"
+        roughness="0.2"
+        metalness="0.55"
+        shadow="receive: true">
+      </a-box>
+
+      <!-- Borda luminosa frontal -->
+      <a-box
+        position="0 1.0 -0.86"
+        width="3.05"
+        height="0.025"
+        depth="0.035"
+        color="#06b6d4"
+        material="emissive: #06b6d4; emissiveIntensity: 1.4">
+      </a-box>
+
+      <!-- Pés -->
+      <a-box position="-1.45 0.43 -0.75" width="0.16" height="0.82" depth="0.16" color="#334155"></a-box>
+      <a-box position="1.45 0.43 -0.75" width="0.16" height="0.82" depth="0.16" color="#334155"></a-box>
+      <a-box position="-1.45 0.43 0.75" width="0.16" height="0.82" depth="0.16" color="#334155"></a-box>
+      <a-box position="1.45 0.43 0.75" width="0.16" height="0.82" depth="0.16" color="#334155"></a-box>
+
+      <!-- Travessas -->
+      <a-box position="0 0.48 -0.75" width="2.75" height="0.08" depth="0.08" color="#1f2937"></a-box>
+      <a-box position="0 0.48 0.75" width="2.75" height="0.08" depth="0.08" color="#1f2937"></a-box>
+
+      <!-- Base de apresentação do braço -->
+      <a-cylinder
+        position="0 1.04 0"
+        radius="0.48"
+        height="0.10"
+        color="#111827"
+        roughness="0.25"
+        metalness="0.8"
+        shadow="cast: true">
+      </a-cylinder>
+
+      <a-torus
+        position="0 1.095 0"
+        rotation="90 0 0"
+        radius="0.39"
+        radius-tubular="0.018"
+        color="#06b6d4"
+        material="emissive: #06b6d4; emissiveIntensity: 1.5">
+      </a-torus>
+
+      <!-- BRAÇO ROBÓTICO EXPOSTO SOBRE A MESA -->
+      <a-entity
+        id="robot-arm"
+        arm-on-table="tableY: 1.15; scale: 0.78">
+
+        <a-gltf-model
+          src="#modelo-braco"
+          position="0 0 0"
+          rotation="0 180 0">
+        </a-gltf-model>
+
+      </a-entity>
+
+      <!-- Foco de luz dedicado ao braço -->
+      <a-light
+        type="spot"
+        position="0 4.2 0.5"
+        target="#robot-arm"
+        color="#ffffff"
+        intensity="3.2"
+        angle="32"
+        penumbra="0.65"
+        distance="7"
+        cast-shadow="true">
+      </a-light>
+
+      <!-- Identificação da estação -->
+      <a-text
+        value="NEXUS ATLAS • ROBOT ARM"
+        align="center"
+        width="2.6"
+        color="#7dd3fc"
+        position="0 1.34 -0.98">
+      </a-text>
+
     </a-entity>
 
   </a-scene>
