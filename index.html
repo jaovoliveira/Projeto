@@ -1,442 +1,141 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS ATLAS - Laboratório VR (SENAI São Carlos)</title>
-
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
+  <title>Visualizador do Braço Robótico</title>
   <style>
-    * {
-      box-sizing: border-box;
+    body {
       margin: 0;
       padding: 0;
-      user-select: none;
-    }
-
-    body, html {
-      width: 100%;
-      height: 100%;
       overflow: hidden;
-      font-family: 'Titillium Web', sans-serif;
-      background-color: #030712;
-      color: #f3f4f6;
+      background-color: #1a1a1a;
+      font-family: sans-serif;
     }
-
-    #intro-screen {
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+    }
+    #loading {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 9999;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      transition: opacity 0.8s ease, visibility 0.8s ease;
-    }
-
-    .intro-card {
-      background: rgba(17, 24, 39, 0.85);
-      border: 1px solid rgba(6, 182, 212, 0.3);
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 650px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .intro-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #005696 0%, #06b6d4 50%, #005696 100%);
-    }
-
-    .badge-senai {
-      display: inline-block;
-      background: #005696;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       color: #ffffff;
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      margin-bottom: 15px;
-      text-transform: uppercase;
-      box-shadow: 0 0 10px rgba(0, 86, 150, 0.5);
-    }
-
-    .intro-card h1 {
-      font-size: 3.2rem;
-      font-weight: 700;
-      letter-spacing: 4px;
-      background: linear-gradient(135deg, #ffffff 0%, #06b6d4 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-
-    .intro-card h2 {
       font-size: 1.2rem;
-      color: #9ca3af;
-      font-weight: 400;
-      letter-spacing: 3px;
-      margin-bottom: 25px;
-      text-transform: uppercase;
-    }
-
-    .intro-card p {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: #d1d5db;
-      margin-bottom: 30px;
-      text-align: justify;
-      text-align-last: center;
-    }
-
-    .btn-enter-vr {
-      background: linear-gradient(135deg, #005696 0%, #0284c7 100%);
-      color: #ffffff;
-      border: 1px solid #38bdf8;
-      padding: 18px 36px;
-      font-size: 1.3rem;
-      font-weight: 700;
-      font-family: 'Titillium Web', sans-serif;
-      border-radius: 50px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-enter-vr:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 0 35px rgba(6, 182, 212, 0.7);
-      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
-    }
-
-    .controls-guide {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      justify-content: space-around;
-      font-size: 0.85rem;
-      color: #9ca3af;
-    }
-
-    .controls-guide div strong {
-      color: #38bdf8;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .fade-out {
-      opacity: 0;
-      visibility: hidden;
       pointer-events: none;
     }
-
-    .a-enter-vr {
-      display: none !important;
-    }
   </style>
-
-  <script>
-    AFRAME.registerComponent('nexus-movement-controller', {
-      schema: {
-        speed: { type: 'number', default: 0.06 },
-        turnSpeed: { type: 'number', default: 0.035 },
-        deadzone: { type: 'number', default: 0.2 },
-        boundsX: { type: 'array', default: [-5.4, 5.4] },
-        boundsZ: { type: 'array', default: [-5.4, 5.4] }
-      },
-
-      init: function () {
-        this.rig = this.el;
-        this.camera = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
-        this.keys = {};
-        window.addEventListener('keydown', (e) => { this.keys[e.code] = true; });
-        window.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
-      },
-
-      tick: function (time, delta) {
-        var dt = delta / 1000;
-        if (isNaN(dt) || dt <= 0) return;
-
-        var moveVector = { x: 0, z: 0 };
-        var turnAmount = 0;
-
-        var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-        for (var i = 0; i < gamepads.length; i++) {
-          var gp = gamepads[i];
-          if (!gp || !gp.connected) continue;
-
-          if (gp.handedness === 'left') {
-            var ax = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
-            var ay = (gp.axes[3] !== undefined && Math.abs(gp.axes[3]) > 0.01) ? gp.axes[3] : (gp.axes[1] || 0);
-            if (Math.hypot(ax, ay) > this.data.deadzone) {
-              moveVector.x = ax;
-              moveVector.z = ay;
-            }
-          }
-
-          if (gp.handedness === 'right') {
-            var rx = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
-            if (Math.abs(rx) > this.data.deadzone) {
-              turnAmount = rx;
-            }
-          }
-        }
-
-        if (this.keys['KeyW'] || this.keys['ArrowUp']) moveVector.z = -1;
-        if (this.keys['KeyS'] || this.keys['ArrowDown']) moveVector.z = 1;
-        if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveVector.x = -1;
-        if (this.keys['KeyD'] || this.keys['ArrowRight']) moveVector.x = 1;
-
-        if (Math.abs(turnAmount) > 0) {
-          var currentRot = this.rig.getAttribute('rotation');
-          currentRot.y -= turnAmount * this.data.turnSpeed * 60;
-          this.rig.setAttribute('rotation', currentRot);
-        }
-
-        if (moveVector.x !== 0 || moveVector.z !== 0) {
-          var len = Math.hypot(moveVector.x, moveVector.z);
-          if (len > 1) {
-            moveVector.x /= len;
-            moveVector.z /= len;
-          }
-
-          var rigRot = this.rig.getAttribute('rotation');
-          var camRot = this.camera ? this.camera.getAttribute('rotation') : { y: 0 };
-          var totalAngleRad = (rigRot.y + camRot.y) * (Math.PI / 180);
-
-          var dx = moveVector.x * Math.cos(totalAngleRad) + moveVector.z * Math.sin(totalAngleRad);
-          var dz = moveVector.z * Math.cos(totalAngleRad) - moveVector.x * Math.sin(totalAngleRad);
-
-          var pos = this.rig.getAttribute('position');
-          var targetX = pos.x + dx * this.data.speed;
-          var targetZ = pos.z + dz * this.data.speed;
-
-          pos.x = Math.max(this.data.boundsX[0], Math.min(this.data.boundsX[1], targetX));
-          pos.z = Math.max(this.data.boundsZ[0], Math.min(this.data.boundsZ[1], targetZ));
-
-          this.rig.setAttribute('position', pos);
-        }
-      }
-    });
-
-    AFRAME.registerComponent('senai-texture-generator', {
-      init: function () {
-        var canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 512;
-        var ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = '#005696';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
-
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(80, 240, 120, 10);
-        ctx.fillRect(canvas.width - 200, 240, 120, 10);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 120px "Titillium Web", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('SENAI', canvas.width / 2, canvas.height / 2 - 20);
-
-        ctx.font = '600 28px "Titillium Web", sans-serif';
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText('SÃO CARLOS • MECATRÔNICA', canvas.width / 2, canvas.height / 2 + 70);
-
-        ctx.font = '400 20px "Titillium Web", sans-serif';
-        ctx.fillStyle = '#e0f2fe';
-        ctx.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR', canvas.width / 2, canvas.height / 2 + 110);
-
-        var texture = new THREE.CanvasTexture(canvas);
-        var mesh = this.el.getObject3D('mesh');
-        if (mesh) {
-          mesh.material.map = texture;
-          mesh.material.needsUpdate = true;
-        }
-      }
-    });
-
-    function enterExperience() {
-      var introScreen = document.getElementById('intro-screen');
-      introScreen.classList.add('fade-out');
-      var scene = document.querySelector('a-scene');
-      if (scene) {
-        if (scene.hasLoaded) {
-          tryEnterVR(scene);
-        } else {
-          scene.addEventListener('loaded', function () {
-            tryEnterVR(scene);
-          });
-        }
-      }
-    }
-
-    function tryEnterVR(scene) {
-      if (AFRAME.utils.device.checkHeadsetConnected() || navigator.xr) {
-        scene.enterVR();
-      }
-    }
-  </script>
+  <!-- Importação do Three.js e loaders via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
-  <!-- TELA INICIAL -->
-  <div id="intro-screen">
-    <div class="intro-card">
-      <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
-      <h1>NEXUS ATLAS</h1>
-      <h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
+  <div id="loading">Carregando braço robótico...</div>
+  <div id="canvas-container"></div>
 
-      <p>
-        Laboratório Virtual de testes. O modelo do <strong>Braço Robótico (.GLB)</strong> já está calibrado sobre a bancada industrial de testes.
-      </p>
+  <script>
+    // 1. Configuração da Cena, Câmera e Renderizador
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1e1e24);
 
-      <button class="btn-enter-vr" onclick="enterExperience()">
-        <span>🥽</span> ENTRAR NO MODO VR
-      </button>
+    const camera = new THREE.PerspectiveCamera(
+      45, 
+      window.innerWidth / window.innerHeight, 
+      0.1, 
+      1000
+    );
 
-      <div class="controls-guide">
-        <div>
-          <strong>CONTROLES VR</strong>
-          Esq: Andar | Dir: Virar
-        </div>
-        <div>
-          <strong>TECLADO PC</strong>
-          Teclas WASD + Mouse
-        </div>
-        <div>
-          <strong>MODELO 3D</strong>
-          braco_robotico.glb
-        </div>
-      </div>
-    </div>
-  </div>
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
 
-  <!-- CENA 3D A-FRAME -->
-  <a-scene 
-    renderer="antialias: true; colorManagement: true; exposure: 1.1; toneMapping: ACESFilmic;"
-    vr-mode-ui="enabled: true">
+    // 2. Controle de Câmera (OrbitControls)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
-    <!-- ASSETS -->
-    <a-assets>
-      <a-asset-item id="modelo-braco" src="braco_robotico.glb"></a-asset-item>
-      <a-asset-item id="modelo-mesa" src="mesa.gltf"></a-asset-item>
-    </a-assets>
+    // 3. Iluminação
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
 
-    <!-- CÂMERA E RIG -->
-    <a-entity id="cameraRig" position="0 0 2.8" nexus-movement-controller>
-      <a-camera id="headCamera" position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="enabled: false"></a-camera>
-      <a-entity id="leftHand" oculus-touch-controls="hand: left" laser-controls="hand: left"></a-entity>
-      <a-entity id="rightHand" oculus-touch-controls="hand: right" laser-controls="hand: right"></a-entity>
-    </a-entity>
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight1.position.set(10, 20, 15);
+    scene.add(dirLight1);
 
-    <!-- ILUMINAÇÃO AVANÇADA / SCI-FI -->
-    <a-light type="ambient" color="#0b1329" intensity="0.8"></a-light>
-    <a-light type="spot" position="0 4.5 0" target="#worktable" color="#ffffff" intensity="3.5" angle="35" penumbra="0.4" castShadow="true"></a-light>
+    const dirLight2 = new THREE.DirectionalLight(0x90e0ef, 0.5);
+    dirLight2.position.set(-10, -10, -10);
+    scene.add(dirLight2);
+
+    // 4. Grade de Chão Virtual (Substitui a mesa visualmente de forma limpa)
+    const gridHelper = new THREE.GridHelper(20, 20, 0x00b4d8, 0x48cae4);
+    scene.add(gridHelper);
+
+    // 5. Carregamento do Arquivo GLB do Braço Robótico
+    const loader = new THREE.GLTFLoader();
     
-    <!-- Luzes de Acento Neon -->
-    <a-light type="point" position="-3 2.5 -2" color="#06b6d4" intensity="2.0" distance="8"></a-light>
-    <a-light type="point" position="3 2.5 -2" color="#3b82f6" intensity="2.0" distance="8"></a-light>
-    <a-light type="point" position="0 1.2 2" color="#0284c7" intensity="1.2" distance="6"></a-light>
+    // Nome exato do seu arquivo GLB local (ajuste se o seu arquivo tiver outro nome)
+    const NOME_DO_ARQUIVO = 'braco_robotico.glb'; 
 
-    <!-- PISO TÉCNICO E GRID -->
-    <a-plane position="0 0 0" rotation="-90 0 0" width="14" height="14" color="#090d16" roughness="0.2" metalness="0.8"></a-plane>
-    <a-ring position="0 0.01 0" rotation="-90 0 0" radius-inner="1.5" radius-outer="1.53" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 1"></a-ring>
+    loader.load(
+      NOME_DO_ARQUIVO,
+      (gltf) => {
+        const model = gltf.scene;
+        scene.add(model);
 
-    <!-- TETO -->
-    <a-plane position="0 4.8 0" rotation="90 0 0" width="14" height="14" color="#030712" side="double"></a-plane>
+        // --- ENQUADRAMENTO AUTOMÁTICO DA CÂMERA ---
+        // Calcula a caixa delimitadora do modelo para centralizar a câmera
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
 
-    <!-- PAREDES DO LABORATÓRIO -->
-    <a-plane position="0 2.4 -7" rotation="0 0 0" width="14" height="5" color="#0f172a" roughness="0.5"></a-plane>
-    <a-plane position="0 2.4 7" rotation="0 180 0" width="14" height="5" color="#0f172a" roughness="0.5"></a-plane>
-    <a-plane position="-7 2.4 0" rotation="0 90 0" width="14" height="5" color="#0b0f19" roughness="0.5"></a-plane>
-    <a-plane position="6.99 2.4 0" rotation="0 -90 0" width="14" height="5" color="#0b0f19" roughness="0.5"></a-plane>
+        // Reposiciona o chão de grade para ficar logo abaixo da base do robô
+        gridHelper.position.y = box.min.y;
 
-    <!-- FAIXAS NEON DECORATIVAS -->
-    <a-box position="0 4.4 -6.9" width="14" height="0.05" depth="0.05" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 1"></a-box>
-    <a-box position="-6.9 4.4 0" rotation="0 90 0" width="14" height="0.05" depth="0.05" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 1"></a-box>
-    <a-box position="6.9 4.4 0" rotation="0 90 0" width="14" height="0.05" depth="0.05" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 1"></a-box>
+        // Ajusta os controles e a câmera com base no tamanho do robô
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = camera.fov * (Math.PI / 180);
+        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.5;
 
-    <!-- PAINEL LOGO SENAI -->
-    <a-entity position="0 3.0 -6.85">
-      <a-box width="4.6" height="2.2" depth="0.1" color="#030712"></a-box>
-      <a-plane width="4.4" height="2.0" position="0 0 0.06" senai-texture-generator></a-plane>
-    </a-entity>
+        camera.position.set(center.x + cameraZ * 0.5, center.y + cameraZ * 0.5, center.z + cameraZ);
+        controls.target.copy(center);
+        controls.update();
 
-    <!-- MONITORES HUD -->
-    <a-entity position="-3.5 2.0 -3" rotation="0 35 0">
-      <a-plane width="1.6" height="1.0" color="#090d16" opacity="0.8" material="transparent: true; side: double">
-        <a-text value="STATUS DO SISTEMA\n-------------------\n- Juntas: 6 Eixos OK\n- Torque: Nominal\n- Sinal VR: Estavel" color="#38bdf8" align="center" width="1.8" position="0 0 0.02"></a-text>
-      </a-plane>
-    </a-entity>
+        // Esconde a mensagem de carregamento
+        document.getElementById('loading').style.display = 'none';
+      },
+      (xhr) => {
+        // Progresso do carregamento
+        if (xhr.lengthComputable) {
+          const percent = Math.round((xhr.loaded / xhr.total) * 100);
+          document.getElementById('loading').innerText = `Carregando braço robótico: ${percent}%`;
+        }
+      },
+      (error) => {
+        console.error('Erro ao carregar o arquivo GLB:', error);
+        document.getElementById('loading').innerText = 'Erro ao carregar o arquivo .glb. Verifique o nome do arquivo na mesma pasta.';
+      }
+    );
 
-    <a-entity position="3.5 2.0 -3" rotation="0 -35 0">
-      <a-plane width="1.6" height="1.0" color="#090d16" opacity="0.8" material="transparent: true; side: double">
-        <a-text value="TELEMETRIA\n-------------------\n- Temp. Motor: 36 C\n- Modo: Teste Manual\n- Status: Aguardando" color="#06b6d4" align="center" width="1.8" position="0 0 0.02"></a-text>
-      </a-plane>
-    </a-entity>
+    // 6. Redimensionamento da Janela
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-    <!-- CONJUNTO BANCADA + BRAÇO ROBÓTICO -->
-    <a-entity id="worktable" position="0 0 0">
-      <a-box position="0 0.85 0" width="2.4" height="0.08" depth="1.4" color="#1e293b" roughness="0.2" metalness="0.8"></a-box>
-      <a-box position="0 0.89 0" width="2.2" height="0.02" depth="1.2" color="#0f172a" roughness="0.1" metalness="0.9"></a-box>
-      
-      <a-box position="0 0.88 0.69" width="2.38" height="0.03" depth="0.02" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.8"></a-box>
-      <a-box position="0 0.88 -0.69" width="2.38" height="0.03" depth="0.02" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.8"></a-box>
-      
-      <a-box position="-1.05 0.41 -0.55" width="0.1" height="0.82" depth="0.1" color="#334155" metalness="0.9"></a-box>
-      <a-box position="1.05 0.41 -0.55" width="0.1" height="0.82" depth="0.1" color="#334155" metalness="0.9"></a-box>
-      <a-box position="-1.05 0.41 0.55" width="0.1" height="0.82" depth="0.1" color="#334155" metalness="0.9"></a-box>
-      <a-box position="1.05 0.41 0.55" width="0.1" height="0.82" depth="0.1" color="#334155" metalness="0.9"></a-box>
-
-      <a-cylinder position="0 0.905 0" radius="0.35" height="0.01" color="#0284c7" material="emissive: #0284c7; emissiveIntensity: 0.5"></a-cylinder>
-
-      <!-- MODELO MESA -->
-      <a-gltf-model src="#modelo-mesa" position="0 0 0" rotation="0 0 0" scale="1 1 1"></a-gltf-model>
-
-      <!-- MODELO BRAÇO ROBÓTICO -->
-      <a-gltf-model src="#modelo-braco" position="0 0.91 0" rotation="0 0 0" scale="1 1 1"></a-gltf-model>
-    </a-entity>
-
-  </a-scene>
-
+    // 7. Loop de Animação
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
 </body>
 </html>
