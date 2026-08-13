@@ -1,169 +1,579 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TCC - Braço Robótico 3D</title>
+  <title>NEXUS ATLAS - Laboratório VR (SENAI São Carlos)</title>
+
+  <!-- Biblioteca A-Frame para WebXR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- Google Fonts: Titillium Web para estética Futurista / Mecatrônica -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
   <style>
-    body {
+    /* =========================================================
+       ESTILOS DA TELA DE INTRODUÇÃO (2D OVERLAY)
+       ========================================================= */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background-color: #0f0f12;
-      font-family: sans-serif;
+      font-family: 'Titillium Web', sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
     }
-    #canvas-container {
-      width: 100vw;
-      height: 100vh;
-    }
-    #info-box {
+
+    /* Tela de Overlay Inicial */
+    #intro-screen {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    .intro-card {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 650px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intro-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #005696 0%, #06b6d4 50%, #005696 100%);
+    }
+
+    .badge-senai {
+      display: inline-block;
+      background: #005696;
+      color: #ffffff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(0, 86, 150, 0.5);
+    }
+
+    .intro-card h1 {
+      font-size: 3.2rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, #ffffff 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .intro-card h2 {
+      font-size: 1.2rem;
+      color: #9ca3af;
+      font-weight: 400;
+      letter-spacing: 3px;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+    }
+
+    .intro-card p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #d1d5db;
+      margin-bottom: 30px;
+      text-align: justify;
+      text-align-last: center;
+    }
+
+    .btn-enter-vr {
+      background: linear-gradient(135deg, #005696 0%, #0284c7 100%);
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      padding: 18px 36px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'Titillium Web', sans-serif;
+      border-radius: 50px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-enter-vr:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 0 35px rgba(6, 182, 212, 0.7);
+      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    }
+
+    .btn-enter-vr:active {
+      transform: translateY(1px);
+    }
+
+    .controls-guide {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-around;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .controls-guide div strong {
+      color: #38bdf8;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Esconder o overlay quando estiver ativo */
+    .fade-out {
+      opacity: 0;
+      visibility: hidden;
       pointer-events: none;
     }
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #00d2ff;
-      font-size: 1.5rem;
-      font-weight: bold;
-      pointer-events: none;
+
+    /* Ajuste para botões originais do A-frame ficarem ocultos até clicar */
+    .a-enter-vr {
+      display: none !important;
     }
   </style>
 
-  <!-- Bibliotecas Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script>
+    /* =========================================================
+       COMPONENTE DE CONTROLE DE MOVIMENTO VR E COMPUTADOR (WASD)
+       Garante movimentação 100% manual, com colisão física nas paredes
+       ========================================================= */
+    AFRAME.registerComponent('nexus-movement-controller', {
+      schema: {
+        speed: { type: 'number', default: 0.06 },       // Velocidade de caminhada
+        turnSpeed: { type: 'number', default: 0.035 },  // Velocidade de rotação
+        deadzone: { type: 'number', default: 0.2 },     // Deadzone do analógico VR
+        // Limites da sala (MinX, MaxX, MinZ, MaxZ) com raio de segurança da pessoa (0.6m)
+        boundsX: { type: 'array', default: [-5.4, 5.4] },
+        boundsZ: { type: 'array', default: [-5.4, 5.4] }
+      },
+
+      init: function () {
+        this.rig = this.el; // Instância da Câmera Rig
+        this.camera = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
+        
+        // Estado das teclas do PC (WASD)
+        this.keys = {};
+        window.addEventListener('keydown', (e) => { this.keys[e.code] = true; });
+        window.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
+      },
+
+      tick: function (time, delta) {
+        var dt = delta / 1000;
+        if (isNaN(dt) || dt <= 0) return;
+
+        var moveVector = { x: 0, z: 0 };
+        var turnAmount = 0;
+
+        // ---------------------------------------------------------
+        // 1. LEITURA DOS CONTROLES VR (WEBXR GAMEPADS)
+        // ---------------------------------------------------------
+        var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        for (var i = 0; i < gamepads.length; i++) {
+          var gp = gamepads[i];
+          if (!gp || !gp.connected) continue;
+
+          // CONTROLE ESQUERDO: Mover para Frente/Trás e Esquerda/Direita
+          if (gp.handedness === 'left') {
+            var ax = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
+            var ay = (gp.axes[3] !== undefined && Math.abs(gp.axes[3]) > 0.01) ? gp.axes[3] : (gp.axes[1] || 0);
+
+            if (Math.hypot(ax, ay) > this.data.deadzone) {
+              moveVector.x = ax;
+              moveVector.z = ay;
+            }
+          }
+
+          // CONTROLE DIREITO: Virar Câmera (Esquerda / Direita)
+          if (gp.handedness === 'right') {
+            var rx = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
+            if (Math.abs(rx) > this.data.deadzone) {
+              turnAmount = rx;
+            }
+          }
+        }
+
+        // ---------------------------------------------------------
+        // 2. LEITURA DO TECLADO (PC DESKTOP TEST)
+        // ---------------------------------------------------------
+        if (this.keys['KeyW'] || this.keys['ArrowUp']) moveVector.z = -1;
+        if (this.keys['KeyS'] || this.keys['ArrowDown']) moveVector.z = 1;
+        if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveVector.x = -1;
+        if (this.keys['KeyD'] || this.keys['ArrowRight']) moveVector.x = 1;
+
+        // ---------------------------------------------------------
+        // 3. APLICAÇÃO DA ROTAÇÃO (Girar Câmera no Eixo Y)
+        // ---------------------------------------------------------
+        if (Math.abs(turnAmount) > 0) {
+          var currentRot = this.rig.getAttribute('rotation');
+          currentRot.y -= turnAmount * this.data.turnSpeed * 60;
+          this.rig.setAttribute('rotation', currentRot);
+        }
+
+        // ---------------------------------------------------------
+        // 4. APLICAÇÃO DA MOVIMENTAÇÃO COM COLISÃO
+        // ---------------------------------------------------------
+        if (moveVector.x !== 0 || moveVector.z !== 0) {
+          // Normaliza se estiver andando na diagonal
+          var len = Math.hypot(moveVector.x, moveVector.z);
+          if (len > 1) {
+            moveVector.x /= len;
+            moveVector.z /= len;
+          }
+
+          // Calcula a orientação global considerando a rotação da cabeça/rig
+          var rigRot = this.rig.getAttribute('rotation');
+          var camRot = this.camera ? this.camera.getAttribute('rotation') : { y: 0 };
+          var totalAngleRad = (rigRot.y + camRot.y) * (Math.PI / 180);
+
+          // Projeção do movimento no espaço 3D
+          var dx = moveVector.x * Math.cos(totalAngleRad) + moveVector.z * Math.sin(totalAngleRad);
+          var dz = moveVector.z * Math.cos(totalAngleRad) - moveVector.x * Math.sin(totalAngleRad);
+
+          var pos = this.rig.getAttribute('position');
+          var targetX = pos.x + dx * this.data.speed;
+          var targetZ = pos.z + dz * this.data.speed;
+
+          // BARREIRA DE COLISÃO COM AS PAREDES (Não atravessa o cômodo)
+          pos.x = Math.max(this.data.boundsX[0], Math.min(this.data.boundsX[1], targetX));
+          pos.z = Math.max(this.data.boundsZ[0], Math.min(this.data.boundsZ[1], targetZ));
+
+          this.rig.setAttribute('position', pos);
+        }
+      }
+    });
+
+    /* =========================================================
+       GERADOR DA TEXTURA DO PAINEL SENAI
+       Cria uma textura vetorial limpa e fiel da logo SENAI via HTML5 Canvas
+       ========================================================= */
+    AFRAME.registerComponent('senai-texture-generator', {
+      init: function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 512;
+        var ctx = canvas.getContext('2d');
+
+        // 1. Fundo Azul Oficial SENAI
+        ctx.fillStyle = '#005696';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Moldura Tecnológica Efeito LED
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 12;
+        ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
+
+        // 3. Linhas decorativas laterais
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(80, 240, 120, 10);
+        ctx.fillRect(canvas.width - 200, 240, 120, 10);
+
+        // 4. Texto BOLD SENAI
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 120px "Titillium Web", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SENAI', canvas.width / 2, canvas.height / 2 - 20);
+
+        // 5. Subtítulo Técnico TCC
+        ctx.font = '600 28px "Titillium Web", sans-serif';
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText('SÃO CARLOS • MECATRÔNICA', canvas.width / 2, canvas.height / 2 + 70);
+
+        ctx.font = '400 20px "Titillium Web", sans-serif';
+        ctx.fillStyle = '#e0f2fe';
+        ctx.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR', canvas.width / 2, canvas.height / 2 + 110);
+
+        // Converte o canvas para imagem de textura no A-Frame
+        var texture = new THREE.CanvasTexture(canvas);
+        var mesh = this.el.getObject3D('mesh');
+        if (mesh) {
+          mesh.material.map = texture;
+          mesh.material.needsUpdate = true;
+        }
+      }
+    });
+
+    // Função executada ao clicar no botão ENTRAR NO MODO VR
+    function enterExperience() {
+      var introScreen = document.getElementById('intro-screen');
+      introScreen.classList.add('fade-out');
+
+      var scene = document.querySelector('a-scene');
+      
+      // Se o navegador / dispositivo suportar VR, solicita entrada WebXR
+      if (scene) {
+        if (scene.hasLoaded) {
+          tryEnterVR(scene);
+        } else {
+          scene.addEventListener('loaded', function () {
+            tryEnterVR(scene);
+          });
+        }
+      }
+    }
+
+    function tryEnterVR(scene) {
+      if (AFRAME.utils.device.checkHeadsetConnected() || navigator.xr) {
+        scene.enterVR();
+      }
+    }
+  </script>
 </head>
 <body>
 
-  <div id="info-box">🤖 <strong>Projeto TCC:</strong> Braço Robótico em Laboratório</div>
-  <div id="loading">Carregando ambiente 3D...</div>
-  <div id="canvas-container"></div>
+  <!-- =========================================================
+       TELA DE INTRODUÇÃO (2D OVERLAY)
+       ========================================================= -->
+  <div id="intro-screen">
+    <div class="intro-card">
+      <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
+      <h1>NEXUS ATLAS</h1>
+      <h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
 
-  <script>
-    // 1. Cena, Câmera e Renderizador
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x141419);
-    scene.fog = new THREE.FogExp2(0x141419, 0.015);
+      <p>
+        Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>. 
+        Este laboratório foi projetado para validar a navegação, rastreamento de headset e controles em WebXR. 
+        Nas próximas etapas, o braço robótico virtual instalado nesta sala controlará o braço físico via ESP32.
+      </p>
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
+      <button class="btn-enter-vr" onclick="enterExperience()">
+        <span>🥽</span> ENTRAR NO MODO VR
+      </button>
 
-    // 2. Controles de Órbita
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+      <div class="controls-guide">
+        <div>
+          <strong>CONTROLES VR</strong>
+          Esq: Andar | Dir: Virar
+        </div>
+        <div>
+          <strong>TECLADO PC</strong>
+          Teclas WASD + Drag do Mouse
+        </div>
+        <div>
+          <strong>SISTEMA</strong>
+          WebXR / GitHub Pages
+        </div>
+      </div>
+    </div>
+  </div>
 
-    // 3. Iluminação de Estúdio / Laboratório
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
+  <!-- =========================================================
+       CENA A-FRAME (CÔMODO / LOBBY 3D)
+       ========================================================= -->
+  <a-scene 
+    renderer="antialias: true; colorManagement: true; exposure: 1.0; toneMapping: ACESFilmic;"
+    aframe-pdf-screen-capture
+    vr-mode-ui="enabled: true">
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    mainLight.position.set(10, 20, 10);
-    mainLight.castShadow = true;
-    mainLight.shadow.mapSize.width = 2048;
-    mainLight.shadow.mapSize.height = 2048;
-    scene.add(mainLight);
+    <!-- RECURSOS E MATERIAIS -->
+    <a-assets>
+      <!-- Textura visual para o chão técnico -->
+      <img id="grid-pattern" src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg" crossorigin="anonymous">
+    </a-assets>
 
-    const fillLight = new THREE.DirectionalLight(0x00d2ff, 0.4);
-    fillLight.position.set(-10, 10, -10);
-    scene.add(fillLight);
+    <!-- =========================================================
+         SISTEMA DE CÂMERA E CONTROLES VR (CAMERA RIG)
+         ========================================================= -->
+    <a-entity id="cameraRig" position="0 0 3" nexus-movement-controller>
+      <!-- Câmera principal (acompanha headset VR automaticamente) -->
+      <a-camera 
+        id="headCamera" 
+        position="0 1.6 0" 
+        look-controls="pointerLockEnabled: false" 
+        wasd-controls="enabled: false">
+      </a-camera>
 
-    // 4. "Cômodo" / Chão Tecnológico
-    const floorGeometry = new THREE.PlaneGeometry(100, 100);
-    const floorMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x1a1a24, 
-      roughness: 0.4,
-      metalness: 0.2
-    });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
+      <!-- Rastreamento dos Controles de Mão VR (Oculus Quest / Vive / Pico) -->
+      <a-entity id="leftHand" oculus-touch-controls="hand: left" laser-controls="hand: left"></a-entity>
+      <a-entity id="rightHand" oculus-touch-controls="hand: right" laser-controls="hand: right"></a-entity>
+    </a-entity>
 
-    const gridHelper = new THREE.GridHelper(50, 50, 0x00d2ff, 0x333344);
-    gridHelper.position.y = 0.01;
-    scene.add(gridHelper);
+    <!-- =========================================================
+         ILUMINAÇÃO FÍSICA DO LABORATÓRIO
+         ========================================================= -->
+    <!-- Luz Ambiente suave de preenchimento (Azul tecnológico) -->
+    <a-light type="ambient" color="#0f172a" intensity="1.2"></a-light>
 
-    // 5. Carregamento do Robô
-    const loader = new THREE.GLTFLoader();
-    const NOME_DO_ARQUIVO = 'barco_robotico.glb'; // Substitua por Base64 se quiser abrir via file://
+    <!-- Ponto de luz Central 1 (Teto Frontal) -->
+    <a-light type="point" position="0 4.2 1.5" color="#e0f2fe" intensity="1.8" distance="12" decay="1.5"></a-light>
+    
+    <!-- Ponto de luz Central 2 (Teto Traseiro) -->
+    <a-light type="point" position="0 4.2 -2.5" color="#38bdf8" intensity="1.5" distance="12" decay="1.5"></a-light>
 
-    loader.load(
-      NOME_DO_ARQUIVO,
-      (gltf) => {
-        const model = gltf.scene;
-        
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
+    <!-- Luz spot direcionada para a mesa/plataforma de testes -->
+    <a-light type="spot" position="0 4.4 0" target="#worktable" color="#ffffff" intensity="2.0" angle="45" penumbra="0.5"></a-light>
 
-        scene.add(model);
 
-        // Ajuste Automático da Câmera
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
+    <!-- =========================================================
+         ESTRUTURA DO CÔMODO (PAREDES, CHÃO, TETO)
+         Tamanho total do cômodo: 12m x 12m x 5m de altura
+         ========================================================= -->
 
-        // Reposiciona o robô exatamente em cima do chão
-        model.position.y -= box.min.y;
+    <!-- CHÃO TÉCNICO -->
+    <a-plane 
+      position="0 0 0" 
+      rotation="-90 0 0" 
+      width="12" 
+      height="12" 
+      color="#111827" 
+      roughness="0.3" 
+      metalness="0.5">
+    </a-plane>
+    <!-- Grade Decorativa Futurista sobre o Chão -->
+    <a-grid position="0 0.01 0" width="12" height="12" cell-size="1" color-center="#06b6d4" color-grid="#1e293b"></a-grid>
 
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.2;
+    <!-- TETO (Corretamente orientado para não inverter normais) -->
+    <a-plane 
+      position="0 4.8 0" 
+      rotation="90 0 0" 
+      width="12" 
+      height="12" 
+      color="#0f172a" 
+      side="double"
+      roughness="0.8">
+    </a-plane>
 
-        camera.position.set(center.x + cameraZ * 0.6, center.y + cameraZ * 0.5, center.z + cameraZ);
-        controls.target.set(center.x, center.y + size.y / 2, center.z);
-        controls.update();
+    <!-- LÂMPADAS LUMINÁRIAS DO TETO (Modelos 3D Emissivos) -->
+    <a-entity position="0 4.75 1.5">
+      <a-box width="3" height="0.1" depth="0.6" color="#1e293b"></a-box>
+      <a-box width="2.8" height="0.05" depth="0.4" position="0 -0.03 0" color="#ffffff" material="emissive: #e0f2fe; emissiveIntensity: 1.0"></a-box>
+    </a-entity>
 
-        document.getElementById('loading').style.display = 'none';
-      },
-      (xhr) => {
-        if (xhr.lengthComputable) {
-          const percent = Math.round((xhr.loaded / xhr.total) * 100);
-          document.getElementById('loading').innerText = `Carregando Braço Robótico: ${percent}%`;
-        }
-      },
-      (error) => {
-        console.error('Erro ao carregar o arquivo GLB:', error);
-        document.getElementById('loading').innerHTML = '⚠️ Bloqueio de CORS do Navegador!<br><span style="font-size:12px; color:#aaa;">Abra este arquivo usando a extensão <b>Live Server</b> no VS Code.</span>';
-      }
-    );
+    <a-entity position="0 4.75 -2.5">
+      <a-box width="3" height="0.1" depth="0.6" color="#1e293b"></a-box>
+      <a-box width="2.8" height="0.05" depth="0.4" position="0 -0.03 0" color="#ffffff" material="emissive: #38bdf8; emissiveIntensity: 0.9"></a-box>
+    </a-entity>
 
-    // Redimensionamento
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    <!-- PAREDE FRONTAL (NORTE) - Onde fica o Painel SENAI -->
+    <a-plane position="0 2.4 -6" rotation="0 0 0" width="12" height="5" color="#1f2937" roughness="0.6"></a-plane>
 
-    // Animação
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
+    <!-- PAREDE TRASEIRA (SUL) -->
+    <a-plane position="0 2.4 6" rotation="0 180 0" width="12" height="5" color="#1f2937" roughness="0.6"></a-plane>
+
+    <!-- PAREDE ESQUERDA (OESTE) -->
+    <a-plane position="-6 2.4 0" rotation="0 90 0" width="12" height="5" color="#111827" roughness="0.6"></a-plane>
+
+    <!-- PAREDE DIREITA (LESTE) -->
+    <a-plane position="6 2.4 0" rotation="0 -90 0" width="12" height="5" color="#111827" roughness="0.6"></a-plane>
+
+
+    <!-- =========================================================
+         ELEMENTOS DE DESIGN DO LABORATÓRIO (LEDs, PAINÉIS, MÓVEIS)
+         ========================================================= -->
+
+    <!-- FAIXAS DE LED AZUL DECORATIVAS NAS PAREDES -->
+    <!-- Rodapé LED Norte -->
+    <a-box position="0 0.1 -5.9" width="11.8" height="0.1" depth="0.05" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.8"></a-box>
+    <!-- Rodapé LED Sul -->
+    <a-box position="0 0.1 5.9" width="11.8" height="0.1" depth="0.05" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.8"></a-box>
+    <!-- LED Superior Norte -->
+    <a-box position="0 4.5 -5.9" width="11.8" height="0.08" depth="0.05" color="#0284c7" material="emissive: #0284c7; emissiveIntensity: 0.8"></a-box>
+
+    <!-- PAINEL DA LOGO SENAI (Na parede frontal) -->
+    <a-entity position="0 2.8 -5.85">
+      <!-- Moldura Externa do Monitor TV -->
+      <a-box width="4.4" height="2.4" depth="0.1" color="#090d16" roughness="0.2"></a-box>
+      <!-- Tela da TV com a Logo SENAI em Alta Resolução -->
+      <a-plane width="4.2" height="2.2" position="0 0 0.06" senai-texture-generator></a-plane>
+      <!-- Glow do Painel -->
+      <a-light type="point" color="#005696" intensity="0.8" distance="3" position="0 0 0.5"></a-light>
+    </a-entity>
+
+    <!-- MESA CENTRAL DE TESTES (Reservada para o Braço Robótico na Etapa 2) -->
+    <a-entity id="worktable" position="0 0 0">
+      <!-- Tampo da Mesa -->
+      <a-box position="0 0.85 0" width="2.4" height="0.1" depth="1.4" color="#1e293b" roughness="0.3" metalness="0.7"></a-box>
+      <!-- Detalhe em LED no Tampo -->
+      <a-box position="0 0.86 0" width="2.2" height="0.09" depth="1.2" color="#0f172a"></a-box>
+      <a-box position="0 0.87 0" width="2.0" height="0.01" depth="0.02" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.9"></a-box>
+      <!-- Pés da Mesa Tecnológica -->
+      <a-box position="-1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155" metalness="0.8"></a-box>
+      <a-box position="1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155" metalness="0.8"></a-box>
+      <a-box position="-1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155" metalness="0.8"></a-box>
+      <a-box position="1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155" metalness="0.8"></a-box>
+      
+      <!-- Placa com identificação na frente da mesa -->
+      <a-plane position="0 0.86 0.71" rotation="0 0 0" width="1.2" height="0.2" color="#005696">
+        <a-text value="MESA DE MANIPULACAO - NEXUS ATLAS" align="center" width="2" color="#ffffff" position="0 0 0.01"></a-text>
+      </a-plane>
+    </a-entity>
+
+    <!-- RACK / ARMARIO FUTURISTA DE EQUIPAMENTOS (Parede Direita) -->
+    <a-entity position="5.2 0 -2">
+      <a-box position="0 1.5 0" width="0.8" height="3" depth="1.6" color="#0f172a" roughness="0.5" metalness="0.6"></a-box>
+      <!-- Servidores / LEDs de Status de Redes -->
+      <a-box position="-0.38 2.2 0" width="0.02" height="0.15" depth="1.2" color="#22c55e" material="emissive: #22c55e; emissiveIntensity: 1"></a-box>
+      <a-box position="-0.38 1.8 0" width="0.02" height="0.15" depth="1.2" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 1"></a-box>
+      <a-box position="-0.38 1.4 0" width="0.02" height="0.15" depth="1.2" color="#eab308" material="emissive: #eab308; emissiveIntensity: 1"></a-box>
+    </a-entity>
+
+    <!-- PLANTAS DECORATIVAS FUTURISTAS (CANTOS DA SALA) -->
+    <!-- Planta Canto Esquerdo Frontal -->
+    <a-entity position="-5 0 -5">
+      <!-- Vaso Futurista -->
+      <a-cylinder position="0 0.4 0" radius="0.35" height="0.8" color="#1e293b" metalness="0.5"></a-cylinder>
+      <a-torus position="0 0.78 0" radius="0.35" radius-tubular="0.02" rotation="90 0 0" color="#06b6d4" material="emissive: #06b6d4"></a-torus>
+      <!-- Folhagem em Estilo Low-Poly Moderno -->
+      <a-cone position="0 1.1 0" radius-bottom="0.4" radius-top="0" height="0.8" color="#15803d" roughness="0.9"></a-cone>
+      <a-cone position="0 1.4 0" radius-bottom="0.3" radius-top="0" height="0.7" color="#22c55e" rotation="0 45 0" roughness="0.9"></a-cone>
+    </a-entity>
+
+    <!-- Planta Canto Direito Frontal -->
+    <a-entity position="5 0 -5">
+      <a-cylinder position="0 0.4 0" radius="0.35" height="0.8" color="#1e293b" metalness="0.5"></a-cylinder>
+      <a-torus position="0 0.78 0" radius="0.35" radius-tubular="0.02" rotation="90 0 0" color="#06b6d4" material="emissive: #06b6d4"></a-torus>
+      <a-cone position="0 1.1 0" radius-bottom="0.4" radius-top="0" height="0.8" color="#15803d" roughness="0.9"></a-cone>
+      <a-cone position="0 1.4 0" radius-bottom="0.3" radius-top="0" height="0.7" color="#22c55e" rotation="0 30 0" roughness="0.9"></a-cone>
+    </a-entity>
+
+  </a-scene>
+
 </body>
 </html>
