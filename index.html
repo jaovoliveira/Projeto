@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEXUS ATLAS - Laboratório VR (SENAI São Carlos)</title>
 
-  <!-- Biblioteca A-Frame para WebXR -->
+  <!-- A-Frame 1.5.0 -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-  <!-- Google Fonts: Titillium Web -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -30,6 +30,7 @@
       color: #f3f4f6;
     }
 
+    /* TELA DE ENTRADA (OVERLAY) */
     #intro-screen {
       position: absolute;
       top: 0;
@@ -43,31 +44,18 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
-      backdrop-filter: blur(10px);
-      transition: opacity 0.8s ease, visibility 0.8s ease;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
     .intro-card {
-      background: rgba(17, 24, 39, 0.85);
-      border: 1px solid rgba(6, 182, 212, 0.3);
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid rgba(6, 182, 212, 0.4);
       border-radius: 16px;
-      padding: 40px;
-      max-width: 650px;
+      padding: 35px;
+      max-width: 600px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .intro-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #005696 0%, #06b6d4 50%, #005696 100%);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.2);
     }
 
     .badge-senai {
@@ -81,44 +69,38 @@
       letter-spacing: 2px;
       margin-bottom: 15px;
       text-transform: uppercase;
-      box-shadow: 0 0 10px rgba(0, 86, 150, 0.5);
     }
 
     .intro-card h1 {
-      font-size: 3.2rem;
+      font-size: 3rem;
       font-weight: 700;
-      letter-spacing: 4px;
-      background: linear-gradient(135deg, #ffffff 0%, #06b6d4 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: 3px;
+      color: #06b6d4;
       margin-bottom: 5px;
-      text-transform: uppercase;
     }
 
     .intro-card h2 {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #9ca3af;
       font-weight: 400;
-      letter-spacing: 3px;
-      margin-bottom: 25px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
       text-transform: uppercase;
     }
 
     .intro-card p {
-      font-size: 1.05rem;
-      line-height: 1.6;
+      font-size: 1rem;
+      line-height: 1.5;
       color: #d1d5db;
-      margin-bottom: 30px;
-      text-align: justify;
-      text-align-last: center;
+      margin-bottom: 25px;
     }
 
     .btn-enter-vr {
       background: linear-gradient(135deg, #005696 0%, #0284c7 100%);
       color: #ffffff;
       border: 1px solid #38bdf8;
-      padding: 18px 36px;
-      font-size: 1.3rem;
+      padding: 16px 32px;
+      font-size: 1.2rem;
       font-weight: 700;
       font-family: 'Titillium Web', sans-serif;
       border-radius: 50px;
@@ -127,20 +109,17 @@
       letter-spacing: 2px;
       transition: all 0.3s ease;
       box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
     }
 
     .btn-enter-vr:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 0 35px rgba(6, 182, 212, 0.7);
+      transform: scale(1.03);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.8);
       background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
     }
 
     .controls-guide {
-      margin-top: 30px;
-      padding-top: 20px;
+      margin-top: 25px;
+      padding-top: 15px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-around;
@@ -151,7 +130,6 @@
     .controls-guide div strong {
       color: #38bdf8;
       display: block;
-      margin-bottom: 4px;
     }
 
     .fade-out {
@@ -160,30 +138,26 @@
       pointer-events: none;
     }
 
+    /* Esconde botões padrões do A-Frame que conflitam */
     .a-enter-vr {
       display: none !important;
     }
   </style>
 
   <script>
-    // Componente de Movimento Manual (Teclado/VR)
+    // Componente de Movimento WASD / Controle VR
     AFRAME.registerComponent('nexus-movement-controller', {
       schema: {
         speed: { type: 'number', default: 0.06 },
-        turnSpeed: { type: 'number', default: 0.035 },
-        deadzone: { type: 'number', default: 0.2 },
-        boundsX: { type: 'array', default: [-5.4, 5.4] },
-        boundsZ: { type: 'array', default: [-5.4, 5.4] }
+        turnSpeed: { type: 'number', default: 0.035 }
       },
-
       init: function () {
         this.rig = this.el;
-        this.camera = this.el.querySelector('a-camera') || this.el.querySelector('[camera]');
+        this.camera = this.el.querySelector('a-camera');
         this.keys = {};
         window.addEventListener('keydown', (e) => { this.keys[e.code] = true; });
         window.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
       },
-
       tick: function (time, delta) {
         var dt = delta / 1000;
         if (isNaN(dt) || dt <= 0) return;
@@ -191,46 +165,33 @@
         var moveVector = { x: 0, z: 0 };
         var turnAmount = 0;
 
+        // Gamepad (Óculos VR)
         var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
         for (var i = 0; i < gamepads.length; i++) {
           var gp = gamepads[i];
           if (!gp || !gp.connected) continue;
-
           if (gp.handedness === 'left') {
-            var ax = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
-            var ay = (gp.axes[3] !== undefined && Math.abs(gp.axes[3]) > 0.01) ? gp.axes[3] : (gp.axes[1] || 0);
-            if (Math.hypot(ax, ay) > this.data.deadzone) {
-              moveVector.x = ax;
-              moveVector.z = ay;
-            }
+            moveVector.x = gp.axes[2] || gp.axes[0] || 0;
+            moveVector.z = gp.axes[3] || gp.axes[1] || 0;
           }
-
           if (gp.handedness === 'right') {
-            var rx = (gp.axes[2] !== undefined && Math.abs(gp.axes[2]) > 0.01) ? gp.axes[2] : (gp.axes[0] || 0);
-            if (Math.abs(rx) > this.data.deadzone) {
-              turnAmount = rx;
-            }
+            turnAmount = gp.axes[2] || gp.axes[0] || 0;
           }
         }
 
+        // Teclado PC
         if (this.keys['KeyW'] || this.keys['ArrowUp']) moveVector.z = -1;
         if (this.keys['KeyS'] || this.keys['ArrowDown']) moveVector.z = 1;
         if (this.keys['KeyA'] || this.keys['ArrowLeft']) moveVector.x = -1;
         if (this.keys['KeyD'] || this.keys['ArrowRight']) moveVector.x = 1;
 
-        if (Math.abs(turnAmount) > 0) {
+        if (Math.abs(turnAmount) > 0.2) {
           var currentRot = this.rig.getAttribute('rotation');
           currentRot.y -= turnAmount * this.data.turnSpeed * 60;
           this.rig.setAttribute('rotation', currentRot);
         }
 
-        if (moveVector.x !== 0 || moveVector.z !== 0) {
-          var len = Math.hypot(moveVector.x, moveVector.z);
-          if (len > 1) {
-            moveVector.x /= len;
-            moveVector.z /= len;
-          }
-
+        if (Math.abs(moveVector.x) > 0.2 || Math.abs(moveVector.z) > 0.2) {
           var rigRot = this.rig.getAttribute('rotation');
           var camRot = this.camera ? this.camera.getAttribute('rotation') : { y: 0 };
           var totalAngleRad = (rigRot.y + camRot.y) * (Math.PI / 180);
@@ -239,80 +200,34 @@
           var dz = moveVector.z * Math.cos(totalAngleRad) - moveVector.x * Math.sin(totalAngleRad);
 
           var pos = this.rig.getAttribute('position');
-          var targetX = pos.x + dx * this.data.speed;
-          var targetZ = pos.z + dz * this.data.speed;
+          pos.x += dx * this.data.speed;
+          pos.z += dz * this.data.speed;
 
-          pos.x = Math.max(this.data.boundsX[0], Math.min(this.data.boundsX[1], targetX));
-          pos.z = Math.max(this.data.boundsZ[0], Math.min(this.data.boundsZ[1], targetZ));
+          // Limites da Sala
+          pos.x = Math.max(-5.2, Math.min(5.2, pos.x));
+          pos.z = Math.max(-5.2, Math.min(5.2, pos.z));
 
           this.rig.setAttribute('position', pos);
         }
       }
     });
 
-    // Gerador dinâmico de textura SENAI
-    AFRAME.registerComponent('senai-texture-generator', {
+    // Diagnóstico do modelo .GLB no console
+    AFRAME.registerComponent('model-checker', {
       init: function () {
-        var canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 512;
-        var ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = '#005696';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
-
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(80, 240, 120, 10);
-        ctx.fillRect(canvas.width - 200, 240, 120, 10);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 120px "Titillium Web", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('SENAI', canvas.width / 2, canvas.height / 2 - 20);
-
-        ctx.font = '600 28px "Titillium Web", sans-serif';
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText('SÃO CARLOS • MECATRÔNICA', canvas.width / 2, canvas.height / 2 + 70);
-
-        ctx.font = '400 20px "Titillium Web", sans-serif';
-        ctx.fillStyle = '#e0f2fe';
-        ctx.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR', canvas.width / 2, canvas.height / 2 + 110);
-
-        var texture = new THREE.CanvasTexture(canvas);
-        var mesh = this.el.getObject3D('mesh');
-        if (mesh) {
-          mesh.material.map = texture;
-          mesh.material.needsUpdate = true;
-        }
+        this.el.addEventListener('model-loaded', () => {
+          console.log('✅ SUCESSO: O modelo braco_robotico.glb foi carregado!');
+        });
+        this.el.addEventListener('model-error', (e) => {
+          console.error('❌ ERRO ao carregar braco_robotico.glb:', e.detail);
+        });
       }
     });
 
     function enterExperience() {
-      var introScreen = document.getElementById('intro-screen');
-      introScreen.classList.add('fade-out');
+      document.getElementById('intro-screen').classList.add('fade-out');
       var scene = document.querySelector('a-scene');
-      if (scene) {
-        if (scene.hasLoaded) {
-          tryEnterVR(scene);
-        } else {
-          scene.addEventListener('loaded', function () {
-            tryEnterVR(scene);
-          });
-        }
-      }
-    }
-
-    function tryEnterVR(scene) {
-      if (AFRAME.utils.device.checkHeadsetConnected() || navigator.xr) {
+      if (scene && (AFRAME.utils.device.checkHeadsetConnected() || navigator.xr)) {
         scene.enterVR();
       }
     }
@@ -320,47 +235,34 @@
 </head>
 <body>
 
-  <!-- OVERLAY TELA INICIAL -->
+  <!-- TELA INICIAL -->
   <div id="intro-screen">
     <div class="intro-card">
       <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
       <h1>NEXUS ATLAS</h1>
-      <h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
+      <h2>LABORATÓRIO DE ROBÓTICA VR</h2>
 
       <p>
-        Laboratório Virtual de testes. O modelo do <strong>Braço Robótico (.GLB)</strong> já está carregado sobre a mesa central de testes.
+        Ambiente Virtual 3D interativo para simulação e teste do <strong>Braço Robótico (.GLB)</strong>.
       </p>
 
       <button class="btn-enter-vr" onclick="enterExperience()">
-        <span>🥽</span> ENTRAR NO MODO VR
+        🥽 ENTRAR NO LABORATÓRIO
       </button>
 
       <div class="controls-guide">
-        <div>
-          <strong>CONTROLES VR</strong>
-          Esq: Andar | Dir: Virar
-        </div>
-        <div>
-          <strong>TECLADO PC</strong>
-          Teclas WASD + Mouse
-        </div>
-        <div>
-          <strong>MODELO 3D</strong>
-          braco_robotico.glb
-        </div>
+        <div><strong>TECLADO PC</strong>WASD + Mouse</div>
+        <div><strong>ÓCULOS VR</strong>Analg. Esq: Andar | Dir: Girar</div>
+        <div><strong>ARQUIVO 3D</strong>braco_robotico.glb</div>
       </div>
     </div>
   </div>
 
-  <!-- CENA 3D A-FRAME -->
+  <!-- CENA 3D (Com loading-screen desativado para não travar em tela azul) -->
   <a-scene 
+    loading-screen="enabled: false"
     renderer="antialias: true; colorManagement: true; exposure: 1.0; toneMapping: ACESFilmic;"
     vr-mode-ui="enabled: true">
-
-    <!-- CARREGAMENTO DO ARQUIVO .GLB -->
-    <a-assets>
-      <a-asset-item id="modelo-braco" src="braco_robotico.glb"></a-asset-item>
-    </a-assets>
 
     <!-- CÂMERA E CONTROLES -->
     <a-entity id="cameraRig" position="0 0 3" nexus-movement-controller>
@@ -369,13 +271,13 @@
       <a-entity id="rightHand" oculus-touch-controls="hand: right" laser-controls="hand: right"></a-entity>
     </a-entity>
 
-    <!-- ILUMINAÇÃO DA SALA -->
+    <!-- ILUMINAÇÃO -->
     <a-light type="ambient" color="#0f172a" intensity="1.2"></a-light>
     <a-light type="point" position="0 4.2 1.5" color="#e0f2fe" intensity="1.8" distance="12"></a-light>
     <a-light type="point" position="0 4.2 -2.5" color="#38bdf8" intensity="1.5" distance="12"></a-light>
     <a-light type="spot" position="0 4.4 0" target="#worktable" color="#ffffff" intensity="2.5" angle="45" penumbra="0.5"></a-light>
 
-    <!-- ESTRUTURA DO CÔMODO -->
+    <!-- PISO E TETO -->
     <a-plane position="0 0 0" rotation="-90 0 0" width="12" height="12" color="#111827" roughness="0.3" metalness="0.5"></a-plane>
     <a-grid position="0 0.01 0" width="12" height="12" cell-size="1" color-center="#06b6d4" color-grid="#1e293b"></a-grid>
     <a-plane position="0 4.8 0" rotation="90 0 0" width="12" height="12" color="#0f172a" side="double"></a-plane>
@@ -388,29 +290,31 @@
 
     <!-- PAINEL SENAI -->
     <a-entity position="0 2.8 -5.85">
-      <a-box width="4.4" height="2.4" depth="0.1" color="#090d16"></a-box>
-      <a-plane width="4.2" height="2.2" position="0 0 0.06" senai-texture-generator></a-plane>
+      <a-box width="4.4" height="2.2" depth="0.1" color="#005696"></a-box>
+      <a-text value="SENAI" align="center" position="0 0.4 0.07" width="12" color="#ffffff" font="roboto"></a-text>
+      <a-text value="SAO CARLOS - MECATRONICA" align="center" position="0 -0.2 0.07" width="5" color="#38bdf8" font="roboto"></a-text>
+      <a-text value="PROJETO NEXUS ATLAS" align="center" position="0 -0.5 0.07" width="4" color="#e0f2fe" font="roboto"></a-text>
     </a-entity>
 
-    <!-- MESA CENTRAL COM O SEU BRAÇO ROBÓTICO DO INVENTOR -->
+    <!-- MESA E BRAÇO ROBÓTICO -->
     <a-entity id="worktable" position="0 0 0">
       <!-- Tampo da Mesa -->
       <a-box position="0 0.85 0" width="2.4" height="0.1" depth="1.4" color="#1e293b" roughness="0.3" metalness="0.7"></a-box>
       <a-box position="0 0.86 0" width="2.2" height="0.09" depth="1.2" color="#0f172a"></a-box>
-      <a-box position="0 0.87 0" width="2.0" height="0.01" depth="0.02" color="#06b6d4" material="emissive: #06b6d4; emissiveIntensity: 0.9"></a-box>
-      
+
       <!-- Pés da Mesa -->
       <a-box position="-1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
       <a-box position="1.0 0.4 -0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
       <a-box position="-1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
       <a-box position="1.0 0.4 0.5" width="0.12" height="0.8" depth="0.12" color="#334155"></a-box>
-      
-      <!-- O SEU BRAÇO ROBÓTICO IMPORTADO (.GLB) -->
+
+      <!-- MODELO 3D .GLB DO BRAÇO ROBÓTICO -->
       <a-gltf-model 
-        src="#modelo-braco" 
+        src="braco_robotico.glb" 
         position="0 0.9 0" 
         rotation="0 0 0" 
-        scale="1 1 1">
+        scale="1 1 1"
+        model-checker>
       </a-gltf-model>
     </a-entity>
 
