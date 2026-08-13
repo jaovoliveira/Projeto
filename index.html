@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,25 +9,23 @@
 <!-- =========================================================
      A-FRAME
 ========================================================= -->
-
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-<link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
->
+<!-- =========================================================
+     BLINK CONTROLS - TELEPORTE
+========================================================= -->
+<script src="https://unpkg.com/aframe-blink-controls@0.4.3/dist/aframe-blink-controls.min.js"></script>
+
+<!-- =========================================================
+     FONTE
+========================================================= -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
+  href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+  rel="stylesheet"
 >
-
-<link
-    href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-    rel="stylesheet"
->
-
 
 <style>
 
@@ -38,371 +34,389 @@
 ========================================================= */
 
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
 }
 
 html,
 body {
 
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 
-    overflow: hidden;
+  overflow: hidden;
 
-    font-family:
-        'Titillium Web',
-        sans-serif;
+  font-family: 'Titillium Web', sans-serif;
 
-    background: #030712;
+  background: #030712;
 
-    color: #f3f4f6;
+  color: #f3f4f6;
 }
 
 
 /* =========================================================
-   INTRO
+   TELA DE INTRODUÇÃO
 ========================================================= */
 
 #intro-screen {
 
-    position: absolute;
+  position: absolute;
 
-    inset: 0;
+  inset: 0;
 
-    z-index: 9999;
+  z-index: 9999;
 
-    display: flex;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(15,23,42,.95) 0%,
+      rgba(3,7,18,.99) 100%
+    );
 
-    align-items: center;
+  display: flex;
 
-    justify-content: center;
+  flex-direction: column;
 
-    padding: 20px;
+  justify-content: center;
 
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(15,23,42,.95) 0%,
-            rgba(3,7,18,.99) 100%
-        );
+  align-items: center;
 
-    backdrop-filter: blur(10px);
+  padding: 20px;
 
-    transition:
-        opacity .8s ease,
-        visibility .8s ease;
+  backdrop-filter: blur(10px);
+
+  transition:
+    opacity .8s ease,
+    visibility .8s ease;
 }
 
 
 .intro-card {
 
-    position: relative;
+  background: rgba(17,24,39,.94);
 
-    width: 100%;
+  border:
+    1px solid
+    rgba(6,182,212,.3);
 
-    max-width: 680px;
+  border-radius: 16px;
 
-    padding: 40px;
+  padding: 40px;
 
-    text-align: center;
+  max-width: 700px;
 
-    background:
-        rgba(17,24,39,.95);
+  width: 100%;
 
-    border:
-        1px solid
-        rgba(6,182,212,.35);
+  text-align: center;
 
-    border-radius: 18px;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.8),
+    0 0 30px rgba(6,182,212,.15);
 
-    overflow: hidden;
+  position: relative;
 
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.85),
-        0 0 40px rgba(6,182,212,.15);
+  overflow: hidden;
 }
 
 
 .intro-card::before {
 
-    content: "";
+  content: '';
 
-    position: absolute;
+  position: absolute;
 
-    top: 0;
-    left: 0;
+  top: 0;
+  left: 0;
 
-    width: 100%;
-    height: 4px;
+  width: 100%;
+  height: 4px;
 
-    background:
-        linear-gradient(
-            90deg,
-            #005696,
-            #06b6d4,
-            #005696
-        );
+  background:
+    linear-gradient(
+      90deg,
+      #005696,
+      #06b6d4,
+      #005696
+    );
 }
 
 
 .badge-senai {
 
-    display: inline-block;
+  display: inline-block;
 
-    margin-bottom: 15px;
+  background: #005696;
 
-    padding: 5px 15px;
+  color: white;
 
-    background: #005696;
+  padding: 4px 14px;
 
-    border-radius: 20px;
+  border-radius: 20px;
 
-    color: white;
+  font-size: .85rem;
 
-    font-size: .85rem;
+  font-weight: 700;
 
-    font-weight: 700;
+  letter-spacing: 2px;
 
-    letter-spacing: 2px;
+  margin-bottom: 15px;
 
-    box-shadow:
-        0 0 12px
-        rgba(0,86,150,.55);
+  text-transform: uppercase;
+
+  box-shadow:
+    0 0 10px
+    rgba(0,86,150,.5);
 }
 
 
 .intro-card h1 {
 
-    margin-bottom: 4px;
+  font-size: 3.2rem;
 
-    font-size: 3.2rem;
+  font-weight: 700;
 
-    font-weight: 700;
+  letter-spacing: 4px;
 
-    letter-spacing: 4px;
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #06b6d4
+    );
 
-    background:
-        linear-gradient(
-            135deg,
-            #ffffff,
-            #06b6d4
-        );
+  -webkit-background-clip: text;
 
-    -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 
-    -webkit-text-fill-color: transparent;
+  margin-bottom: 5px;
 }
 
 
 .intro-card h2 {
 
-    margin-bottom: 25px;
+  font-size: 1.2rem;
 
-    color: #9ca3af;
+  color: #9ca3af;
 
-    font-size: 1.15rem;
+  font-weight: 400;
 
-    font-weight: 400;
+  letter-spacing: 3px;
 
-    letter-spacing: 3px;
+  margin-bottom: 25px;
 }
 
 
 .intro-card p {
 
-    margin-bottom: 30px;
+  font-size: 1.05rem;
 
-    color: #d1d5db;
+  line-height: 1.6;
 
-    font-size: 1.05rem;
+  color: #d1d5db;
 
-    line-height: 1.6;
+  margin-bottom: 30px;
 
-    text-align: justify;
+  text-align: justify;
 
-    text-align-last: center;
+  text-align-last: center;
 }
 
 
 .btn-enter-vr {
 
-    display: inline-flex;
+  background:
+    linear-gradient(
+      135deg,
+      #005696,
+      #0284c7
+    );
 
-    align-items: center;
+  color: white;
 
-    gap: 12px;
+  border:
+    1px solid
+    #38bdf8;
 
-    padding: 17px 34px;
+  padding: 18px 36px;
 
-    border:
-        1px solid
-        #38bdf8;
+  font-size: 1.3rem;
 
-    border-radius: 50px;
+  font-weight: 700;
 
-    background:
-        linear-gradient(
-            135deg,
-            #005696,
-            #0284c7
-        );
+  font-family:
+    'Titillium Web',
+    sans-serif;
 
-    color: white;
+  border-radius: 50px;
 
-    font-family:
-        'Titillium Web',
-        sans-serif;
+  cursor: pointer;
 
-    font-size: 1.25rem;
+  text-transform: uppercase;
 
-    font-weight: 700;
+  letter-spacing: 2px;
 
-    letter-spacing: 2px;
+  transition: .3s;
 
-    cursor: pointer;
+  box-shadow:
+    0 0 20px
+    rgba(2,132,199,.4);
 
-    box-shadow:
-        0 0 20px
-        rgba(2,132,199,.4);
+  display: inline-flex;
 
-    transition: .3s;
+  align-items: center;
+
+  gap: 12px;
 }
 
 
 .btn-enter-vr:hover {
 
-    transform:
-        translateY(-3px)
-        scale(1.02);
+  transform:
+    translateY(-3px)
+    scale(1.02);
 
-    box-shadow:
-        0 0 35px
-        rgba(6,182,212,.7);
+  box-shadow:
+    0 0 35px
+    rgba(6,182,212,.7);
 }
 
 
 .controls-guide {
 
-    display: flex;
+  margin-top: 30px;
 
-    flex-wrap: wrap;
+  padding-top: 20px;
 
-    justify-content: space-around;
+  border-top:
+    1px solid
+    rgba(255,255,255,.1);
 
-    gap: 15px;
+  display: flex;
 
-    margin-top: 30px;
+  flex-wrap: wrap;
 
-    padding-top: 20px;
+  justify-content: space-around;
 
-    border-top:
-        1px solid
-        rgba(255,255,255,.1);
+  gap: 12px;
 
-    color: #9ca3af;
+  font-size: .85rem;
 
-    font-size: .85rem;
+  color: #9ca3af;
 }
 
 
 .controls-guide strong {
 
-    display: block;
+  color: #38bdf8;
 
-    margin-bottom: 4px;
+  display: block;
 
-    color: #38bdf8;
+  margin-bottom: 4px;
 }
 
 
 .fade-out {
 
-    opacity: 0;
+  opacity: 0;
 
-    visibility: hidden;
+  visibility: hidden;
 
-    pointer-events: none;
-}
-
-
-.a-enter-vr {
-
-    display: none !important;
+  pointer-events: none;
 }
 
 
 /* =========================================================
-   STATUS
+   STATUS VR
 ========================================================= */
 
 #vr-status {
 
-    position: absolute;
+  position: absolute;
 
-    top: 20px;
-    left: 50%;
+  top: 20px;
 
-    z-index: 1000;
+  left: 50%;
 
-    transform:
-        translateX(-50%);
+  transform:
+    translateX(-50%);
 
-    padding: 8px 18px;
+  z-index: 1000;
 
-    border:
-        1px solid
-        rgba(56,189,248,.4);
+  background:
+    rgba(3,7,18,.85);
 
-    border-radius: 30px;
+  border:
+    1px solid
+    rgba(56,189,248,.4);
 
-    background:
-        rgba(3,7,18,.85);
+  padding: 8px 18px;
 
-    color: #38bdf8;
+  border-radius: 30px;
 
-    font-size: 14px;
+  font-size: 14px;
 
-    letter-spacing: 1px;
+  letter-spacing: 1px;
 
-    opacity: 0;
+  color: #38bdf8;
 
-    pointer-events: none;
+  pointer-events: none;
 
-    transition: .4s;
+  opacity: 0;
+
+  transition: .4s;
 }
 
 
-#desktop-help {
+/* =========================================================
+   MENSAGEM DE ERRO
+========================================================= */
 
-    position: absolute;
+#error-message {
 
-    left: 50%;
-    bottom: 15px;
+  position: absolute;
 
-    z-index: 1000;
+  left: 50%;
 
-    transform:
-        translateX(-50%);
+  bottom: 25px;
 
-    padding: 7px 15px;
+  transform:
+    translateX(-50%);
 
-    border:
-        1px solid
-        rgba(56,189,248,.25);
+  z-index: 10000;
 
-    border-radius: 20px;
+  display: none;
 
-    background:
-        rgba(3,7,18,.75);
+  background:
+    rgba(127,29,29,.95);
 
-    color: #94a3b8;
+  border:
+    1px solid
+    #ef4444;
 
-    font-size: 13px;
+  color: white;
 
-    pointer-events: none;
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  max-width: 90%;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   ESCONDE BOTÃO PADRÃO DO A-FRAME
+========================================================= */
+
+.a-enter-vr {
+
+  display: none !important;
+
 }
 
 </style>
@@ -412,1338 +426,681 @@ body {
 
 /* =========================================================
    NEXUS ATLAS
-   CONFIGURAÇÃO
+   SISTEMA DE MOVIMENTO VR
 ========================================================= */
 
-const NEXUS_CONFIG = {
+AFRAME.registerComponent(
+  'nexus-movement-controller',
+  {
 
-    speed: 2.8,
+    schema: {
 
-    turnSpeed: 2.2,
+      speed: {
+        type: 'number',
+        default: 2.8
+      },
 
-    gravity: 14,
+      turnSpeed: {
+        type: 'number',
+        default: 2.2
+      },
 
-    jumpForce: 5.2,
+      jumpForce: {
+        type: 'number',
+        default: 5.2
+      },
 
-    playerRadius: .28,
+      gravity: {
+        type: 'number',
+        default: 14
+      },
 
-    minX: -5.35,
+      boundsX: {
+        type: 'array',
+        default: [-5.35, 5.35]
+      },
 
-    maxX: 5.35,
+      boundsZ: {
+        type: 'array',
+        default: [-5.35, 5.35]
+      }
 
-    minZ: -5.35,
-
-    maxZ: 5.35
-
-};
-
-
-/* =========================================================
-   OBSTÁCULOS
-========================================================= */
-
-const NEXUS_OBSTACLES = [
-
-    {
-        name: "Mesa",
-        x: 0,
-        z: 0,
-        width: 2.6,
-        depth: 1.6
     },
 
-    {
-        name: "Rack",
-        x: 5.2,
-        z: -2,
-        width: 1.0,
-        depth: 1.8
+
+    init: function () {
+
+      console.log(
+        'NEXUS ATLAS: controlador iniciado.'
+      );
+
+
+      /* =====================================================
+         REFERÊNCIAS
+      ===================================================== */
+
+      this.rig = this.el;
+
+      this.camera =
+        this.el.querySelector('[camera]');
+
+
+      /* =====================================================
+         VALORES DOS ANALÓGICOS
+      ===================================================== */
+
+      this.leftStickX = 0;
+
+      this.leftStickY = 0;
+
+      this.rightStickX = 0;
+
+
+      /* =====================================================
+         PULO
+      ===================================================== */
+
+      this.velocityY = 0;
+
+      this.grounded = true;
+
+
+      /* =====================================================
+         TECLADO
+      ===================================================== */
+
+      this.keys = {};
+
+      this.spaceWasPressed = false;
+
+
+      window.addEventListener(
+        'keydown',
+        (event) => {
+
+          this.keys[event.code] = true;
+
+        }
+      );
+
+
+      window.addEventListener(
+        'keyup',
+        (event) => {
+
+          this.keys[event.code] = false;
+
+        }
+      );
+
+
+      /* =====================================================
+         CONTROLE ESQUERDO
+      ===================================================== */
+
+      this.setupLeftController();
+
+
+      /* =====================================================
+         CONTROLE DIREITO
+      ===================================================== */
+
+      this.setupRightController();
+
+
+      /* =====================================================
+         STATUS VR
+      ===================================================== */
+
+      const scene =
+        this.el.sceneEl;
+
+
+      scene.addEventListener(
+        'enter-vr',
+        () => {
+
+          const status =
+            document.getElementById(
+              'vr-status'
+            );
+
+          if (status) {
+
+            status.textContent =
+              '● META QUEST 2 CONECTADO';
+
+            status.style.opacity = '1';
+
+          }
+
+        }
+      );
+
+
+      scene.addEventListener(
+        'exit-vr',
+        () => {
+
+          const status =
+            document.getElementById(
+              'vr-status'
+            );
+
+          if (status) {
+
+            status.style.opacity = '0';
+
+          }
+
+        }
+      );
+
     },
 
-    {
-        name: "Planta esquerda",
-        x: -5,
-        z: -5,
-        width: .9,
-        depth: .9
+
+    /* =========================================================
+       CONTROLE ESQUERDO
+    ========================================================= */
+
+    setupLeftController:
+    function () {
+
+      const controller =
+        document.getElementById(
+          'leftController'
+        );
+
+
+      if (!controller) {
+
+        console.warn(
+          'Controle esquerdo não encontrado.'
+        );
+
+        return;
+
+      }
+
+
+      /* ANALÓGICO */
+
+      controller.addEventListener(
+        'thumbstickmoved',
+        (event) => {
+
+          if (
+            !event.detail
+          ) return;
+
+
+          this.leftStickX =
+            Number(
+              event.detail.x
+            ) || 0;
+
+
+          this.leftStickY =
+            Number(
+              event.detail.y
+            ) || 0;
+
+
+          console.log(
+            'STICK ESQUERDO:',
+            this.leftStickX,
+            this.leftStickY
+          );
+
+        }
+      );
+
+
+      /* BOTÃO X */
+
+      controller.addEventListener(
+        'xbuttondown',
+        () => {
+
+          this.jump();
+
+        }
+      );
+
+
+      /* TAMBÉM ACEITA GAMEPAD BUTTON 4
+         COMO SEGURANÇA */
+
+      controller.addEventListener(
+        'abuttondown',
+        () => {
+
+          this.jump();
+
+        }
+      );
+
     },
 
-    {
-        name: "Planta direita",
-        x: 5,
-        z: -5,
-        width: .9,
-        depth: .9
-    }
 
-];
+    /* =========================================================
+       CONTROLE DIREITO
+    ========================================================= */
+
+    setupRightController:
+    function () {
+
+      const controller =
+        document.getElementById(
+          'rightController'
+        );
 
 
-/* =========================================================
-   COLISÃO
-========================================================= */
+      if (!controller) {
 
-function nexusCollision(x, z) {
+        console.warn(
+          'Controle direito não encontrado.'
+        );
 
-    const radius =
-        NEXUS_CONFIG.playerRadius;
+        return;
 
-    for (
-        const obstacle
-        of NEXUS_OBSTACLES
-    ) {
+      }
 
-        const minX =
-            obstacle.x -
-            obstacle.width / 2 -
-            radius;
 
-        const maxX =
-            obstacle.x +
-            obstacle.width / 2 +
-            radius;
+      controller.addEventListener(
+        'thumbstickmoved',
+        (event) => {
 
-        const minZ =
-            obstacle.z -
-            obstacle.depth / 2 -
-            radius;
+          if (
+            !event.detail
+          ) return;
 
-        const maxZ =
-            obstacle.z +
-            obstacle.depth / 2 +
-            radius;
+
+          this.rightStickX =
+            Number(
+              event.detail.x
+            ) || 0;
+
+        }
+      );
+
+    },
+
+
+    /* =========================================================
+       FUNÇÃO DE PULO
+    ========================================================= */
+
+    jump:
+    function () {
+
+      if (
+        !this.grounded
+      ) return;
+
+
+      this.velocityY =
+        this.data.jumpForce;
+
+
+      this.grounded =
+        false;
+
+    },
+
+
+    /* =========================================================
+       TICK
+    ========================================================= */
+
+    tick:
+    function (time, delta) {
+
+      let dt =
+        delta / 1000;
+
+
+      if (
+        !isFinite(dt) ||
+        dt <= 0
+      ) return;
+
+
+      dt =
+        Math.min(
+          dt,
+          .05
+        );
+
+
+      /* =====================================================
+         MOVIMENTO
+      ===================================================== */
+
+      let moveX =
+        this.leftStickX;
+
+
+      let moveZ =
+        this.leftStickY;
+
+
+      let turn =
+        this.rightStickX;
+
+
+      /* =====================================================
+         DEADZONE
+      ===================================================== */
+
+      const deadzone =
+        0.15;
+
+
+      if (
+        Math.abs(moveX)
+        < deadzone
+      ) {
+
+        moveX = 0;
+
+      }
+
+
+      if (
+        Math.abs(moveZ)
+        < deadzone
+      ) {
+
+        moveZ = 0;
+
+      }
+
+
+      if (
+        Math.abs(turn)
+        < deadzone
+      ) {
+
+        turn = 0;
+
+      }
+
+
+      /* =====================================================
+         TECLADO
+      ===================================================== */
+
+      if (
+        this.keys['KeyW'] ||
+        this.keys['ArrowUp']
+      ) {
+
+        moveZ = -1;
+
+      }
+
+
+      if (
+        this.keys['KeyS'] ||
+        this.keys['ArrowDown']
+      ) {
+
+        moveZ = 1;
+
+      }
+
+
+      if (
+        this.keys['KeyA']
+      ) {
+
+        moveX = -1;
+
+      }
+
+
+      if (
+        this.keys['KeyD']
+      ) {
+
+        moveX = 1;
+
+      }
+
+
+      /* =====================================================
+         SETAS PARA ROTAÇÃO NO PC
+      ===================================================== */
+
+      if (
+        this.keys['ArrowLeft']
+      ) {
+
+        turn = -1;
+
+      }
+
+
+      if (
+        this.keys['ArrowRight']
+      ) {
+
+        turn = 1;
+
+      }
+
+
+      /* =====================================================
+         ESPAÇO
+      ===================================================== */
+
+      if (
+        this.keys['Space'] &&
+        !this.spaceWasPressed
+      ) {
+
+        this.jump();
+
+      }
+
+
+      this.spaceWasPressed =
+        !!this.keys['Space'];
+
+
+      /* =====================================================
+         ROTAÇÃO
+      ===================================================== */
+
+      if (
+        Math.abs(turn) > 0
+      ) {
+
+        const rotation =
+          this.rig.getAttribute(
+            'rotation'
+          );
+
+
+        rotation.y -=
+          turn *
+          this.data.turnSpeed *
+          dt;
+
+
+        this.rig.setAttribute(
+          'rotation',
+          rotation
+        );
+
+      }
+
+
+      /* =====================================================
+         MOVIMENTO RELATIVO À CÂMERA
+      ===================================================== */
+
+      if (
+        moveX !== 0 ||
+        moveZ !== 0
+      ) {
+
+        const length =
+          Math.hypot(
+            moveX,
+            moveZ
+          );
+
 
         if (
-            x >= minX &&
-            x <= maxX &&
-            z >= minZ &&
-            z <= maxZ
+          length > 1
         ) {
 
-            return true;
+          moveX /=
+            length;
+
+          moveZ /=
+            length;
 
         }
 
-    }
 
-    return false;
-}
+        const rigRotation =
+          this.rig.getAttribute(
+            'rotation'
+          );
 
 
-/* =========================================================
-   MOVIMENTO
-========================================================= */
+        const cameraRotation =
+          this.camera
+            ? this.camera.getAttribute(
+                'rotation'
+              )
+            : { y: 0 };
 
-AFRAME.registerComponent(
-    'nexus-movement-controller',
-    {
 
-        schema: {
+        const angle =
+          (
+            rigRotation.y +
+            cameraRotation.y
+          ) *
+          Math.PI /
+          180;
 
-            speed: {
-                type: 'number',
-                default: 2.8
-            },
 
-            turnSpeed: {
-                type: 'number',
-                default: 2.2
-            },
+        const dx =
+          moveX *
+          Math.cos(angle) +
 
-            gravity: {
-                type: 'number',
-                default: 14
-            },
+          moveZ *
+          Math.sin(angle);
 
-            jumpForce: {
-                type: 'number',
-                default: 5.2
-            }
 
-        },
+        const dz =
+          moveZ *
+          Math.cos(angle) -
 
+          moveX *
+          Math.sin(angle);
 
-        init: function () {
 
-            this.rig = this.el;
+        const pos =
+          this.rig.getAttribute(
+            'position'
+          );
 
-            this.camera =
-                this.el.querySelector(
-                    '[camera]'
-                );
 
-            this.keys = {};
+        const targetX =
+          pos.x +
+          dx *
+          this.data.speed *
+          dt;
 
-            this.velocityY = 0;
 
-            this.grounded = true;
+        const targetZ =
+          pos.z +
+          dz *
+          this.data.speed *
+          dt;
 
-            this.jumpRequested = false;
 
-            this.teleporting = false;
+        pos.x =
+          Math.max(
+            this.data.boundsX[0],
+            Math.min(
+              this.data.boundsX[1],
+              targetX
+            )
+          );
 
 
-            /* =============================================
-               TECLADO
-            ============================================= */
+        pos.z =
+          Math.max(
+            this.data.boundsZ[0],
+            Math.min(
+              this.data.boundsZ[1],
+              targetZ
+            )
+          );
 
-            window.addEventListener(
-                'keydown',
-                event => {
 
-                    this.keys[
-                        event.code
-                    ] = true;
+        this.rig.setAttribute(
+          'position',
+          pos
+        );
 
-                    if (
-                        event.code === 'Space'
-                    ) {
+      }
 
-                        this.jumpRequested =
-                            true;
 
-                    }
+      /* =====================================================
+         GRAVIDADE
+      ===================================================== */
 
-                }
-            );
+      if (
+        !this.grounded
+      ) {
 
+        const pos =
+          this.rig.getAttribute(
+            'position'
+          );
 
-            window.addEventListener(
-                'keyup',
-                event => {
 
-                    this.keys[
-                        event.code
-                    ] = false;
+        this.velocityY -=
+          this.data.gravity *
+          dt;
 
-                }
-            );
 
+        pos.y +=
+          this.velocityY *
+          dt;
 
-            /* =============================================
-               EVENTOS DO TELEPORTE
-            ============================================= */
 
-            this.el.sceneEl.addEventListener(
-                'nexus-teleport-start',
-                () => {
-
-                    this.teleporting = true;
-
-                }
-            );
-
-
-            this.el.sceneEl.addEventListener(
-                'nexus-teleported',
-                () => {
-
-                    this.teleporting = false;
-
-                    this.velocityY = 0;
-
-                    this.grounded = true;
-
-                }
-            );
-
-
-            /* =============================================
-               BOTÃO X
-            ============================================= */
-
-            const leftController =
-                document.getElementById(
-                    'leftController'
-                );
-
-
-            if (leftController) {
-
-                leftController.addEventListener(
-                    'xbuttondown',
-                    () => {
-
-                        this.jumpRequested =
-                            true;
-
-                    }
-                );
-
-            }
-
-
-            /* =============================================
-               VR
-            ============================================= */
-
-            this.el.sceneEl.addEventListener(
-                'enter-vr',
-                () => {
-
-                    const status =
-                        document.getElementById(
-                            'vr-status'
-                        );
-
-                    if (status) {
-
-                        status.textContent =
-                            '● META QUEST 2 CONECTADO';
-
-                        status.style.opacity =
-                            '1';
-
-                    }
-
-
-                    const help =
-                        document.getElementById(
-                            'desktop-help'
-                        );
-
-                    if (help) {
-
-                        help.style.display =
-                            'none';
-
-                    }
-
-                }
-            );
-
-
-            this.el.sceneEl.addEventListener(
-                'exit-vr',
-                () => {
-
-                    const status =
-                        document.getElementById(
-                            'vr-status'
-                        );
-
-                    if (status) {
-
-                        status.textContent =
-                            '● MODO DESKTOP';
-
-                        status.style.opacity =
-                            '1';
-
-                    }
-
-
-                    const help =
-                        document.getElementById(
-                            'desktop-help'
-                        );
-
-                    if (help) {
-
-                        help.style.display =
-                            'block';
-
-                    }
-
-                }
-            );
-
-        },
-
-
-        /* =============================================
-           GAMEPADS
-        ============================================= */
-
-        getControllers: function () {
-
-            const result = {
-
-                left: null,
-
-                right: null
-
-            };
-
-
-            if (
-                !navigator.getGamepads
-            ) {
-
-                return result;
-
-            }
-
-
-            const gamepads =
-                navigator.getGamepads();
-
-
-            for (
-                const gamepad
-                of gamepads
-            ) {
-
-                if (
-                    !gamepad ||
-                    !gamepad.connected
-                ) {
-
-                    continue;
-
-                }
-
-
-                if (
-                    gamepad.handedness ===
-                    'left'
-                ) {
-
-                    result.left =
-                        gamepad;
-
-                }
-
-
-                if (
-                    gamepad.handedness ===
-                    'right'
-                ) {
-
-                    result.right =
-                        gamepad;
-
-                }
-
-            }
-
-
-            return result;
-
-        },
-
-
-        getAxis: function (
-            gamepad,
-            first,
-            second
+        if (
+          pos.y <= 0
         ) {
 
-            if (!gamepad) {
+          pos.y = 0;
 
-                return 0;
+          this.velocityY = 0;
 
-            }
-
-
-            let value = 0;
-
-
-            if (
-                gamepad.axes &&
-                gamepad.axes[first] !== undefined
-            ) {
-
-                value =
-                    gamepad.axes[first];
-
-            }
-
-
-            if (
-                Math.abs(value) < .15 &&
-                gamepad.axes &&
-                gamepad.axes[second] !== undefined
-            ) {
-
-                value =
-                    gamepad.axes[second];
-
-            }
-
-
-            if (
-                Math.abs(value) < .15
-            ) {
-
-                return 0;
-
-            }
-
-
-            return value;
-
-        },
-
-
-        /* =============================================
-           TICK
-        ============================================= */
-
-        tick: function (
-            time,
-            delta
-        ) {
-
-            let dt =
-                delta / 1000;
-
-
-            if (
-                !isFinite(dt) ||
-                dt <= 0
-            ) {
-
-                return;
-
-            }
-
-
-            dt =
-                Math.min(
-                    dt,
-                    .05
-                );
-
-
-            const controllers =
-                this.getControllers();
-
-
-            let moveX = 0;
-
-            let moveZ = 0;
-
-            let turn = 0;
-
-
-            /* =============================================
-               ANALÓGICO ESQUERDO
-            ============================================= */
-
-            if (
-                controllers.left
-            ) {
-
-                moveX =
-                    this.getAxis(
-                        controllers.left,
-                        2,
-                        0
-                    );
-
-                moveZ =
-                    this.getAxis(
-                        controllers.left,
-                        3,
-                        1
-                    );
-
-            }
-
-
-            /* =============================================
-               ANALÓGICO DIREITO
-            ============================================= */
-
-            if (
-                controllers.right
-            ) {
-
-                turn =
-                    this.getAxis(
-                        controllers.right,
-                        2,
-                        0
-                    );
-
-            }
-
-
-            /* =============================================
-               TECLADO
-            ============================================= */
-
-            const keyboardX =
-
-                (
-                    this.keys['KeyD'] ||
-                    this.keys['ArrowRight']
-                ? 1 : 0
-                )
-
-                -
-
-                (
-                    this.keys['KeyA'] ||
-                    this.keys['ArrowLeft']
-                ? 1 : 0
-                );
-
-
-            const keyboardZ =
-
-                (
-                    this.keys['KeyS'] ||
-                    this.keys['ArrowDown']
-                ? 1 : 0
-                )
-
-                -
-
-                (
-                    this.keys['KeyW'] ||
-                    this.keys['ArrowUp']
-                ? 1 : 0
-                );
-
-
-            if (
-                keyboardX !== 0 ||
-                keyboardZ !== 0
-            ) {
-
-                moveX =
-                    keyboardX;
-
-                moveZ =
-                    keyboardZ;
-
-            }
-
-
-            /* =============================================
-               ROTAÇÃO
-            ============================================= */
-
-            if (
-                Math.abs(turn) > .12
-            ) {
-
-                const rotation =
-                    this.rig.getAttribute(
-                        'rotation'
-                    );
-
-
-                rotation.y -=
-                    turn *
-                    this.data.turnSpeed *
-                    dt;
-
-
-                this.rig.setAttribute(
-                    'rotation',
-                    rotation
-                );
-
-            }
-
-
-            /* =============================================
-               MOVIMENTO
-            ============================================= */
-
-            if (
-                !this.teleporting &&
-                (
-                    moveX !== 0 ||
-                    moveZ !== 0
-                )
-            ) {
-
-                const length =
-                    Math.hypot(
-                        moveX,
-                        moveZ
-                    );
-
-
-                if (
-                    length > 1
-                ) {
-
-                    moveX /= length;
-
-                    moveZ /= length;
-
-                }
-
-
-                const rigRotation =
-                    this.rig.getAttribute(
-                        'rotation'
-                    );
-
-
-                const cameraRotation =
-                    this.camera
-                    ?
-                    this.camera.getAttribute(
-                        'rotation'
-                    )
-                    :
-                    { y: 0 };
-
-
-                const angle =
-
-                    (
-                        rigRotation.y +
-                        cameraRotation.y
-                    )
-                    *
-                    Math.PI /
-                    180;
-
-
-                const dx =
-
-                    moveX *
-                    Math.cos(angle)
-
-                    +
-
-                    moveZ *
-                    Math.sin(angle);
-
-
-                const dz =
-
-                    moveZ *
-                    Math.cos(angle)
-
-                    -
-
-                    moveX *
-                    Math.sin(angle);
-
-
-                const position =
-                    this.rig.getAttribute(
-                        'position'
-                    );
-
-
-                const nextX =
-
-                    position.x +
-
-                    dx *
-                    this.data.speed *
-                    dt;
-
-
-                const nextZ =
-
-                    position.z +
-
-                    dz *
-                    this.data.speed *
-                    dt;
-
-
-                const limitedX =
-
-                    Math.max(
-                        NEXUS_CONFIG.minX,
-                        Math.min(
-                            NEXUS_CONFIG.maxX,
-                            nextX
-                        )
-                    );
-
-
-                const limitedZ =
-
-                    Math.max(
-                        NEXUS_CONFIG.minZ,
-                        Math.min(
-                            NEXUS_CONFIG.maxZ,
-                            nextZ
-                        )
-                    );
-
-
-                /* =========================================
-                   COLISÃO X
-                ========================================= */
-
-                if (
-                    !nexusCollision(
-                        limitedX,
-                        position.z
-                    )
-                ) {
-
-                    position.x =
-                        limitedX;
-
-                }
-
-
-                /* =========================================
-                   COLISÃO Z
-                ========================================= */
-
-                if (
-                    !nexusCollision(
-                        position.x,
-                        limitedZ
-                    )
-                ) {
-
-                    position.z =
-                        limitedZ;
-
-                }
-
-
-                this.rig.setAttribute(
-                    'position',
-                    position
-                );
-
-            }
-
-
-            /* =============================================
-               PULO
-            ============================================= */
-
-            if (
-                this.jumpRequested &&
-                this.grounded &&
-                !this.teleporting
-            ) {
-
-                this.velocityY =
-                    this.data.jumpForce;
-
-                this.grounded =
-                    false;
-
-            }
-
-
-            this.jumpRequested =
-                false;
-
-
-            /* =============================================
-               GRAVIDADE
-            ============================================= */
-
-            if (
-                !this.grounded &&
-                !this.teleporting
-            ) {
-
-                const position =
-                    this.rig.getAttribute(
-                        'position'
-                    );
-
-
-                this.velocityY -=
-                    this.data.gravity *
-                    dt;
-
-
-                position.y +=
-                    this.velocityY *
-                    dt;
-
-
-                if (
-                    position.y <= 0
-                ) {
-
-                    position.y = 0;
-
-                    this.velocityY = 0;
-
-                    this.grounded = true;
-
-                }
-
-
-                this.rig.setAttribute(
-                    'position',
-                    position
-                );
-
-            }
+          this.grounded =
+            true;
 
         }
 
-    }
-);
 
+        this.rig.setAttribute(
+          'position',
+          pos
+        );
 
-/* =========================================================
-   TELEPORTE PRÓPRIO
-   THREE.RAYCASTER
-========================================================= */
-
-AFRAME.registerComponent(
-    'nexus-teleport',
-    {
-
-        schema: {
-
-            cameraRig: {
-                type: 'selector'
-            },
-
-            surface: {
-                type: 'selector'
-            },
-
-            maxDistance: {
-                type: 'number',
-                default: 8
-            }
-
-        },
-
-
-        init: function () {
-
-            this.rig =
-                this.data.cameraRig;
-
-            this.surface =
-                this.data.surface;
-
-            this.active =
-                false;
-
-            this.validTarget =
-                false;
-
-            this.target =
-                new THREE.Vector3();
-
-
-            this.raycaster =
-                new THREE.Raycaster();
-
-
-            this.createVisuals();
-
-
-            /* =============================================
-               INÍCIO
-            ============================================= */
-
-            this.el.addEventListener(
-                'thumbstickdown',
-                () => {
-
-                    this.startTeleport();
-
-                }
-            );
-
-
-            /* =============================================
-               FINAL
-            ============================================= */
-
-            this.el.addEventListener(
-                'thumbstickup',
-                () => {
-
-                    this.finishTeleport();
-
-                }
-            );
-
-        },
-
-
-        /* =============================================
-           VISUAL DO TELEPORTE
-        ============================================= */
-
-        createVisuals: function () {
-
-            /* ---------------------------------------------
-               LINHA
-            --------------------------------------------- */
-
-            this.line =
-                document.createElement(
-                    'a-entity'
-                );
-
-
-            this.line.setAttribute(
-                'line',
-                {
-                    start: '0 0 0',
-                    end: '0 0 -1',
-                    color: '#06b6d4'
-                }
-            );
-
-
-            this.line.setAttribute(
-                'visible',
-                false
-            );
-
-
-            this.el.appendChild(
-                this.line
-            );
-
-
-            /* ---------------------------------------------
-               MARCADOR
-            --------------------------------------------- */
-
-            this.marker =
-                document.createElement(
-                    'a-ring'
-                );
-
-
-            this.marker.setAttribute(
-                'radius-inner',
-                '.18'
-            );
-
-
-            this.marker.setAttribute(
-                'radius-outer',
-                '.27'
-            );
-
-
-            this.marker.setAttribute(
-                'rotation',
-                '-90 0 0'
-            );
-
-
-            this.marker.setAttribute(
-                'material',
-                {
-                    color: '#06b6d4',
-                    emissive: '#06b6d4',
-                    emissiveIntensity: 1,
-                    shader: 'flat'
-                }
-            );
-
-
-            this.marker.setAttribute(
-                'visible',
-                false
-            );
-
-
-            this.el.sceneEl.appendChild(
-                this.marker
-            );
-
-        },
-
-
-        /* =============================================
-           COMEÇAR
-        ============================================= */
-
-        startTeleport: function () {
-
-            if (
-                this.active
-            ) {
-
-                return;
-
-            }
-
-
-            this.active =
-                true;
-
-            this.validTarget =
-                false;
-
-
-            this.line.setAttribute(
-                'visible',
-                true
-            );
-
-
-            this.marker.setAttribute(
-                'visible',
-                false
-            );
-
-
-            this.el.sceneEl.emit(
-                'nexus-teleport-start'
-            );
-
-        },
-
-
-        /* =============================================
-           FINALIZAR
-        ============================================= */
-
-        finishTeleport: function () {
-
-            if (
-                this.validTarget
-            ) {
-
-                const position =
-                    this.rig.getAttribute(
-                        'position'
-                    );
-
-
-                position.x =
-                    this.target.x;
-
-
-                position.z =
-                    this.target.z;
-
-
-                position.y =
-                    0;
-
-
-                this.rig.setAttribute(
-                    'position',
-                    position
-                );
-
-
-                this.el.sceneEl.emit(
-                    'nexus-teleported',
-                    {
-                        position:
-                            this.target.clone()
-                    }
-                );
-
-            }
-
-
-            this.active =
-                false;
-
-            this.validTarget =
-                false;
-
-
-            this.line.setAttribute(
-                'visible',
-                false
-            );
-
-
-            this.marker.setAttribute(
-                'visible',
-                false
-            );
-
-        },
-
-
-        /* =============================================
-           RAYCASTER
-        ============================================= */
-
-        tick: function () {
-
-            if (
-                !this.active ||
-                !this.surface
-            ) {
-
-                return;
-
-            }
-
-
-            const object =
-                this.el.object3D;
-
-
-            const origin =
-                new THREE.Vector3();
-
-
-            const direction =
-                new THREE.Vector3(
-                    0,
-                    0,
-                    -1
-                );
-
-
-            const quaternion =
-                new THREE.Quaternion();
-
-
-            object.getWorldPosition(
-                origin
-            );
-
-
-            object.getWorldQuaternion(
-                quaternion
-            );
-
-
-            direction.applyQuaternion(
-                quaternion
-            );
-
-
-            direction.normalize();
-
-
-            this.raycaster.set(
-                origin,
-                direction
-            );
-
-
-            this.raycaster.far =
-                this.data.maxDistance;
-
-
-            const hits =
-                this.raycaster.intersectObject(
-                    this.surface.object3D,
-                    true
-                );
-
-
-            if (
-                hits.length === 0
-            ) {
-
-                this.invalidTarget();
-
-                return;
-
-            }
-
-
-            const point =
-                hits[0].point;
-
-
-            /* =========================================
-               LIMITES
-            ========================================= */
-
-            if (
-                point.x <
-                    NEXUS_CONFIG.minX ||
-
-                point.x >
-                    NEXUS_CONFIG.maxX ||
-
-                point.z <
-                    NEXUS_CONFIG.minZ ||
-
-                point.z >
-                    NEXUS_CONFIG.maxZ
-            ) {
-
-                this.invalidTarget();
-
-                return;
-
-            }
-
-
-            /* =========================================
-               COLISÕES
-            ========================================= */
-
-            if (
-                nexusCollision(
-                    point.x,
-                    point.z
-                )
-            ) {
-
-                this.invalidTarget();
-
-                return;
-
-            }
-
-
-            /* =========================================
-               DESTINO VÁLIDO
-            ========================================= */
-
-            this.target.copy(
-                point
-            );
-
-
-            this.validTarget =
-                true;
-
-
-            this.marker.setAttribute(
-                'position',
-                {
-                    x: point.x,
-                    y: .025,
-                    z: point.z
-                }
-            );
-
-
-            this.marker.setAttribute(
-                'visible',
-                true
-            );
-
-
-            this.marker.setAttribute(
-                'material',
-                {
-                    color: '#22c55e',
-                    emissive: '#22c55e',
-                    emissiveIntensity: 1,
-                    shader: 'flat'
-                }
-            );
-
-        },
-
-
-        invalidTarget: function () {
-
-            this.validTarget =
-                false;
-
-
-            this.marker.setAttribute(
-                'visible',
-                false
-            );
-
-        }
+      }
 
     }
+
+  }
 );
 
 
@@ -1752,381 +1109,379 @@ AFRAME.registerComponent(
 ========================================================= */
 
 AFRAME.registerComponent(
-    'senai-texture-generator',
-    {
+  'senai-texture-generator',
+  {
 
-        init: function () {
+    init: function () {
 
-            const canvas =
-                document.createElement(
-                    'canvas'
-                );
-
-
-            canvas.width =
-                1024;
-
-            canvas.height =
-                512;
+      const canvas =
+        document.createElement(
+          'canvas'
+        );
 
 
-            const ctx =
-                canvas.getContext(
-                    '2d'
-                );
+      canvas.width = 1024;
+
+      canvas.height = 512;
 
 
-            ctx.fillStyle =
-                '#005696';
+      const ctx =
+        canvas.getContext(
+          '2d'
+        );
 
 
-            ctx.fillRect(
-                0,
-                0,
-                1024,
-                512
-            );
+      /* FUNDO */
+
+      ctx.fillStyle =
+        '#005696';
+
+      ctx.fillRect(
+        0,
+        0,
+        1024,
+        512
+      );
 
 
-            ctx.strokeStyle =
-                '#ffffff';
+      /* BORDA */
+
+      ctx.strokeStyle =
+        '#ffffff';
+
+      ctx.lineWidth = 12;
+
+      ctx.strokeRect(
+        30,
+        30,
+        964,
+        452
+      );
 
 
-            ctx.lineWidth =
-                12;
+      ctx.strokeStyle =
+        '#06b6d4';
+
+      ctx.lineWidth = 4;
+
+      ctx.strokeRect(
+        45,
+        45,
+        934,
+        422
+      );
 
 
-            ctx.strokeRect(
-                30,
-                30,
-                964,
-                452
-            );
+      /* SENAI */
+
+      ctx.fillStyle =
+        '#ffffff';
+
+      ctx.fillRect(
+        80,
+        240,
+        120,
+        10
+      );
+
+      ctx.fillRect(
+        824,
+        240,
+        120,
+        10
+      );
 
 
-            ctx.strokeStyle =
-                '#06b6d4';
+      ctx.font =
+        'bold 120px "Titillium Web", sans-serif';
+
+      ctx.textAlign =
+        'center';
+
+      ctx.textBaseline =
+        'middle';
+
+      ctx.fillText(
+        'SENAI',
+        512,
+        236
+      );
 
 
-            ctx.lineWidth =
-                4;
+      ctx.font =
+        '600 28px "Titillium Web", sans-serif';
+
+      ctx.fillStyle =
+        '#38bdf8';
 
 
-            ctx.strokeRect(
-                45,
-                45,
-                934,
-                422
-            );
+      ctx.fillText(
+        'SÃO CARLOS • MECATRÔNICA',
+        512,
+        326
+      );
 
 
-            ctx.fillStyle =
-                '#ffffff';
+      ctx.font =
+        '400 20px "Titillium Web", sans-serif';
+
+      ctx.fillStyle =
+        '#e0f2fe';
 
 
-            ctx.fillRect(
-                80,
-                240,
-                120,
-                10
-            );
+      ctx.fillText(
+        'PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR',
+        512,
+        366
+      );
 
 
-            ctx.fillRect(
-                824,
-                240,
-                120,
-                10
-            );
+      /* TEXTURA */
+
+      const texture =
+        new THREE.CanvasTexture(
+          canvas
+        );
 
 
-            ctx.fillStyle =
-                '#ffffff';
+      const mesh =
+        this.el.getObject3D(
+          'mesh'
+        );
 
 
-            ctx.font =
-                'bold 120px "Titillium Web", sans-serif';
+      if (
+        mesh &&
+        mesh.material
+      ) {
 
+        mesh.material.map =
+          texture;
 
-            ctx.textAlign =
-                'center';
+        mesh.material.needsUpdate =
+          true;
 
-
-            ctx.textBaseline =
-                'middle';
-
-
-            ctx.fillText(
-                'SENAI',
-                512,
-                236
-            );
-
-
-            ctx.font =
-                '600 28px "Titillium Web", sans-serif';
-
-
-            ctx.fillStyle =
-                '#38bdf8';
-
-
-            ctx.fillText(
-                'SÃO CARLOS • MECATRÔNICA',
-                512,
-                326
-            );
-
-
-            ctx.font =
-                '400 20px "Titillium Web", sans-serif';
-
-
-            ctx.fillStyle =
-                '#e0f2fe';
-
-
-            ctx.fillText(
-                'PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR',
-                512,
-                366
-            );
-
-
-            const texture =
-                new THREE.CanvasTexture(
-                    canvas
-                );
-
-
-            const mesh =
-                this.el.getObject3D(
-                    'mesh'
-                );
-
-
-            if (
-                mesh &&
-                mesh.material
-            ) {
-
-                mesh.material.map =
-                    texture;
-
-                mesh.material.needsUpdate =
-                    true;
-
-            }
-
-        }
+      }
 
     }
+
+  }
 );
 
 
 /* =========================================================
-   ENTRADA VR
+   ENTRAR NO VR
 ========================================================= */
 
-async function enterExperience() {
+function enterExperience() {
 
-    const intro =
-        document.getElementById(
-            'intro-screen'
-        );
-
-
-    const scene =
-        document.querySelector(
-            'a-scene'
-        );
-
-
-    if (!scene) {
-
-        console.error(
-            'A-Frame não encontrado.'
-        );
-
-        return;
-
-    }
-
-
-    intro.classList.add(
-        'fade-out'
+  const intro =
+    document.getElementById(
+      'intro-screen'
     );
 
 
-    if (
-        !scene.hasLoaded
-    ) {
+  intro.classList.add(
+    'fade-out'
+  );
 
-        await new Promise(
-            resolve => {
 
-                scene.addEventListener(
-                    'loaded',
-                    resolve,
-                    {
-                        once: true
-                    }
-                );
+  const scene =
+    document.querySelector(
+      'a-scene'
+    );
 
-            }
+
+  if (!scene) {
+
+    showError(
+      'A cena VR não foi encontrada.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    scene.hasLoaded
+  ) {
+
+    tryEnterVR(
+      scene
+    );
+
+  } else {
+
+    scene.addEventListener(
+      'loaded',
+      () => {
+
+        tryEnterVR(
+          scene
         );
 
-    }
+      },
+      {
+        once: true
+      }
+    );
 
-
-    if (
-        !navigator.xr
-    ) {
-
-        showDesktopMode();
-
-        return;
-
-    }
-
-
-    try {
-
-        const supported =
-            await navigator.xr.isSessionSupported(
-                'immersive-vr'
-            );
-
-
-        if (!supported) {
-
-            showDesktopMode();
-
-            return;
-
-        }
-
-
-        await scene.enterVR();
-
-    }
-    catch (error) {
-
-        console.error(
-            'Erro ao iniciar VR:',
-            error
-        );
-
-        showDesktopMode();
-
-    }
+  }
 
 }
 
 
 /* =========================================================
-   MODO DESKTOP
+   TENTAR ENTRAR NO VR
 ========================================================= */
 
-function showDesktopMode() {
+function tryEnterVR(scene) {
 
-    const status =
-        document.getElementById(
-            'vr-status'
-        );
+  try {
 
+    scene.enterVR();
 
-    if (status) {
+  }
 
-        status.textContent =
-            '● MODO DESKTOP';
+  catch (error) {
 
-        status.style.opacity =
-            '1';
+    console.error(
+      error
+    );
 
-    }
+    showError(
+      'Não foi possível iniciar o modo VR. Verifique se o Quest 2 está conectado e se o navegador permite WebXR.'
+    );
+
+  }
 
 }
 
 
 /* =========================================================
-   EVENTOS
+   ERROS
+========================================================= */
+
+function showError(message) {
+
+  const box =
+    document.getElementById(
+      'error-message'
+    );
+
+
+  if (!box) return;
+
+
+  box.textContent =
+    message;
+
+
+  box.style.display =
+    'block';
+
+
+  setTimeout(
+    () => {
+
+      box.style.display =
+        'none';
+
+    },
+    6000
+  );
+
+}
+
+
+/* =========================================================
+   DEBUG
 ========================================================= */
 
 document.addEventListener(
-    'DOMContentLoaded',
-    () => {
+  'DOMContentLoaded',
+  () => {
 
-        const scene =
-            document.querySelector(
-                'a-scene'
-            );
-
-
-        if (!scene) {
-
-            return;
-
-        }
+    const scene =
+      document.querySelector(
+        'a-scene'
+      );
 
 
-        scene.addEventListener(
-            'loaded',
-            () => {
+    scene.addEventListener(
+      'loaded',
+      () => {
 
-                console.log(
-                    '================================'
-                );
-
-                console.log(
-                    'NEXUS ATLAS'
-                );
-
-                console.log(
-                    'Sistema carregado.'
-                );
-
-                console.log(
-                    'Movimento: OK'
-                );
-
-                console.log(
-                    'Rotação: OK'
-                );
-
-                console.log(
-                    'Pulo: OK'
-                );
-
-                console.log(
-                    'Teleporte Raycaster: OK'
-                );
-
-                console.log(
-                    'Hand Tracking: OK'
-                );
-
-                console.log(
-                    '================================'
-                );
-
-            }
+        console.log(
+          '================================='
         );
 
-
-        scene.addEventListener(
-            'nexus-teleported',
-            event => {
-
-                console.log(
-                    'Novo destino:',
-                    event.detail.position
-                );
-
-            }
+        console.log(
+          'NEXUS ATLAS CARREGADO'
         );
 
-    }
+        console.log(
+          'Controle esquerdo: movimento'
+        );
+
+        console.log(
+          'Controle direito: rotação'
+        );
+
+        console.log(
+          'Botão X: pulo'
+        );
+
+        console.log(
+          'Stick direito: teleporte'
+        );
+
+        console.log(
+          '================================='
+        );
+
+      }
+    );
+
+
+    scene.addEventListener(
+      'enter-vr',
+      () => {
+
+        console.log(
+          'VR ATIVADO'
+        );
+
+      }
+    );
+
+
+    scene.addEventListener(
+      'exit-vr',
+      () => {
+
+        console.log(
+          'VR DESATIVADO'
+        );
+
+      }
+    );
+
+
+    scene.addEventListener(
+      'teleported',
+      (event) => {
+
+        console.log(
+          'Teleporte:',
+          event.detail
+        );
+
+      }
+    );
+
+  }
 );
 
 </script>
@@ -2138,101 +1493,79 @@ document.addEventListener(
 
 
 <!-- =========================================================
-     TELA INICIAL
+     INTRO
 ========================================================= -->
 
 <div id="intro-screen">
 
-    <div class="intro-card">
+  <div class="intro-card">
 
-        <span class="badge-senai">
-
-            SENAI SÃO CARLOS — MECATRÔNICA
-
-        </span>
+    <span class="badge-senai">
+      SENAI SÃO CARLOS — MECATRÔNICA
+    </span>
 
 
-        <h1>
-
-            NEXUS ATLAS
-
-        </h1>
+    <h1>
+      NEXUS ATLAS
+    </h1>
 
 
-        <h2>
-
-            SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR
-
-        </h2>
+    <h2>
+      SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR
+    </h2>
 
 
-        <p>
+    <p>
 
-            Bem-vindo ao ambiente virtual de testes
-            do projeto <strong>NEXUS ATLAS</strong>.
-            Este laboratório foi desenvolvido para
-            testar navegação, realidade virtual,
-            rastreamento de mãos e posteriormente
-            a integração entre o braço robótico virtual
-            e o braço físico utilizando ESP32.
+      Bem-vindo ao ambiente virtual de testes
+      do projeto <strong>NEXUS ATLAS</strong>.
 
-        </p>
+      Este laboratório foi desenvolvido para
+      testar navegação em realidade virtual,
+      rastreamento de mãos e futuramente a
+      integração entre o braço robótico virtual
+      e o braço físico utilizando ESP32.
 
-
-        <button
-            class="btn-enter-vr"
-            onclick="enterExperience()"
-        >
-
-            <span>🥽</span>
-
-            ENTRAR NO MODO VR
-
-        </button>
+    </p>
 
 
-        <div class="controls-guide">
+    <button
+      class="btn-enter-vr"
+      onclick="enterExperience()"
+    >
 
-            <div>
+      <span>🥽</span>
 
-                <strong>QUEST 2</strong>
+      ENTRAR NO MODO VR
 
-                Analógico esquerdo:
-                andar
-
-            </div>
-
-
-            <div>
-
-                <strong>ROTAÇÃO</strong>
-
-                Analógico direito:
-                virar
-
-            </div>
+    </button>
 
 
-            <div>
+    <div class="controls-guide">
 
-                <strong>PULO</strong>
+      <div>
+        <strong>ANDAR</strong>
+        Analógico esquerdo
+      </div>
 
-                Botão X
+      <div>
+        <strong>GIRAR</strong>
+        Analógico direito
+      </div>
 
-            </div>
+      <div>
+        <strong>PULAR</strong>
+        Botão X
+      </div>
 
-
-            <div>
-
-                <strong>TELEPORTE</strong>
-
-                Clique no stick direito
-
-            </div>
-
-        </div>
+      <div>
+        <strong>TELEPORTE</strong>
+        Clique no stick direito
+      </div>
 
     </div>
+
+  </div>
 
 </div>
 
@@ -2242,19 +1575,15 @@ document.addEventListener(
 ========================================================= -->
 
 <div id="vr-status">
-
-    ● META QUEST 2
-
+  ● META QUEST 2
 </div>
 
 
-<div id="desktop-help">
+<!-- =========================================================
+     ERRO
+========================================================= -->
 
-    WASD / SETAS = MOVIMENTAR
-    •
-    ESPAÇO = PULAR
-
-</div>
+<div id="error-message"></div>
 
 
 <!-- =========================================================
@@ -2263,27 +1592,23 @@ document.addEventListener(
 
 <a-scene
 
-    renderer="
-        antialias:true;
-        colorManagement:true;
-        exposure:1;
-        toneMapping:ACESFilmic;
-    "
+  renderer="
+    antialias:true;
+    colorManagement:true;
+    exposure:1;
+    toneMapping:ACESFilmic;
+  "
 
-    vr-mode-ui="
-        enabled:true
-    "
+  vr-mode-ui="
+    enabled:true
+  "
 
-    webxr="
-        optionalFeatures:
-        local-floor,
-        bounded-floor,
-        hand-tracking
-    "
-
-    background="
-        color:#030712
-    "
+  webxr="
+    optionalFeatures:
+    local-floor,
+    bounded-floor,
+    hand-tracking
+  "
 
 >
 
@@ -2294,11 +1619,11 @@ document.addEventListener(
 
 <a-assets>
 
-    <img
-        id="grid-pattern"
-        src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg"
-        crossorigin="anonymous"
-    >
+  <img
+    id="grid-pattern"
+    src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg"
+    crossorigin="anonymous"
+  >
 
 </a-assets>
 
@@ -2309,111 +1634,124 @@ document.addEventListener(
 
 <a-entity
 
-    id="cameraRig"
+  id="cameraRig"
 
-    position="0 0 3"
+  position="0 0 3"
 
-    nexus-movement-controller="
-        speed:2.8;
-        turnSpeed:2.2;
-        gravity:14;
-        jumpForce:5.2;
-    "
+  nexus-movement-controller
 
 >
 
 
-<!-- =========================================================
-     CÂMERA
-========================================================= -->
+  <!-- =======================================================
+       CÂMERA
+  ======================================================== -->
 
-<a-camera
+  <a-camera
 
     id="headCamera"
 
     position="0 1.6 0"
 
     look-controls="
-        pointerLockEnabled:false
+      pointerLockEnabled:false
     "
 
     wasd-controls="
-        enabled:false
+      enabled:false
     "
 
-></a-camera>
+  ></a-camera>
 
 
-<!-- =========================================================
-     HAND TRACKING ESQUERDA
-========================================================= -->
+  <!-- =======================================================
+       MÃO ESQUERDA
+  ======================================================== -->
 
-<a-entity
+  <a-entity
 
     id="leftHand"
 
     hand-tracking-controls="
-        hand:left;
-        modelStyle:mesh;
-        modelColor:#e0b08a;
-        modelOpacity:1;
+      hand:left;
+      modelStyle:mesh;
+      modelColor:#e0b08a;
+      modelOpacity:1
     "
 
-></a-entity>
+  ></a-entity>
 
 
-<!-- =========================================================
-     HAND TRACKING DIREITA
-========================================================= -->
+  <!-- =======================================================
+       MÃO DIREITA
+  ======================================================== -->
 
-<a-entity
+  <a-entity
 
     id="rightHand"
 
     hand-tracking-controls="
-        hand:right;
-        modelStyle:mesh;
-        modelColor:#e0b08a;
-        modelOpacity:1;
+      hand:right;
+      modelStyle:mesh;
+      modelColor:#e0b08a;
+      modelOpacity:1
     "
 
-></a-entity>
+  ></a-entity>
 
 
-<!-- =========================================================
-     CONTROLE ESQUERDO
-========================================================= -->
+  <!-- =======================================================
+       CONTROLE ESQUERDO
+       
+       ANALÓGICO ESQUERDO:
+       ANDAR
+       
+       X:
+       PULAR
+  ======================================================== -->
 
-<a-entity
+  <a-entity
 
     id="leftController"
 
     oculus-touch-controls="
-        hand:left
+      hand:left
     "
 
-></a-entity>
+  ></a-entity>
 
 
-<!-- =========================================================
-     CONTROLE DIREITO + TELEPORTE
-========================================================= -->
+  <!-- =======================================================
+       CONTROLE DIREITO
+       
+       ANALÓGICO DIREITO:
+       GIRAR
+       
+       CLIQUE:
+       TELEPORTE
+  ======================================================== -->
 
-<a-entity
+  <a-entity
 
     id="rightController"
 
     oculus-touch-controls="
-        hand:right
+      hand:right
     "
 
-    nexus-teleport="
-        cameraRig:#cameraRig;
-        surface:#teleportSurface;
-        maxDistance:8;
+    blink-controls="
+      cameraRig:#cameraRig;
+      teleportOrigin:#headCamera;
+      button:thumbstick;
+      collisionEntities:#floor;
+      landingNormal:0 1 0;
+      maxLength:8;
+      curveShootingSpeed:6;
+      curveHitColor:#06b6d4;
+      curveMissColor:#ef4444
     "
 
-></a-entity>
+  ></a-entity>
 
 
 </a-entity>
@@ -2424,40 +1762,66 @@ document.addEventListener(
 ========================================================= -->
 
 <a-light
-    type="ambient"
-    color="#0f172a"
-    intensity="1.2"
+
+  type="ambient"
+
+  color="#0f172a"
+
+  intensity="1.2"
+
 ></a-light>
 
 
 <a-light
-    type="point"
-    position="0 4.2 1.5"
-    color="#e0f2fe"
-    intensity="1.8"
-    distance="12"
-    decay="1.5"
+
+  type="point"
+
+  position="0 4.2 1.5"
+
+  color="#e0f2fe"
+
+  intensity="1.8"
+
+  distance="12"
+
+  decay="1.5"
+
 ></a-light>
 
 
 <a-light
-    type="point"
-    position="0 4.2 -2.5"
-    color="#38bdf8"
-    intensity="1.5"
-    distance="12"
-    decay="1.5"
+
+  type="point"
+
+  position="0 4.2 -2.5"
+
+  color="#38bdf8"
+
+  intensity="1.5"
+
+  distance="12"
+
+  decay="1.5"
+
 ></a-light>
 
 
 <a-light
-    type="spot"
-    position="0 4.4 0"
-    target="#worktable"
-    color="#ffffff"
-    intensity="2"
-    angle="45"
-    penumbra=".5"
+
+  type="spot"
+
+  position="0 4.4 0"
+
+  target="#worktable"
+
+  color="#ffffff"
+
+  intensity="2"
+
+  angle="45"
+
+  penumbra=".5"
+
 ></a-light>
 
 
@@ -2467,64 +1831,41 @@ document.addEventListener(
 
 <a-plane
 
-    id="floor"
+  id="floor"
 
-    position="0 0 0"
+  position="0 0 0"
 
-    rotation="-90 0 0"
+  rotation="-90 0 0"
 
-    width="12"
+  width="12"
 
-    height="12"
+  height="12"
 
-    color="#111827"
+  color="#111827"
 
-    material="
-        roughness:.3;
-        metalness:.5;
-    "
-
-></a-plane>
-
-
-<!-- =========================================================
-     SUPERFÍCIE DE TELEPORTE
-========================================================= -->
-
-<a-plane
-
-    id="teleportSurface"
-
-    position="0 .005 0"
-
-    rotation="-90 0 0"
-
-    width="10.7"
-
-    height="10.7"
-
-    visible="false"
+  material="
+    roughness:.3;
+    metalness:.5
+  "
 
 ></a-plane>
 
 
-<!-- =========================================================
-     GRID
-========================================================= -->
+<!-- GRID -->
 
 <a-grid
 
-    position="0 .01 0"
+  position="0 .01 0"
 
-    width="12"
+  width="12"
 
-    height="12"
+  height="12"
 
-    cell-size="1"
+  cell-size="1"
 
-    color-center="#06b6d4"
+  color-center="#06b6d4"
 
-    color-grid="#1e293b"
+  color-grid="#1e293b"
 
 ></a-grid>
 
@@ -2535,17 +1876,17 @@ document.addEventListener(
 
 <a-plane
 
-    position="0 4.8 0"
+  position="0 4.8 0"
 
-    rotation="90 0 0"
+  rotation="90 0 0"
 
-    width="12"
+  width="12"
 
-    height="12"
+  height="12"
 
-    color="#0f172a"
+  color="#0f172a"
 
-    side="double"
+  side="double"
 
 ></a-plane>
 
@@ -2555,28 +1896,40 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="0 4.75 1.5"
+  position="0 4.75 1.5"
 >
 
-    <a-box
-        width="3"
-        height=".1"
-        depth=".6"
-        color="#1e293b"
-    ></a-box>
+  <a-box
+
+    width="3"
+
+    height=".1"
+
+    depth=".6"
+
+    color="#1e293b"
+
+  ></a-box>
 
 
-    <a-box
-        width="2.8"
-        height=".05"
-        depth=".4"
-        position="0 -.03 0"
-        color="#ffffff"
-        material="
-            emissive:#e0f2fe;
-            emissiveIntensity:1
-        "
-    ></a-box>
+  <a-box
+
+    width="2.8"
+
+    height=".05"
+
+    depth=".4"
+
+    position="0 -.03 0"
+
+    color="#ffffff"
+
+    material="
+      emissive:#e0f2fe;
+      emissiveIntensity:1
+    "
+
+  ></a-box>
 
 </a-entity>
 
@@ -2586,28 +1939,40 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="0 4.75 -2.5"
+  position="0 4.75 -2.5"
 >
 
-    <a-box
-        width="3"
-        height=".1"
-        depth=".6"
-        color="#1e293b"
-    ></a-box>
+  <a-box
+
+    width="3"
+
+    height=".1"
+
+    depth=".6"
+
+    color="#1e293b"
+
+  ></a-box>
 
 
-    <a-box
-        width="2.8"
-        height=".05"
-        depth=".4"
-        position="0 -.03 0"
-        color="#ffffff"
-        material="
-            emissive:#38bdf8;
-            emissiveIntensity:.9
-        "
-    ></a-box>
+  <a-box
+
+    width="2.8"
+
+    height=".05"
+
+    depth=".4"
+
+    position="0 -.03 0"
+
+    color="#ffffff"
+
+    material="
+      emissive:#38bdf8;
+      emissiveIntensity:.9
+    "
+
+  ></a-box>
 
 </a-entity>
 
@@ -2617,37 +1982,60 @@ document.addEventListener(
 ========================================================= -->
 
 <a-plane
-    position="0 2.4 -6"
-    width="12"
-    height="5"
-    color="#1f2937"
+
+  position="0 2.4 -6"
+
+  width="12"
+
+  height="5"
+
+  color="#1f2937"
+
 ></a-plane>
 
 
 <a-plane
-    position="0 2.4 6"
-    rotation="0 180 0"
-    width="12"
-    height="5"
-    color="#1f2937"
+
+  position="0 2.4 6"
+
+  rotation="0 180 0"
+
+  width="12"
+
+  height="5"
+
+  color="#1f2937"
+
 ></a-plane>
 
 
 <a-plane
-    position="-6 2.4 0"
-    rotation="0 90 0"
-    width="12"
-    height="5"
-    color="#111827"
+
+  position="-6 2.4 0"
+
+  rotation="0 90 0"
+
+  width="12"
+
+  height="5"
+
+  color="#111827"
+
 ></a-plane>
 
 
 <a-plane
-    position="6 2.4 0"
-    rotation="0 -90 0"
-    width="12"
-    height="5"
-    color="#111827"
+
+  position="6 2.4 0"
+
+  rotation="0 -90 0"
+
+  width="12"
+
+  height="5"
+
+  color="#111827"
+
 ></a-plane>
 
 
@@ -2656,41 +2044,62 @@ document.addEventListener(
 ========================================================= -->
 
 <a-box
-    position="0 .1 -5.9"
-    width="11.8"
-    height=".1"
-    depth=".05"
-    color="#06b6d4"
-    material="
-        emissive:#06b6d4;
-        emissiveIntensity:.8
-    "
+
+  position="0 .1 -5.9"
+
+  width="11.8"
+
+  height=".1"
+
+  depth=".05"
+
+  color="#06b6d4"
+
+  material="
+    emissive:#06b6d4;
+    emissiveIntensity:.8
+  "
+
 ></a-box>
 
 
 <a-box
-    position="0 .1 5.9"
-    width="11.8"
-    height=".1"
-    depth=".05"
-    color="#06b6d4"
-    material="
-        emissive:#06b6d4;
-        emissiveIntensity:.8
-    "
+
+  position="0 .1 5.9"
+
+  width="11.8"
+
+  height=".1"
+
+  depth=".05"
+
+  color="#06b6d4"
+
+  material="
+    emissive:#06b6d4;
+    emissiveIntensity:.8
+  "
+
 ></a-box>
 
 
 <a-box
-    position="0 4.5 -5.9"
-    width="11.8"
-    height=".08"
-    depth=".05"
-    color="#0284c7"
-    material="
-        emissive:#0284c7;
-        emissiveIntensity:.8
-    "
+
+  position="0 4.5 -5.9"
+
+  width="11.8"
+
+  height=".08"
+
+  depth=".05"
+
+  color="#0284c7"
+
+  material="
+    emissive:#0284c7;
+    emissiveIntensity:.8
+  "
+
 ></a-box>
 
 
@@ -2699,32 +2108,48 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="0 2.8 -5.85"
+  position="0 2.8 -5.85"
 >
 
-    <a-box
-        width="4.4"
-        height="2.4"
-        depth=".1"
-        color="#090d16"
-    ></a-box>
+  <a-box
+
+    width="4.4"
+
+    height="2.4"
+
+    depth=".1"
+
+    color="#090d16"
+
+  ></a-box>
 
 
-    <a-plane
-        width="4.2"
-        height="2.2"
-        position="0 0 .06"
-        senai-texture-generator
-    ></a-plane>
+  <a-plane
+
+    width="4.2"
+
+    height="2.2"
+
+    position="0 0 .06"
+
+    senai-texture-generator
+
+  ></a-plane>
 
 
-    <a-light
-        type="point"
-        color="#005696"
-        intensity=".8"
-        distance="3"
-        position="0 0 .5"
-    ></a-light>
+  <a-light
+
+    type="point"
+
+    color="#005696"
+
+    intensity=".8"
+
+    distance="3"
+
+    position="0 0 .5"
+
+  ></a-light>
 
 </a-entity>
 
@@ -2734,101 +2159,161 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    id="worktable"
-    position="0 0 0"
+
+  id="worktable"
+
+  position="0 0 0"
+
 >
 
-    <a-box
-        position="0 .85 0"
-        width="2.4"
-        height=".1"
-        depth="1.4"
-        color="#1e293b"
-        material="
-            roughness:.3;
-            metalness:.7;
-        "
-    ></a-box>
+
+  <a-box
+
+    position="0 .85 0"
+
+    width="2.4"
+
+    height=".1"
+
+    depth="1.4"
+
+    color="#1e293b"
+
+    material="
+      roughness:.3;
+      metalness:.7
+    "
+
+  ></a-box>
 
 
-    <a-box
-        position="0 .86 0"
-        width="2.2"
-        height=".09"
-        depth="1.2"
-        color="#0f172a"
-    ></a-box>
+  <a-box
+
+    position="0 .86 0"
+
+    width="2.2"
+
+    height=".09"
+
+    depth="1.2"
+
+    color="#0f172a"
+
+  ></a-box>
 
 
-    <a-box
-        position="0 .87 0"
-        width="2"
-        height=".01"
-        depth=".02"
-        color="#06b6d4"
-        material="
-            emissive:#06b6d4;
-            emissiveIntensity:.9;
-        "
-    ></a-box>
+  <a-box
+
+    position="0 .87 0"
+
+    width="2"
+
+    height=".01"
+
+    depth=".02"
+
+    color="#06b6d4"
+
+    material="
+      emissive:#06b6d4;
+      emissiveIntensity:.9
+    "
+
+  ></a-box>
 
 
-    <!-- PERNAS -->
+  <!-- PERNAS -->
 
-    <a-box
-        position="-1 .4 -.5"
-        width=".12"
-        height=".8"
-        depth=".12"
-        color="#334155"
-    ></a-box>
+  <a-box
 
+    position="-1 .4 -.5"
 
-    <a-box
-        position="1 .4 -.5"
-        width=".12"
-        height=".8"
-        depth=".12"
-        color="#334155"
-    ></a-box>
+    width=".12"
+
+    height=".8"
+
+    depth=".12"
+
+    color="#334155"
+
+  ></a-box>
 
 
-    <a-box
-        position="-1 .4 .5"
-        width=".12"
-        height=".8"
-        depth=".12"
-        color="#334155"
-    ></a-box>
+  <a-box
+
+    position="1 .4 -.5"
+
+    width=".12"
+
+    height=".8"
+
+    depth=".12"
+
+    color="#334155"
+
+  ></a-box>
 
 
-    <a-box
-        position="1 .4 .5"
-        width=".12"
-        height=".8"
-        depth=".12"
-        color="#334155"
-    ></a-box>
+  <a-box
+
+    position="-1 .4 .5"
+
+    width=".12"
+
+    height=".8"
+
+    depth=".12"
+
+    color="#334155"
+
+  ></a-box>
 
 
-    <!-- IDENTIFICAÇÃO -->
+  <a-box
 
-    <a-plane
-        position="0 .86 .71"
-        width="1.2"
-        height=".2"
-        color="#005696"
-    >
+    position="1 .4 .5"
 
-        <a-text
-            value="MESA DE MANIPULACAO - NEXUS ATLAS"
-            align="center"
-            width="2"
-            color="#ffffff"
-            position="0 0 .01"
-        ></a-text>
+    width=".12"
 
-    </a-plane>
+    height=".8"
+
+    depth=".12"
+
+    color="#334155"
+
+  ></a-box>
+
+
+  <!-- IDENTIFICAÇÃO -->
+
+  <a-plane
+
+    position="0 .86 .71"
+
+    width="1.2"
+
+    height=".2"
+
+    color="#005696"
+
+  >
+
+    <a-text
+
+      value="MESA DE MANIPULAÇÃO - NEXUS ATLAS"
+
+      align="center"
+
+      width="2"
+
+      color="#ffffff"
+
+      position="0 0 .01"
+
+    ></a-text>
+
+  </a-plane>
+
 
 </a-entity>
 
@@ -2838,55 +2323,84 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="5.2 0 -2"
+
+  position="5.2 0 -2"
+
 >
 
-    <a-box
-        position="0 1.5 0"
-        width=".8"
-        height="3"
-        depth="1.6"
-        color="#0f172a"
-    ></a-box>
+  <a-box
+
+    position="0 1.5 0"
+
+    width=".8"
+
+    height="3"
+
+    depth="1.6"
+
+    color="#0f172a"
+
+  ></a-box>
 
 
-    <a-box
-        position="-.38 2.2 0"
-        width=".02"
-        height=".15"
-        depth="1.2"
-        color="#22c55e"
-        material="
-            emissive:#22c55e;
-            emissiveIntensity:1
-        "
-    ></a-box>
+  <a-box
+
+    position="-.38 2.2 0"
+
+    width=".02"
+
+    height=".15"
+
+    depth="1.2"
+
+    color="#22c55e"
+
+    material="
+      emissive:#22c55e;
+      emissiveIntensity:1
+    "
+
+  ></a-box>
 
 
-    <a-box
-        position="-.38 1.8 0"
-        width=".02"
-        height=".15"
-        depth="1.2"
-        color="#06b6d4"
-        material="
-            emissive:#06b6d4;
-            emissiveIntensity:1
-        "
-    ></a-box>
+  <a-box
+
+    position="-.38 1.8 0"
+
+    width=".02"
+
+    height=".15"
+
+    depth="1.2"
+
+    color="#06b6d4"
+
+    material="
+      emissive:#06b6d4;
+      emissiveIntensity:1
+    "
+
+  ></a-box>
 
 
-    <a-box
-        position="-.38 1.4 0"
-        width=".02"
-        height=".15"
-        depth="1.2"
-        color="#eab308"
-        material="
-            emissive:#eab308;
-            emissiveIntensity:1
-        "
-    ></a-box>
+  <a-box
+
+    position="-.38 1.4 0"
+
+    width=".02"
+
+    height=".15"
+
+    depth="1.2"
+
+    color="#eab308"
+
+    material="
+      emissive:#eab308;
+      emissiveIntensity:1
+    "
+
+  ></a-box>
 
 </a-entity>
 
@@ -2896,41 +2410,65 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="-5 0 -5"
+
+  position="-5 0 -5"
+
 >
 
-    <a-cylinder
-        position="0 .4 0"
-        radius=".35"
-        height=".8"
-        color="#1e293b"
-    ></a-cylinder>
+  <a-cylinder
+
+    position="0 .4 0"
+
+    radius=".35"
+
+    height=".8"
+
+    color="#1e293b"
+
+  ></a-cylinder>
 
 
-    <a-torus
-        position="0 .78 0"
-        radius=".35"
-        radius-tubular=".02"
-        rotation="90 0 0"
-        color="#06b6d4"
-    ></a-torus>
+  <a-torus
+
+    position="0 .78 0"
+
+    radius=".35"
+
+    radius-tubular=".02"
+
+    rotation="90 0 0"
+
+    color="#06b6d4"
+
+  ></a-torus>
 
 
-    <a-cone
-        position="0 1.1 0"
-        radius-bottom=".4"
-        height=".8"
-        color="#15803d"
-    ></a-cone>
+  <a-cone
+
+    position="0 1.1 0"
+
+    radius-bottom=".4"
+
+    height=".8"
+
+    color="#15803d"
+
+  ></a-cone>
 
 
-    <a-cone
-        position="0 1.4 0"
-        radius-bottom=".3"
-        height=".7"
-        color="#22c55e"
-        rotation="0 45 0"
-    ></a-cone>
+  <a-cone
+
+    position="0 1.4 0"
+
+    radius-bottom=".3"
+
+    height=".7"
+
+    color="#22c55e"
+
+    rotation="0 45 0"
+
+  ></a-cone>
 
 </a-entity>
 
@@ -2940,291 +2478,455 @@ document.addEventListener(
 ========================================================= -->
 
 <a-entity
-    position="5 0 -5"
+
+  position="5 0 -5"
+
 >
 
-    <a-cylinder
-        position="0 .4 0"
-        radius=".35"
-        height=".8"
-        color="#1e293b"
-    ></a-cylinder>
+  <a-cylinder
+
+    position="0 .4 0"
+
+    radius=".35"
+
+    height=".8"
+
+    color="#1e293b"
+
+  ></a-cylinder>
 
 
-    <a-torus
-        position="0 .78 0"
-        radius=".35"
-        radius-tubular=".02"
-        rotation="90 0 0"
-        color="#06b6d4"
-    ></a-torus>
+  <a-torus
+
+    position="0 .78 0"
+
+    radius=".35"
+
+    radius-tubular=".02"
+
+    rotation="90 0 0"
+
+    color="#06b6d4"
+
+  ></a-torus>
 
 
-    <a-cone
-        position="0 1.1 0"
-        radius-bottom=".4"
-        height=".8"
-        color="#15803d"
-    ></a-cone>
+  <a-cone
+
+    position="0 1.1 0"
+
+    radius-bottom=".4"
+
+    height=".8"
+
+    color="#15803d"
+
+  ></a-cone>
 
 
-    <a-cone
-        position="0 1.4 0"
-        radius-bottom=".3"
-        height=".7"
-        color="#22c55e"
-        rotation="0 30 0"
-    ></a-cone>
+  <a-cone
+
+    position="0 1.4 0"
+
+    radius-bottom=".3"
+
+    height=".7"
+
+    color="#22c55e"
+
+    rotation="0 30 0"
+
+  ></a-cone>
 
 </a-entity>
 
 
 <!-- =========================================================
-     PLACA DE CONTROLES VR
+     PLACA DE COMANDOS
 ========================================================= -->
 
 <a-entity
-    id="controlsBoard"
-    position="5.82 2.55 1.2"
-    rotation="0 -90 0"
+
+  id="controlPanel"
+
+  position="-4.5 2.25 -5.72"
+
+  rotation="0 0 0"
+
 >
 
-    <!-- FUNDO -->
 
-    <a-box
-        width="2.8"
-        height="2.9"
-        depth=".12"
-        color="#090d16"
-        material="
-            roughness:.35;
-            metalness:.65;
-        "
-    ></a-box>
+  <!-- FUNDO -->
 
+  <a-box
 
-    <!-- BORDA -->
+    width="2.8"
 
-    <a-box
-        width="2.9"
-        height="3"
-        depth=".04"
-        position="0 0 -.07"
-        color="#06b6d4"
-        material="
-            emissive:#06b6d4;
-            emissiveIntensity:.7;
-        "
-    ></a-box>
+    height="3.5"
+
+    depth=".12"
+
+    color="#090d16"
+
+    material="
+      roughness:.35;
+      metalness:.6
+    "
+
+  ></a-box>
 
 
-    <!-- PAINEL INTERNO -->
+  <!-- BORDA -->
 
-    <a-box
-        width="2.65"
-        height="2.75"
-        depth=".05"
-        position="0 0 -.11"
-        color="#0f172a"
-    ></a-box>
+  <a-box
 
+    width="2.7"
 
-    <!-- TÍTULO -->
+    height="3.4"
 
-    <a-text
-        value="NEXUS ATLAS"
-        align="center"
-        width="3.8"
-        color="#38bdf8"
-        position="0 1.12 .02"
-    ></a-text>
+    depth=".04"
+
+    position="0 0 .08"
+
+    color="#005696"
+
+  ></a-box>
 
 
-    <a-text
-        value="CONTROLES QUEST 2"
-        align="center"
-        width="3.1"
-        color="#ffffff"
-        position="0 .88 .02"
-    ></a-text>
+  <!-- PAINEL INTERNO -->
+
+  <a-plane
+
+    width="2.55"
+
+    height="3.25"
+
+    position="0 0 .11"
+
+    color="#0f172a"
+
+  ></a-plane>
 
 
-    <a-box
-        width="2.15"
-        height=".015"
-        depth=".01"
-        position="0 .69 .03"
-        color="#06b6d4"
-    ></a-box>
+  <!-- TÍTULO -->
+
+  <a-text
+
+    value="COMANDOS — NEXUS ATLAS"
+
+    position="0 1.35 .14"
+
+    align="center"
+
+    anchor="center"
+
+    width="3.3"
+
+    color="#38bdf8"
+
+  ></a-text>
 
 
-    <!-- MOVIMENTO -->
+  <!-- LINHA -->
 
-    <a-text
-        value="JOYSTICK ESQUERDO"
-        align="left"
-        width="3"
-        color="#38bdf8"
-        position="-1.05 .46 .03"
-    ></a-text>
+  <a-box
 
+    width="2.2"
 
-    <a-text
-        value="Andar / movimentar"
-        align="left"
-        width="2.7"
-        color="#e5e7eb"
-        position="-1.05 .27 .03"
-    ></a-text>
+    height=".025"
+
+    depth=".01"
+
+    position="0 1.12 .14"
+
+    color="#06b6d4"
+
+  ></a-box>
 
 
-    <!-- ROTAÇÃO -->
+  <!-- ANDAR -->
 
-    <a-text
-        value="JOYSTICK DIREITO"
-        align="left"
-        width="3"
-        color="#38bdf8"
-        position="-1.05 .05 .03"
-    ></a-text>
+  <a-text
 
+    value="🕹 ANALÓGICO ESQUERDO"
 
-    <a-text
-        value="Mover = girar"
-        align="left"
-        width="2.7"
-        color="#e5e7eb"
-        position="-1.05 -.14 .03"
-    ></a-text>
+    position="-.95 .82 .14"
+
+    align="left"
+
+    width="2.8"
+
+    color="#ffffff"
+
+  ></a-text>
 
 
-    <!-- TELEPORTE -->
+  <a-text
 
-    <a-text
-        value="CLIQUE NO DIREITO"
-        align="left"
-        width="3"
-        color="#22c55e"
-        position="-1.05 -.38 .03"
-    ></a-text>
+    value="Mover o personagem"
 
+    position="-.95 .57 .14"
 
-    <a-text
-        value="Aponte para o chão"
-        align="left"
-        width="2.7"
-        color="#e5e7eb"
-        position="-1.05 -.57 .03"
-    ></a-text>
+    align="left"
+
+    width="2.5"
+
+    color="#9ca3af"
+
+  ></a-text>
 
 
-    <a-text
-        value="Solte para teleportar"
-        align="left"
-        width="2.7"
-        color="#e5e7eb"
-        position="-1.05 -.74 .03"
-    ></a-text>
+  <!-- GIRAR -->
+
+  <a-text
+
+    value="🕹 ANALÓGICO DIREITO"
+
+    position="-.95 .30 .14"
+
+    align="left"
+
+    width="2.8"
+
+    color="#ffffff"
+
+  ></a-text>
 
 
-    <!-- PULO -->
+  <a-text
 
-    <a-text
-        value="BOTÃO X = PULAR"
-        align="left"
-        width="3"
-        color="#facc15"
-        position="-1.05 -.99 .03"
-    ></a-text>
+    value="Esquerda / direita = girar"
+
+    position="-.95 .05 .14"
+
+    align="left"
+
+    width="2.5"
+
+    color="#9ca3af"
+
+  ></a-text>
 
 
-    <!-- MÃOS -->
+  <!-- PULO -->
 
-    <a-text
-        value="MÃOS = HAND TRACKING"
-        align="left"
-        width="3"
-        color="#c084fc"
-        position="-1.05 -1.20 .03"
-    ></a-text>
+  <a-text
+
+    value="❎ BOTÃO X"
+
+    position="-.95 -.22 .14"
+
+    align="left"
+
+    width="2.8"
+
+    color="#ffffff"
+
+  ></a-text>
+
+
+  <a-text
+
+    value="Pular"
+
+    position="-.95 -.47 .14"
+
+    align="left"
+
+    width="2.5"
+
+    color="#9ca3af"
+
+  ></a-text>
+
+
+  <!-- TELEPORTE -->
+
+  <a-text
+
+    value="🎯 STICK DIREITO"
+
+    position="-.95 -.74 .14"
+
+    align="left"
+
+    width="2.8"
+
+    color="#ffffff"
+
+  ></a-text>
+
+
+  <a-text
+
+    value="Clique + aponte + solte"
+
+    position="-.95 -.99 .14"
+
+    align="left"
+
+    width="2.5"
+
+    color="#9ca3af"
+
+  ></a-text>
+
+
+  <!-- MÃOS -->
+
+  <a-text
+
+    value="🖐 MÃOS"
+
+    position="-.95 -1.27 .14"
+
+    align="left"
+
+    width="2.8"
+
+    color="#ffffff"
+
+  ></a-text>
+
+
+  <a-text
+
+    value="Rastreamento de mãos"
+
+    position="-.95 -1.52 .14"
+
+    align="left"
+
+    width="2.5"
+
+    color="#9ca3af"
+
+  ></a-text>
+
 
 </a-entity>
 
 
 <!-- =========================================================
-     PLACA DE CONTROLES DESKTOP
+     PLACA PC
 ========================================================= -->
 
 <a-entity
-    position="-3.8 2.0 -5.82"
+
+  position="3.2 1.8 -5.72"
+
 >
 
-    <a-box
-        width="2.4"
-        height="1.25"
-        depth=".08"
-        color="#090d16"
-    ></a-box>
+  <a-box
+
+    width="2.1"
+
+    height="1.6"
+
+    depth=".1"
+
+    color="#090d16"
+
+  ></a-box>
 
 
-    <a-box
-        width="2.48"
-        height="1.33"
-        depth=".025"
-        position="0 0 -.05"
-        color="#0284c7"
-        material="
-            emissive:#0284c7;
-            emissiveIntensity:.5
-        "
-    ></a-box>
+  <a-plane
+
+    width="1.9"
+
+    height="1.4"
+
+    position="0 0 .06"
+
+    color="#111827"
+
+  ></a-plane>
 
 
-    <a-text
-        value="MODO DESKTOP"
-        align="center"
-        width="3.2"
-        color="#38bdf8"
-        position="0 .40 .05"
-    ></a-text>
+  <a-text
+
+    value="CONTROLES PC"
+
+    position="0 .48 .08"
+
+    align="center"
+
+    width="2.5"
+
+    color="#38bdf8"
+
+  ></a-text>
 
 
-    <a-text
-        value="W A S D / SETAS"
-        align="center"
-        width="2.8"
-        color="#ffffff"
-        position="0 .12 .05"
-    ></a-text>
+  <a-text
+
+    value="W A S D  = ANDAR"
+
+    position="-.78 .15 .08"
+
+    align="left"
+
+    width="2"
+
+    color="#ffffff"
+
+  ></a-text>
 
 
-    <a-text
-        value="MOVIMENTAR"
-        align="center"
-        width="2.3"
-        color="#cbd5e1"
-        position="0 -.10 .05"
-    ></a-text>
+  <a-text
+
+    value="SETAS = GIRAR"
+
+    position="-.78 -.15 .08"
+
+    align="left"
+
+    width="2"
+
+    color="#ffffff"
+
+  ></a-text>
 
 
-    <a-text
-        value="ESPAÇO = PULAR"
-        align="center"
-        width="2.5"
-        color="#facc15"
-        position="0 -.34 .05"
-    ></a-text>
+  <a-text
+
+    value="ESPAÇO = PULAR"
+
+    position="-.78 -.45 .08"
+
+    align="left"
+
+    width="2"
+
+    color="#ffffff"
+
+  ></a-text>
 
 </a-entity>
 
 
 <!-- =========================================================
-     FIM DA CENA
+     NOME DA SALA
 ========================================================= -->
+
+<a-text
+
+  value="NEXUS ATLAS"
+
+  position="0 3.9 -5.8"
+
+  align="center"
+
+  width="7"
+
+  color="#38bdf8"
+
+  side="double"
+
+></a-text>
+
 
 </a-scene>
 
-
 </body>
-
 </html>
