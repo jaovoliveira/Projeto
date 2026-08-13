@@ -3,108 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizador do Braço Robótico</title>
-  
-  <!-- Carrega o componente Web <model-viewer> (trata o arquivo local de forma segura) -->
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  
+  <title>TCC - Braço Robótico 3D</title>
   <style>
-    * {
-      box-sizing: border-box;
+    body {
       margin: 0;
       padding: 0;
+      overflow: hidden;
+      background-color: #0f0f12;
+      font-family: sans-serif;
     }
-    body {
+    #canvas-container {
       width: 100vw;
       height: 100vh;
-      background-color: #121214;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
     }
-    
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      background-color: #1a1a1e;
-      --poster-color: transparent;
-    }
-
-    .info-badge {
+    #info-box {
       position: absolute;
       top: 20px;
       left: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      color: #ffffff;
-      padding: 10px 16px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 12px 20px;
       border-radius: 8px;
       font-size: 14px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       pointer-events: none;
-      z-index: 10;
     }
-
-    .controls-hint {
+    #loading {
       position: absolute;
-      bottom: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      color: #a0a0a0;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      z-index: 10;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #00d2ff;
+      font-size: 1.5rem;
+      font-weight: bold;
       pointer-events: none;
     }
   </style>
+
+  <!-- Bibliotecas Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
-  <div class="info-badge">
-    🤖 <strong>Projeto TCC:</strong> Braço Robótico 3D
-  </div>
-
-  <div class="controls-hint">
-    🖱️ Clique e arraste para girar | Scroll para zoom | Botão direito para mover
-  </div>
-
-  <!-- Componente 3D com enquadramento, iluminação e sombras automáticas -->
-  <model-viewer 
-    id="robot-viewer"
-    src="barco_robotico.glb" 
-    alt="Modelo 3D do Braço Robótico" 
-    auto-rotate 
-    camera-controls 
-    shadow-intensity="1.5"
-    shadow-softness="0.8"
-    exposure="1.0"
-    interaction-prompt="auto"
-    ar>
-  </model-viewer>
+  <div id="info-box">🤖 <strong>Projeto TCC:</strong> Braço Robótico em Laboratório</div>
+  <div id="loading">Carregando ambiente 3D...</div>
+  <div id="canvas-container"></div>
 
   <script>
-    // Correção para leitura de arquivos locais (evita travamento por CORS)
-    const viewer = document.getElementById('robot-viewer');
+    // 1. Cena, Câmera e Renderizador
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x141419);
+    scene.fog = new THREE.FogExp2(0x141419, 0.015);
 
-    // Se o navegador barrar o carregamento direto por protocolo file://,
-    // convertemos o arquivo local em um Blob automaticamente.
-    fetch('barco_robotico.glb')
-      .then(response => {
-        if (!response.ok) throw new Error('Erro na rede');
-        return response.blob();
-      })
-      .then(blob => {
-        const objectURL = URL.createObjectURL(blob);
-        viewer.src = objectURL;
-      })
-      .catch(err => {
-        console.log('Tentando modo de compatibilidade direta...');
-      });
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // 2. Controles de Órbita
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    // 3. Iluminação de Estúdio / Laboratório
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(10, 20, 10);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 2048;
+    mainLight.shadow.mapSize.height = 2048;
+    scene.add(mainLight);
+
+    const fillLight = new THREE.DirectionalLight(0x00d2ff, 0.4);
+    fillLight.position.set(-10, 10, -10);
+    scene.add(fillLight);
+
+    // 4. "Cômodo" / Chão Tecnológico
+    const floorGeometry = new THREE.PlaneGeometry(100, 100);
+    const floorMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x1a1a24, 
+      roughness: 0.4,
+      metalness: 0.2
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const gridHelper = new THREE.GridHelper(50, 50, 0x00d2ff, 0x333344);
+    gridHelper.position.y = 0.01;
+    scene.add(gridHelper);
+
+    // 5. Carregamento do Robô
+    const loader = new THREE.GLTFLoader();
+    const NOME_DO_ARQUIVO = 'barco_robotico.glb'; // Substitua por Base64 se quiser abrir via file://
+
+    loader.load(
+      NOME_DO_ARQUIVO,
+      (gltf) => {
+        const model = gltf.scene;
+        
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        scene.add(model);
+
+        // Ajuste Automático da Câmera
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        // Reposiciona o robô exatamente em cima do chão
+        model.position.y -= box.min.y;
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = camera.fov * (Math.PI / 180);
+        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.2;
+
+        camera.position.set(center.x + cameraZ * 0.6, center.y + cameraZ * 0.5, center.z + cameraZ);
+        controls.target.set(center.x, center.y + size.y / 2, center.z);
+        controls.update();
+
+        document.getElementById('loading').style.display = 'none';
+      },
+      (xhr) => {
+        if (xhr.lengthComputable) {
+          const percent = Math.round((xhr.loaded / xhr.total) * 100);
+          document.getElementById('loading').innerText = `Carregando Braço Robótico: ${percent}%`;
+        }
+      },
+      (error) => {
+        console.error('Erro ao carregar o arquivo GLB:', error);
+        document.getElementById('loading').innerHTML = '⚠️ Bloqueio de CORS do Navegador!<br><span style="font-size:12px; color:#aaa;">Abra este arquivo usando a extensão <b>Live Server</b> no VS Code.</span>';
+      }
+    );
+
+    // Redimensionamento
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animação
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
   </script>
-
 </body>
 </html>
