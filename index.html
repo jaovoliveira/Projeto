@@ -4,133 +4,107 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visualizador do Braço Robótico</title>
+  
+  <!-- Carrega o componente Web <model-viewer> (trata o arquivo local de forma segura) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      background-color: #1a1a1a;
-      font-family: sans-serif;
     }
-    #canvas-container {
+    body {
       width: 100vw;
       height: 100vh;
+      background-color: #121214;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
-    #loading {
+    
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background-color: #1a1a1e;
+      --poster-color: transparent;
+    }
+
+    .info-badge {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
       color: #ffffff;
-      font-size: 1.2rem;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .controls-hint {
+      position: absolute;
+      bottom: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      color: #a0a0a0;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 10;
       pointer-events: none;
     }
   </style>
-  <!-- Importação do Three.js e loaders via CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
-  <div id="loading">Carregando modelo 3D...</div>
-  <div id="canvas-container"></div>
+  <div class="info-badge">
+    🤖 <strong>Projeto TCC:</strong> Braço Robótico 3D
+  </div>
+
+  <div class="controls-hint">
+    🖱️ Clique e arraste para girar | Scroll para zoom | Botão direito para mover
+  </div>
+
+  <!-- Componente 3D com enquadramento, iluminação e sombras automáticas -->
+  <model-viewer 
+    id="robot-viewer"
+    src="barco_robotico.glb" 
+    alt="Modelo 3D do Braço Robótico" 
+    auto-rotate 
+    camera-controls 
+    shadow-intensity="1.5"
+    shadow-softness="0.8"
+    exposure="1.0"
+    interaction-prompt="auto"
+    ar>
+  </model-viewer>
 
   <script>
-    // 1. Configuração da Cena, Câmera e Renderizador
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1e1e24);
+    // Correção para leitura de arquivos locais (evita travamento por CORS)
+    const viewer = document.getElementById('robot-viewer');
 
-    const camera = new THREE.PerspectiveCamera(
-      45, 
-      window.innerWidth / window.innerHeight, 
-      0.1, 
-      1000
-    );
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
-
-    // 2. Controle de Câmera (OrbitControls)
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // 3. Iluminação
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambientLight);
-
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight1.position.set(10, 20, 15);
-    scene.add(dirLight1);
-
-    const dirLight2 = new THREE.DirectionalLight(0x90e0ef, 0.5);
-    dirLight2.position.set(-10, -10, -10);
-    scene.add(dirLight2);
-
-    // 4. Grade de Chão Virtual
-    const gridHelper = new THREE.GridHelper(20, 20, 0x00b4d8, 0x48cae4);
-    scene.add(gridHelper);
-
-    // 5. Carregamento do Arquivo GLB
-    const loader = new THREE.GLTFLoader();
-    
-    // NOME EXATO DO SEU ARQUIVO NA PASTA:
-    const NOME_DO_ARQUIVO = 'barco_robotico.glb'; 
-
-    loader.load(
-      NOME_DO_ARQUIVO,
-      (gltf) => {
-        const model = gltf.scene;
-        scene.add(model);
-
-        // Enquadramento automático da câmera
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-
-        gridHelper.position.y = box.min.y;
-
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.5;
-
-        camera.position.set(center.x + cameraZ * 0.5, center.y + cameraZ * 0.5, center.z + cameraZ);
-        controls.target.copy(center);
-        controls.update();
-
-        document.getElementById('loading').style.display = 'none';
-      },
-      (xhr) => {
-        if (xhr.lengthComputable) {
-          const percent = Math.round((xhr.loaded / xhr.total) * 100);
-          document.getElementById('loading').innerText = `Carregando: ${percent}%`;
-        }
-      },
-      (error) => {
-        console.error('Erro ao carregar o arquivo GLB:', error);
-        document.getElementById('loading').innerText = 'Erro ao carregar o arquivo. Verifique o console.';
-      }
-    );
-
-    // 6. Redimensionamento
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // 7. Animação
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
+    // Se o navegador barrar o carregamento direto por protocolo file://,
+    // convertemos o arquivo local em um Blob automaticamente.
+    fetch('barco_robotico.glb')
+      .then(response => {
+        if (!response.ok) throw new Error('Erro na rede');
+        return response.blob();
+      })
+      .then(blob => {
+        const objectURL = URL.createObjectURL(blob);
+        viewer.src = objectURL;
+      })
+      .catch(err => {
+        console.log('Tentando modo de compatibilidade direta...');
+      });
   </script>
+
 </body>
 </html>
