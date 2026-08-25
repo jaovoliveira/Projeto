@@ -422,6 +422,71 @@ body {
 </style>
 
 
+
+<script>
+/* =========================================================
+   SYNCHROARM - CARREGAMENTO DO MODELO 3D
+   Apenas carrega, centraliza e dimensiona o GLB.
+   A movimentação do braço será feita em uma etapa posterior.
+========================================================= */
+AFRAME.registerComponent('synchroarm-model', {
+  schema: {
+    targetHeight: { type: 'number', default: 1.15 }
+  },
+
+  init: function () {
+    const el = this.el;
+
+    el.addEventListener('model-loaded', () => {
+      const object = el.getObject3D('mesh');
+
+      if (!object) {
+        console.error('SynchroArm: objeto 3D não encontrado.');
+        return;
+      }
+
+      const box = new THREE.Box3().setFromObject(object);
+      const size = new THREE.Vector3();
+
+      box.getSize(size);
+
+      if (!size.y || !isFinite(size.y)) {
+        console.error('SynchroArm: não foi possível calcular o tamanho do modelo.');
+        return;
+      }
+
+      // Ajusta a altura do modelo para aproximadamente 1,15 m.
+      const scale = this.data.targetHeight / size.y;
+      object.scale.setScalar(scale);
+
+      // Centraliza X/Z e coloca a base do modelo sobre Y=0.
+      const scaledBox = new THREE.Box3().setFromObject(object);
+      const center = new THREE.Vector3();
+      scaledBox.getCenter(center);
+
+      object.position.x -= center.x;
+      object.position.z -= center.z;
+
+      const finalBox = new THREE.Box3().setFromObject(object);
+      object.position.y -= finalBox.min.y;
+
+      console.log('SynchroArm carregado e ajustado com sucesso.');
+    });
+
+    el.addEventListener('model-error', (event) => {
+      console.error('SynchroArm: erro ao carregar o GLB.', event);
+
+      const error = document.getElementById('error-message');
+      if (error) {
+        error.textContent =
+          'Erro ao carregar o SynchroArm. Verifique se models/dolphin_arm.glb existe.';
+        error.style.display = 'block';
+      }
+    });
+  }
+});
+</script>
+
 <script>
 
 /* =========================================================
@@ -1624,6 +1689,15 @@ document.addEventListener(
     src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg"
     crossorigin="anonymous"
   >
+  <!-- =====================================================
+       MODELO 3D DO SYNCHROARM
+       Arquivo: models/dolphin_arm.glb
+  ====================================================== -->
+  <a-asset-item
+    id="synchroarm-model"
+    src="models/dolphin_arm.glb">
+  </a-asset-item>
+
 
 </a-assets>
 
@@ -2317,6 +2391,23 @@ document.addEventListener(
 
 </a-entity>
 
+
+
+
+<!-- =========================================================
+     SYNCHROARM - BRAÇO ROBÓTICO
+
+     Nesta etapa o braço NÃO é movimentado.
+     Ele apenas aparece sobre a mesa.
+========================================================= -->
+<a-entity
+  id="synchroarm"
+  gltf-model="#synchroarm-model"
+  synchroarm-model="targetHeight:1.15"
+  position="0 0.88 0"
+  rotation="0 0 0"
+  shadow="cast:true; receive:true">
+</a-entity>
 
 <!-- =========================================================
      RACK
