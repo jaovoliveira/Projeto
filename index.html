@@ -2038,9 +2038,9 @@ document.addEventListener(
 
   castShadow="true"
 
-  shadow-mapH="1024"
+  shadow-map-height="1024"
 
-  shadow-mapW="1024"
+  shadow-map-width="1024"
 
 ></a-light>
 
@@ -2308,10 +2308,14 @@ document.addEventListener(
 
 <!-- =========================================================
      PAINEL SENAI
+     (Corrigido: estava sobreposto ao Painel de Comandos na
+     mesma parede de fundo. Foi movido para a parede lateral
+     direita, longe do rack, para não colidir com nada.)
 ========================================================= -->
 
 <a-entity
-  position="0 2.55 -5.85"
+  position="5.75 2.6 2"
+  rotation="0 -90 0"
 >
 
   <a-box
