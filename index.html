@@ -445,13 +445,38 @@ AFRAME.registerComponent('synchroarm-model', {
         return;
       }
 
+      // IMPORTANTE: THREE.Box3().setFromObject() calcula a caixa em
+      // coordenadas de MUNDO, ou seja, ela já inclui a posição da própria
+      // entidade (ex: position="0 0.88 0", a altura da mesa). Por isso,
+      // zeramos temporariamente a transformação da entidade antes de medir
+      // o modelo — assim o cálculo fica em espaço local e o braço não é
+      // deslocado para dentro da mesa. A posição original é restaurada
+      // no final.
+      const rig = el.object3D;
+      const savedPosition = rig.position.clone();
+      const savedQuaternion = rig.quaternion.clone();
+      const savedScale = rig.scale.clone();
+
+      rig.position.set(0, 0, 0);
+      rig.quaternion.set(0, 0, 0, 1);
+      rig.scale.set(1, 1, 1);
+      rig.updateMatrixWorld(true);
+
       const box = new THREE.Box3().setFromObject(object);
       const size = new THREE.Vector3();
 
       box.getSize(size);
 
+      const restoreEntityTransform = () => {
+        rig.position.copy(savedPosition);
+        rig.quaternion.copy(savedQuaternion);
+        rig.scale.copy(savedScale);
+        rig.updateMatrixWorld(true);
+      };
+
       if (!size.y || !isFinite(size.y)) {
         console.error('SynchroArm: não foi possível calcular o tamanho do modelo.');
+        restoreEntityTransform();
         return;
       }
 
@@ -459,7 +484,7 @@ AFRAME.registerComponent('synchroarm-model', {
       const scale = this.data.targetHeight / size.y;
       object.scale.setScalar(scale);
 
-      // Centraliza X/Z e coloca a base do modelo sobre Y=0.
+      // Centraliza X/Z e coloca a base do modelo sobre Y=0 (agora em espaço local correto).
       const scaledBox = new THREE.Box3().setFromObject(object);
       const center = new THREE.Vector3();
       scaledBox.getCenter(center);
@@ -476,6 +501,9 @@ AFRAME.registerComponent('synchroarm-model', {
           node.receiveShadow = true;
         }
       });
+
+      // Restaura a posição/rotação/escala originais da entidade (ex: sobre a mesa).
+      restoreEntityTransform();
 
       console.log('SynchroArm carregado e ajustado com sucesso.');
     });
