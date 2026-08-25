@@ -470,6 +470,13 @@ AFRAME.registerComponent('synchroarm-model', {
       const finalBox = new THREE.Box3().setFromObject(object);
       object.position.y -= finalBox.min.y;
 
+      object.traverse((node) => {
+        if (node.isMesh) {
+          node.castShadow = true;
+          node.receiveShadow = true;
+        }
+      });
+
       console.log('SynchroArm carregado e ajustado com sucesso.');
     });
 
@@ -1335,6 +1342,80 @@ AFRAME.registerComponent(
 
 
 /* =========================================================
+   TEXTURA DE PISO (CONCRETO INDUSTRIAL PROCEDURAL)
+========================================================= */
+
+AFRAME.registerComponent(
+  'floor-texture-generator',
+  {
+
+    init: function () {
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+
+      const ctx = canvas.getContext('2d');
+
+      /* BASE DE CONCRETO */
+      ctx.fillStyle = '#14202e';
+      ctx.fillRect(0, 0, 512, 512);
+
+      /* RUÍDO SUTIL PARA SIMULAR TEXTURA DE CONCRETO */
+      for (let i = 0; i < 4000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const shade = Math.random() * 18 - 9;
+        ctx.fillStyle = `rgba(${180 + shade},${200 + shade},${215 + shade},${Math.random() * 0.05})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      /* JUNTAS DE PLACA (ESTILO PISO INDUSTRIAL) */
+      ctx.strokeStyle = 'rgba(6,182,212,.15)';
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i <= 512; i += 128) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, 512);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(512, i);
+        ctx.stroke();
+      }
+
+      /* FAIXA DE SEGURANÇA AMARELO/PRETO NA BORDA DA ÁREA DE TRABALHO */
+      ctx.save();
+      ctx.translate(256, 256);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 6;
+      ctx.setLineDash([14, 10]);
+      ctx.strokeRect(-150, -150, 300, 300);
+      ctx.restore();
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(6, 6);
+
+      const mesh = this.el.getObject3D('mesh');
+
+      if (mesh && mesh.material) {
+        mesh.material.map = texture;
+        mesh.material.roughness = 0.55;
+        mesh.material.metalness = 0.25;
+        mesh.material.needsUpdate = true;
+      }
+
+    }
+
+  }
+);
+
+
+/* =========================================================
    ENTRAR NO VR
 ========================================================= */
 
@@ -1587,7 +1668,7 @@ document.addEventListener(
 
       Este laboratório foi desenvolvido para
       testar navegação em realidade virtual,
-      rastreamento de mãos e futuramente a
+      rastreamento de mãos e, futuramente, a
       integração entre o braço robótico virtual
       e o braço físico utilizando ESP32.
 
@@ -1660,8 +1741,21 @@ document.addEventListener(
   renderer="
     antialias:true;
     colorManagement:true;
-    exposure:1;
+    exposure:1.1;
     toneMapping:ACESFilmic;
+    physicallyCorrectLights:true;
+  "
+
+  shadow="
+    type:pcfsoft;
+    autoUpdate:true;
+  "
+
+  fog="
+    type:linear;
+    color:#0a0f1a;
+    near:9;
+    far:15;
   "
 
   vr-mode-ui="
@@ -1833,7 +1927,23 @@ document.addEventListener(
 
 <!-- =========================================================
      ILUMINAÇÃO
+     Camada 1: luz hemisférica para preencher sombras (bounce)
+     Camada 2: pontos de luz frios/quentes para volume
+     Camada 3: spot principal com sombra projetada sobre a mesa
 ========================================================= -->
+
+<a-light
+
+  type="hemisphere"
+
+  color="#e8f4ff"
+
+  ground-color="#0b1220"
+
+  intensity="0.55"
+
+></a-light>
+
 
 <a-light
 
@@ -1841,7 +1951,7 @@ document.addEventListener(
 
   color="#0f172a"
 
-  intensity="1.2"
+  intensity="0.35"
 
 ></a-light>
 
@@ -1854,11 +1964,11 @@ document.addEventListener(
 
   color="#e0f2fe"
 
-  intensity="1.8"
+  intensity="1.4"
 
   distance="12"
 
-  decay="1.5"
+  decay="1.7"
 
 ></a-light>
 
@@ -1871,11 +1981,11 @@ document.addEventListener(
 
   color="#38bdf8"
 
-  intensity="1.5"
+  intensity="1.1"
 
   distance="12"
 
-  decay="1.5"
+  decay="1.7"
 
 ></a-light>
 
@@ -1890,11 +2000,32 @@ document.addEventListener(
 
   color="#ffffff"
 
-  intensity="2"
+  intensity="2.6"
 
   angle="45"
 
-  penumbra=".5"
+  penumbra=".6"
+
+  castShadow="true"
+
+  shadow-mapH="1024"
+
+  shadow-mapW="1024"
+
+></a-light>
+
+
+<!-- LUZ DE PREENCHIMENTO SUAVE, TIPO "SOFTBOX", VINDA DA CÂMERA -->
+
+<a-light
+
+  type="directional"
+
+  position="2 3 4"
+
+  color="#bcd9ff"
+
+  intensity="0.4"
 
 ></a-light>
 
@@ -1915,12 +2046,11 @@ document.addEventListener(
 
   height="12"
 
-  color="#111827"
+  color="#c7d2e0"
 
-  material="
-    roughness:.3;
-    metalness:.5
-  "
+  floor-texture-generator
+
+  shadow="receive:true"
 
 ></a-plane>
 
@@ -1960,92 +2090,41 @@ document.addEventListener(
 
   color="#0f172a"
 
-  side="double"
+  material="
+    roughness:.85;
+    metalness:.1;
+    side:double
+  "
 
 ></a-plane>
 
 
-<!-- =========================================================
-     LUMINÁRIA 1
-========================================================= -->
+<!-- DUTO DE VENTILAÇÃO (DETALHE DE REALISMO NO TETO) -->
 
-<a-entity
-  position="0 4.75 1.5"
->
+<a-entity position="-2 4.55 0" rotation="0 0 0">
 
   <a-box
+    width="1.6"
+    height=".22"
+    depth=".22"
+    color="#334155"
+    material="roughness:.4;metalness:.75"
+  ></a-box>
 
-    width="3"
-
-    height=".1"
-
-    depth=".6"
-
+  <a-box
+    width=".2"
+    height=".22"
+    depth=".22"
+    position="-.9 0 0"
     color="#1e293b"
-
   ></a-box>
 
-
   <a-box
-
-    width="2.8"
-
-    height=".05"
-
-    depth=".4"
-
-    position="0 -.03 0"
-
-    color="#ffffff"
-
-    material="
-      emissive:#e0f2fe;
-      emissiveIntensity:1
-    "
-
-  ></a-box>
-
-</a-entity>
-
-
-<!-- =========================================================
-     LUMINÁRIA 2
-========================================================= -->
-
-<a-entity
-  position="0 4.75 -2.5"
->
-
-  <a-box
-
-    width="3"
-
-    height=".1"
-
-    depth=".6"
-
+    width=".2"
+    height=".22"
+    depth=".22"
+    position=".9 0 0"
     color="#1e293b"
-
-  ></a-box>
-
-
-  <a-box
-
-    width="2.8"
-
-    height=".05"
-
-    depth=".4"
-
-    position="0 -.03 0"
-
-    color="#ffffff"
-
-    material="
-      emissive:#38bdf8;
-      emissiveIntensity:.9
-    "
-
   ></a-box>
 
 </a-entity>
@@ -2063,7 +2142,11 @@ document.addEventListener(
 
   height="5"
 
-  color="#1f2937"
+  color="#232f3f"
+
+  material="roughness:.75;metalness:.15"
+
+  shadow="receive:true"
 
 ></a-plane>
 
@@ -2078,7 +2161,9 @@ document.addEventListener(
 
   height="5"
 
-  color="#1f2937"
+  color="#232f3f"
+
+  material="roughness:.75;metalness:.15"
 
 ></a-plane>
 
@@ -2093,7 +2178,11 @@ document.addEventListener(
 
   height="5"
 
-  color="#111827"
+  color="#161f2b"
+
+  material="roughness:.75;metalness:.15"
+
+  shadow="receive:true"
 
 ></a-plane>
 
@@ -2108,9 +2197,19 @@ document.addEventListener(
 
   height="5"
 
-  color="#111827"
+  color="#161f2b"
+
+  material="roughness:.75;metalness:.15"
 
 ></a-plane>
+
+
+<!-- RODAPÉ NAS PAREDES (DETALHE DE ACABAMENTO) -->
+
+<a-box position="0 .15 -5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+<a-box position="0 .15 5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+<a-box position="-5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+<a-box position="5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
 
 
 <!-- =========================================================
@@ -2258,6 +2357,8 @@ document.addEventListener(
       metalness:.7
     "
 
+    shadow="cast:true;receive:true"
+
   ></a-box>
 
 
@@ -2272,6 +2373,8 @@ document.addEventListener(
     depth="1.2"
 
     color="#0f172a"
+
+    shadow="receive:true"
 
   ></a-box>
 
@@ -2310,6 +2413,8 @@ document.addEventListener(
 
     color="#334155"
 
+    shadow="cast:true"
+
   ></a-box>
 
 
@@ -2324,6 +2429,8 @@ document.addEventListener(
     depth=".12"
 
     color="#334155"
+
+    shadow="cast:true"
 
   ></a-box>
 
@@ -2340,6 +2447,8 @@ document.addEventListener(
 
     color="#334155"
 
+    shadow="cast:true"
+
   ></a-box>
 
 
@@ -2354,6 +2463,8 @@ document.addEventListener(
     depth=".12"
 
     color="#334155"
+
+    shadow="cast:true"
 
   ></a-box>
 
@@ -2392,6 +2503,25 @@ document.addEventListener(
 </a-entity>
 
 
+<!-- TAPETE ANTIDERRAPANTE SOB A MESA (REFORÇA REALISMO E ESCALA) -->
+
+<a-plane
+
+  position="0 .012 0"
+
+  rotation="-90 0 0"
+
+  width="3.2"
+
+  height="2.2"
+
+  color="#1a2432"
+
+  material="roughness:.9;metalness:.05;opacity:.9"
+
+  shadow="receive:true"
+
+></a-plane>
 
 
 <!-- =========================================================
@@ -2408,6 +2538,35 @@ document.addEventListener(
   rotation="0 0 0"
   shadow="cast:true; receive:true">
 </a-entity>
+
+
+<!-- =========================================================
+     PLACA DE SEGURANÇA JUNTO AO BRAÇO ROBÓTICO
+========================================================= -->
+
+<a-entity position="1.4 1.1 .6" rotation="0 -35 0">
+
+  <a-box width=".5" height=".5" depth=".02" color="#eab308"></a-box>
+
+  <a-text
+    value="⚠"
+    position="0 .08 .012"
+    align="center"
+    width="1.4"
+    color="#111827"
+  ></a-text>
+
+  <a-text
+    value="ÁREA DE TESTE
+MANTENHA DISTÂNCIA"
+    position="0 -.15 .012"
+    align="center"
+    width="1"
+    color="#111827"
+  ></a-text>
+
+</a-entity>
+
 
 <!-- =========================================================
      RACK
@@ -2430,6 +2589,10 @@ document.addEventListener(
     depth="1.6"
 
     color="#0f172a"
+
+    material="roughness:.4;metalness:.6"
+
+    shadow="cast:true;receive:true"
 
   ></a-box>
 
@@ -2493,6 +2656,25 @@ document.addEventListener(
 
   ></a-box>
 
+
+  <!-- CABOS SAINDO DO RACK ATÉ O CHÃO (DETALHE DE REALISMO) -->
+
+  <a-cylinder
+    position="-.3 .3 .6"
+    rotation="0 0 12"
+    radius=".025"
+    height=".8"
+    color="#111827"
+  ></a-cylinder>
+
+  <a-cylinder
+    position="-.2 .3 .5"
+    rotation="0 0 -8"
+    radius=".025"
+    height=".8"
+    color="#1e293b"
+  ></a-cylinder>
+
 </a-entity>
 
 
@@ -2515,6 +2697,10 @@ document.addEventListener(
     height=".8"
 
     color="#1e293b"
+
+    material="roughness:.5;metalness:.3"
+
+    shadow="cast:true;receive:true"
 
   ></a-cylinder>
 
@@ -2544,6 +2730,8 @@ document.addEventListener(
 
     color="#15803d"
 
+    shadow="cast:true"
+
   ></a-cone>
 
 
@@ -2558,6 +2746,8 @@ document.addEventListener(
     color="#22c55e"
 
     rotation="0 45 0"
+
+    shadow="cast:true"
 
   ></a-cone>
 
@@ -2584,6 +2774,10 @@ document.addEventListener(
 
     color="#1e293b"
 
+    material="roughness:.5;metalness:.3"
+
+    shadow="cast:true;receive:true"
+
   ></a-cylinder>
 
 
@@ -2612,6 +2806,8 @@ document.addEventListener(
 
     color="#15803d"
 
+    shadow="cast:true"
+
   ></a-cone>
 
 
@@ -2627,7 +2823,76 @@ document.addEventListener(
 
     rotation="0 30 0"
 
+    shadow="cast:true"
+
   ></a-cone>
+
+</a-entity>
+
+
+<!-- =========================================================
+     CARRINHO DE FERRAMENTAS (NOVO — REFORÇA O CLIMA DE OFICINA)
+========================================================= -->
+
+<a-entity position="3.6 0 1.8" rotation="0 20 0">
+
+  <a-box
+    position="0 .55 0"
+    width=".7"
+    height=".08"
+    depth=".45"
+    color="#b91c1c"
+    material="roughness:.35;metalness:.6"
+    shadow="cast:true;receive:true"
+  ></a-box>
+
+  <a-box
+    position="0 .3 0"
+    width=".68"
+    height=".42"
+    depth=".43"
+    color="#991b1b"
+    material="roughness:.4;metalness:.55"
+  ></a-box>
+
+  <a-box
+    position="0 .38 .22"
+    width=".5"
+    height=".08"
+    depth=".02"
+    color="#1f2937"
+  ></a-box>
+
+  <a-box
+    position="0 .2 .22"
+    width=".5"
+    height=".08"
+    depth=".02"
+    color="#1f2937"
+  ></a-box>
+
+  <!-- RODÍZIOS -->
+  <a-cylinder position="-.3 .08 -.18" radius=".07" height=".05" color="#111827"></a-cylinder>
+  <a-cylinder position=".3 .08 -.18" radius=".07" height=".05" color="#111827"></a-cylinder>
+  <a-cylinder position="-.3 .08 .18" radius=".07" height=".05" color="#111827"></a-cylinder>
+  <a-cylinder position=".3 .08 .18" radius=".07" height=".05" color="#111827"></a-cylinder>
+
+  <!-- FERRAMENTAS SOBRE O CARRINHO -->
+  <a-cylinder
+    position="-.15 .61 0"
+    rotation="0 0 90"
+    radius=".012"
+    height=".22"
+    color="#facc15"
+  ></a-cylinder>
+
+  <a-box
+    position=".12 .6 -.05"
+    width=".16"
+    height=".02"
+    depth=".05"
+    color="#38bdf8"
+  ></a-box>
 
 </a-entity>
 
