@@ -2679,158 +2679,6 @@ MANTENHA DISTANCIA"
 
 
 <!-- =========================================================
-     PLANTA ESQUERDA
-========================================================= -->
-
-<a-entity
-
-  position="-5 0 -5"
-
->
-
-  <a-cylinder
-
-    position="0 .4 0"
-
-    radius=".35"
-
-    height=".8"
-
-    color="#1e293b"
-
-    material="roughness:.5;metalness:.3"
-
-    shadow="cast:true;receive:true"
-
-  ></a-cylinder>
-
-
-  <a-torus
-
-    position="0 .78 0"
-
-    radius=".35"
-
-    radius-tubular=".02"
-
-    rotation="90 0 0"
-
-    color="#06b6d4"
-
-  ></a-torus>
-
-
-  <a-cone
-
-    position="0 1.1 0"
-
-    radius-bottom=".4"
-
-    height=".8"
-
-    color="#15803d"
-
-    shadow="cast:true"
-
-  ></a-cone>
-
-
-  <a-cone
-
-    position="0 1.4 0"
-
-    radius-bottom=".3"
-
-    height=".7"
-
-    color="#22c55e"
-
-    rotation="0 45 0"
-
-    shadow="cast:true"
-
-  ></a-cone>
-
-</a-entity>
-
-
-<!-- =========================================================
-     PLANTA DIREITA
-========================================================= -->
-
-<a-entity
-
-  position="5 0 -5"
-
->
-
-  <a-cylinder
-
-    position="0 .4 0"
-
-    radius=".35"
-
-    height=".8"
-
-    color="#1e293b"
-
-    material="roughness:.5;metalness:.3"
-
-    shadow="cast:true;receive:true"
-
-  ></a-cylinder>
-
-
-  <a-torus
-
-    position="0 .78 0"
-
-    radius=".35"
-
-    radius-tubular=".02"
-
-    rotation="90 0 0"
-
-    color="#06b6d4"
-
-  ></a-torus>
-
-
-  <a-cone
-
-    position="0 1.1 0"
-
-    radius-bottom=".4"
-
-    height=".8"
-
-    color="#15803d"
-
-    shadow="cast:true"
-
-  ></a-cone>
-
-
-  <a-cone
-
-    position="0 1.4 0"
-
-    radius-bottom=".3"
-
-    height=".7"
-
-    color="#22c55e"
-
-    rotation="0 30 0"
-
-    shadow="cast:true"
-
-  ></a-cone>
-
-</a-entity>
-
-
-<!-- =========================================================
      CARRINHO DE FERRAMENTAS (NOVO — REFORÇA O CLIMA DE OFICINA)
 ========================================================= -->
 
@@ -2898,367 +2746,262 @@ MANTENHA DISTANCIA"
 
 
 <!-- =========================================================
-     PLACA DE COMANDOS
+     PAINEL DE COMANDOS UNIFICADO
+     Um único painel, organizado em duas colunas:
+     esquerda = controles VR, direita = controles PC
 ========================================================= -->
 
 <a-entity
 
   id="controlPanel"
 
-  position="-4.5 2.25 -5.72"
+  position="-3.2 2.35 -5.7"
 
   rotation="0 0 0"
 
 >
 
 
-  <!-- FUNDO -->
+  <!-- MOLDURA EXTERNA -->
 
   <a-box
 
-    width="2.8"
+    width="5.6"
 
-    height="3.5"
+    height="3.1"
 
-    depth=".12"
+    depth=".1"
 
-    color="#090d16"
+    color="#060a12"
 
-    material="
-      roughness:.35;
-      metalness:.6
-    "
+    material="roughness:.4;metalness:.55"
 
   ></a-box>
 
 
-  <!-- BORDA -->
+  <!-- FILETE AZUL -->
 
   <a-box
 
-    width="2.7"
+    width="5.48"
 
-    height="3.4"
+    height="2.98"
 
-    depth=".04"
+    depth=".035"
 
-    position="0 0 .08"
+    position="0 0 .06"
 
-    color="#005696"
+    color="#0284c7"
 
   ></a-box>
 
 
-  <!-- PAINEL INTERNO -->
+  <!-- FUNDO INTERNO -->
 
   <a-plane
 
-    width="2.55"
+    width="5.36"
 
-    height="3.25"
+    height="2.86"
 
-    position="0 0 .11"
+    position="0 0 .09"
 
-    color="#0f172a"
+    color="#0b1220"
+
+    material="roughness:.6;metalness:.1"
 
   ></a-plane>
 
 
-  <!-- TÍTULO -->
+  <!-- CABEÇALHO -->
+
+  <a-plane
+
+    width="5.36"
+
+    height=".42"
+
+    position="0 1.22 .095"
+
+    color="#0f3f66"
+
+  ></a-plane>
 
   <a-text
 
-    value="COMANDOS - NEXUS ATLAS"
+    value="PAINEL DE COMANDOS"
 
-    position="0 1.35 .14"
+    position="0 1.22 .11"
 
     align="center"
 
     anchor="center"
 
-    width="3.3"
+    baseline="center"
+
+    width="4"
+
+    color="#e0f2fe"
+
+  ></a-text>
+
+  <a-text
+
+    value="NEXUS ATLAS"
+
+    position="0 .98 .11"
+
+    align="center"
+
+    anchor="center"
+
+    baseline="center"
+
+    width="2.4"
 
     color="#38bdf8"
 
   ></a-text>
 
 
-  <!-- LINHA -->
+  <!-- LINHA DIVISÓRIA VERTICAL ENTRE AS DUAS COLUNAS -->
 
   <a-box
 
-    width="2.2"
+    width=".012"
 
-    height=".025"
+    height="2.05"
 
     depth=".01"
 
-    position="0 1.12 .14"
+    position="0 -.06 .1"
 
-    color="#06b6d4"
+    color="#1e3a5f"
 
   ></a-box>
 
 
-  <!-- ANDAR -->
+  <!-- ===================================================
+       COLUNA ESQUERDA — CONTROLES VR
+  =================================================== -->
 
   <a-text
 
-    value="ANALOGICO ESQUERDO"
+    value="CONTROLES VR"
 
-    position="-.95 .82 .14"
-
-    align="left"
-
-    width="2.8"
-
-    color="#ffffff"
-
-  ></a-text>
-
-
-  <a-text
-
-    value="Mover o personagem"
-
-    position="-.95 .57 .14"
+    position="-2.55 .78 .11"
 
     align="left"
 
-    width="2.5"
+    width="2.6"
 
-    color="#9ca3af"
-
-  ></a-text>
-
-
-  <!-- GIRAR -->
-
-  <a-text
-
-    value="ANALOGICO DIREITO"
-
-    position="-.95 .30 .14"
-
-    align="left"
-
-    width="2.8"
-
-    color="#ffffff"
+    color="#22d3ee"
 
   ></a-text>
 
+  <a-box width="1.3" height=".012" depth=".01" position="-1.9 .68 .1" color="#164e63"></a-box>
 
-  <a-text
 
-    value="Esquerda / direita = girar"
+  <!-- LINHA: ANALOGICO ESQUERDO -->
 
-    position="-.95 .05 .14"
+  <a-box width=".26" height=".26" depth=".02" position="-2.5 .42 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
+  <a-circle radius=".07" position="-2.5 .42 .112" color="#67e8f9"></a-circle>
+  <a-text value="ANALOGICO ESQUERDO" position="-2.28 .47 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Mover o personagem" position="-2.28 .30 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-    align="left"
 
-    width="2.5"
+  <!-- LINHA: ANALOGICO DIREITO -->
 
-    color="#9ca3af"
+  <a-box width=".26" height=".26" depth=".02" position="-2.5 .04 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
+  <a-circle radius=".07" position="-2.5 .04 .112" color="#67e8f9"></a-circle>
+  <a-text value="ANALOGICO DIREITO" position="-2.28 .09 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Girar a visao / o corpo" position="-2.28 -.08 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-  ></a-text>
 
+  <!-- LINHA: BOTAO X -->
 
-  <!-- PULO -->
+  <a-box width=".26" height=".26" depth=".02" position="-2.5 -.34 .1" color="#1d4ed8" material="roughness:.4;metalness:.3"></a-box>
+  <a-text value="X" position="-2.5 -.34 .112" align="center" baseline="center" width="1.4" color="#dbeafe"></a-text>
+  <a-text value="BOTAO X" position="-2.28 -.29 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Pular" position="-2.28 -.46 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-  <a-text
 
-    value="BOTAO X"
+  <!-- LINHA: CLIQUE STICK DIREITO -->
 
-    position="-.95 -.22 .14"
+  <a-box width=".26" height=".26" depth=".02" position="-2.5 -.72 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
+  <a-circle radius=".05" position="-2.5 -.72 .112" color="#67e8f9"></a-circle>
+  <a-text value="CLIQUE STICK DIREITO" position="-2.28 -.67 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Aponte e solte p/ teleportar" position="-2.28 -.84 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-    align="left"
 
-    width="2.8"
+  <!-- LINHA: MAOS -->
 
-    color="#ffffff"
+  <a-box width=".26" height=".26" depth=".02" position="-2.5 -1.1 .1" color="#15803d" material="roughness:.4;metalness:.3"></a-box>
+  <a-text value="MAOS" position="-2.28 -1.05 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Rastreamento de maos" position="-2.28 -1.22 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-  ></a-text>
 
-
-  <a-text
-
-    value="Pular"
-
-    position="-.95 -.47 .14"
-
-    align="left"
-
-    width="2.5"
-
-    color="#9ca3af"
-
-  ></a-text>
-
-
-  <!-- TELEPORTE -->
-
-  <a-text
-
-    value="STICK DIREITO"
-
-    position="-.95 -.74 .14"
-
-    align="left"
-
-    width="2.8"
-
-    color="#ffffff"
-
-  ></a-text>
-
-
-  <a-text
-
-    value="Clique + aponte + solte"
-
-    position="-.95 -.99 .14"
-
-    align="left"
-
-    width="2.5"
-
-    color="#9ca3af"
-
-  ></a-text>
-
-
-  <!-- MÃOS -->
-
-  <a-text
-
-    value="MAOS"
-
-    position="-.95 -1.27 .14"
-
-    align="left"
-
-    width="2.8"
-
-    color="#ffffff"
-
-  ></a-text>
-
-
-  <a-text
-
-    value="Rastreamento de maos"
-
-    position="-.95 -1.52 .14"
-
-    align="left"
-
-    width="2.5"
-
-    color="#9ca3af"
-
-  ></a-text>
-
-
-</a-entity>
-
-
-<!-- =========================================================
-     PLACA PC
-========================================================= -->
-
-<a-entity
-
-  position="3.2 1.8 -5.72"
-
->
-
-  <a-box
-
-    width="2.1"
-
-    height="1.6"
-
-    depth=".1"
-
-    color="#090d16"
-
-  ></a-box>
-
-
-  <a-plane
-
-    width="1.9"
-
-    height="1.4"
-
-    position="0 0 .06"
-
-    color="#111827"
-
-  ></a-plane>
-
+  <!-- ===================================================
+       COLUNA DIREITA — CONTROLES PC
+  =================================================== -->
 
   <a-text
 
     value="CONTROLES PC"
 
-    position="0 .48 .08"
+    position=".25 .78 .11"
 
+    align="left"
+
+    width="2.6"
+
+    color="#facc15"
+
+  ></a-text>
+
+  <a-box width="1.3" height=".012" depth=".01" position=".9 .68 .1" color="#78350f"></a-box>
+
+
+  <!-- LINHA: WASD -->
+
+  <a-box width=".26" height=".26" depth=".02" position=".3 .42 .1" color="#a16207" material="roughness:.4;metalness:.3"></a-box>
+  <a-text value="WASD" position=".3 .42 .112" align="center" baseline="center" width="1.1" color="#fef9c3"></a-text>
+  <a-text value="W A S D" position=".52 .47 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Andar" position=".52 .30 .11" align="left" width="2.2" color="#94a3b8"></a-text>
+
+
+  <!-- LINHA: SETAS -->
+
+  <a-box width=".26" height=".26" depth=".02" position=".3 .04 .1" color="#a16207" material="roughness:.4;metalness:.3"></a-box>
+  <a-text value="SETAS" position=".3 .04 .112" align="center" baseline="center" width="1" color="#fef9c3"></a-text>
+  <a-text value="SETAS DIRECIONAIS" position=".52 .09 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Cima/baixo = andar, esq/dir = girar" position=".52 -.08 .11" align="left" width="2.2" color="#94a3b8"></a-text>
+
+
+  <!-- LINHA: ESPACO -->
+
+  <a-box width=".26" height=".26" depth=".02" position=".3 -.34 .1" color="#1d4ed8" material="roughness:.4;metalness:.3"></a-box>
+  <a-text value="SPC" position=".3 -.34 .112" align="center" baseline="center" width="1.1" color="#dbeafe"></a-text>
+  <a-text value="ESPACO" position=".52 -.29 .11" align="left" width="2.4" color="#ffffff"></a-text>
+  <a-text value="Pular" position=".52 -.46 .11" align="left" width="2.2" color="#94a3b8"></a-text>
+
+
+  <!-- RODAPÉ -->
+
+  <a-box width="5.36" height=".26" depth=".005" position="0 -1.32 .095" color="#0f3f66"></a-box>
+
+  <a-text
+    value="SENAI SAO CARLOS - MECATRONICA"
+    position="0 -1.32 .11"
     align="center"
-
-    width="2.5"
-
-    color="#38bdf8"
-
+    baseline="center"
+    width="4.6"
+    color="#e0f2fe"
   ></a-text>
 
-
-  <a-text
-
-    value="W A S D  = ANDAR"
-
-    position="-.78 .15 .08"
-
-    align="left"
-
-    width="2"
-
-    color="#ffffff"
-
-  ></a-text>
-
-
-  <a-text
-
-    value="SETAS = GIRAR"
-
-    position="-.78 -.15 .08"
-
-    align="left"
-
-    width="2"
-
-    color="#ffffff"
-
-  ></a-text>
-
-
-  <a-text
-
-    value="ESPACO = PULAR"
-
-    position="-.78 -.45 .08"
-
-    align="left"
-
-    width="2"
-
-    color="#ffffff"
-
-  ></a-text>
 
 </a-entity>
+
 
 
 <!-- =========================================================
