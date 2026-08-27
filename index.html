@@ -3,457 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NEXUS ATLAS - Laboratório VR</title>
 
-<!-- =========================================================
-     A-FRAME
-========================================================= -->
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="[aframe.io](https://aframe.io/releases/1.5.0/aframe.min.js)"></script>
+<script src="[unpkg.com](https://unpkg.com/aframe-blink-controls@0.4.3/dist/aframe-blink-controls.min.js)"></script>
 
-<!-- =========================================================
-     BLINK CONTROLS - TELEPORTE
-========================================================= -->
-<script src="https://unpkg.com/aframe-blink-controls@0.4.3/dist/aframe-blink-controls.min.js"></script>
-
-<!-- =========================================================
-     FONTE
-========================================================= -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-  rel="stylesheet"
->
+<link rel="preconnect" href="[fonts.googleapis.com](https://fonts.googleapis.com)">
+<link rel="preconnect" href="[fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap)" rel="stylesheet">
 
 <style>
-
-/* =========================================================
-   RESET
-========================================================= */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  user-select: none;
-}
-
-html,
-body {
-
-  width: 100%;
-  height: 100%;
-
-  overflow: hidden;
-
-  font-family: 'Titillium Web', sans-serif;
-
-  background: #030712;
-
-  color: #f3f4f6;
-}
-
-
-/* =========================================================
-   TELA DE INTRODUÇÃO
-========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Titillium Web', sans-serif; background: #030712; color: #f3f4f6; }
 
 #intro-screen {
-
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 9999;
-
-  background:
-    radial-gradient(
-      circle at center,
-      rgba(15,23,42,.95) 0%,
-      rgba(3,7,18,.99) 100%
-    );
-
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: center;
-
-  align-items: center;
-
-  padding: 20px;
-
-  backdrop-filter: blur(10px);
-
-  transition:
-    opacity .8s ease,
-    visibility .8s ease;
+  position: absolute; inset: 0; z-index: 9999;
+  background: radial-gradient(circle at center, rgba(15,23,42,.95) 0%, rgba(3,7,18,.99) 100%);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 20px; backdrop-filter: blur(10px);
+  transition: opacity .8s ease, visibility .8s ease;
 }
-
 
 .intro-card {
-
   background: rgba(17,24,39,.94);
-
-  border:
-    1px solid
-    rgba(6,182,212,.3);
-
-  border-radius: 16px;
-
-  padding: 40px;
-
-  max-width: 700px;
-
-  width: 100%;
-
-  text-align: center;
-
-  box-shadow:
-    0 20px 50px rgba(0,0,0,.8),
-    0 0 30px rgba(6,182,212,.15);
-
-  position: relative;
-
-  overflow: hidden;
+  border: 1px solid rgba(6,182,212,.3);
+  border-radius: 16px; padding: 40px; max-width: 700px; width: 100%; text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,.8), 0 0 30px rgba(6,182,212,.15);
+  position: relative; overflow: hidden;
 }
-
 
 .intro-card::before {
-
-  content: '';
-
-  position: absolute;
-
-  top: 0;
-  left: 0;
-
-  width: 100%;
-  height: 4px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #005696,
-      #06b6d4,
-      #005696
-    );
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+  background: linear-gradient(90deg, #005696, #06b6d4, #005696);
 }
-
 
 .badge-senai {
-
-  display: inline-block;
-
-  background: #005696;
-
-  color: white;
-
-  padding: 4px 14px;
-
-  border-radius: 20px;
-
-  font-size: .85rem;
-
-  font-weight: 700;
-
-  letter-spacing: 2px;
-
-  margin-bottom: 15px;
-
-  text-transform: uppercase;
-
-  box-shadow:
-    0 0 10px
-    rgba(0,86,150,.5);
+  display: inline-block; background: #005696; color: white; padding: 4px 14px;
+  border-radius: 20px; font-size: .85rem; font-weight: 700; letter-spacing: 2px;
+  margin-bottom: 15px; text-transform: uppercase; box-shadow: 0 0 10px rgba(0,86,150,.5);
 }
 
-
 .intro-card h1 {
-
-  font-size: 3.2rem;
-
-  font-weight: 700;
-
-  letter-spacing: 4px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #06b6d4
-    );
-
-  -webkit-background-clip: text;
-
-  background-clip: text;
-
-  -webkit-text-fill-color: transparent;
-
+  font-size: 3.2rem; font-weight: 700; letter-spacing: 4px;
+  background: linear-gradient(135deg, #ffffff, #06b6d4);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   margin-bottom: 5px;
 }
 
-
-.intro-card h2 {
-
-  font-size: 1.2rem;
-
-  color: #9ca3af;
-
-  font-weight: 400;
-
-  letter-spacing: 3px;
-
-  margin-bottom: 25px;
-}
-
-
-.intro-card p {
-
-  font-size: 1.05rem;
-
-  line-height: 1.6;
-
-  color: #d1d5db;
-
-  margin-bottom: 30px;
-
-  text-align: justify;
-
-  text-align-last: center;
-}
-
+.intro-card h2 { font-size: 1.2rem; color: #9ca3af; font-weight: 400; letter-spacing: 3px; margin-bottom: 25px; }
+.intro-card p { font-size: 1.05rem; line-height: 1.6; color: #d1d5db; margin-bottom: 30px; text-align: justify; text-align-last: center; }
 
 .btn-enter-vr {
-
-  background:
-    linear-gradient(
-      135deg,
-      #005696,
-      #0284c7
-    );
-
-  color: white;
-
-  border:
-    1px solid
-    #38bdf8;
-
-  padding: 18px 36px;
-
-  font-size: 1.3rem;
-
-  font-weight: 700;
-
-  font-family:
-    'Titillium Web',
-    sans-serif;
-
-  border-radius: 50px;
-
-  cursor: pointer;
-
-  text-transform: uppercase;
-
-  letter-spacing: 2px;
-
-  transition: .3s;
-
-  box-shadow:
-    0 0 20px
-    rgba(2,132,199,.4);
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 12px;
+  background: linear-gradient(135deg, #005696, #0284c7); color: white; border: 1px solid #38bdf8;
+  padding: 18px 36px; font-size: 1.3rem; font-weight: 700; font-family: 'Titillium Web', sans-serif;
+  border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: .3s;
+  box-shadow: 0 0 20px rgba(2,132,199,.4); display: inline-flex; align-items: center; gap: 12px;
 }
-
-
-.btn-enter-vr:hover {
-
-  transform:
-    translateY(-3px)
-    scale(1.02);
-
-  box-shadow:
-    0 0 35px
-    rgba(6,182,212,.7);
-}
-
+.btn-enter-vr:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 35px rgba(6,182,212,.7); }
 
 .controls-guide {
-
-  margin-top: 30px;
-
-  padding-top: 20px;
-
-  border-top:
-    1px solid
-    rgba(255,255,255,.1);
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  justify-content: space-around;
-
-  gap: 12px;
-
-  font-size: .85rem;
-
-  color: #9ca3af;
+  margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.1);
+  display: flex; flex-wrap: wrap; justify-content: space-around; gap: 12px; font-size: .85rem; color: #9ca3af;
 }
+.controls-guide strong { color: #38bdf8; display: block; margin-bottom: 4px; }
 
-
-.controls-guide strong {
-
-  color: #38bdf8;
-
-  display: block;
-
-  margin-bottom: 4px;
-}
-
-
-.fade-out {
-
-  opacity: 0;
-
-  visibility: hidden;
-
-  pointer-events: none;
-}
-
-
-/* =========================================================
-   STATUS VR
-========================================================= */
+.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
 
 #vr-status {
-
-  position: absolute;
-
-  top: 20px;
-
-  left: 50%;
-
-  transform:
-    translateX(-50%);
-
-  z-index: 1000;
-
-  background:
-    rgba(3,7,18,.85);
-
-  border:
-    1px solid
-    rgba(56,189,248,.4);
-
-  padding: 8px 18px;
-
-  border-radius: 30px;
-
-  font-size: 14px;
-
-  letter-spacing: 1px;
-
-  color: #38bdf8;
-
-  pointer-events: none;
-
-  opacity: 0;
-
-  transition: .4s;
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;
+  background: rgba(3,7,18,.85); border: 1px solid rgba(56,189,248,.4);
+  padding: 8px 18px; border-radius: 30px; font-size: 14px; letter-spacing: 1px; color: #38bdf8;
+  pointer-events: none; opacity: 0; transition: .4s;
 }
-
-
-/* =========================================================
-   MENSAGEM DE ERRO
-========================================================= */
 
 #error-message {
-
-  position: absolute;
-
-  left: 50%;
-
-  bottom: 25px;
-
-  transform:
-    translateX(-50%);
-
-  z-index: 10000;
-
-  display: none;
-
-  background:
-    rgba(127,29,29,.95);
-
-  border:
-    1px solid
-    #ef4444;
-
-  color: white;
-
-  padding: 12px 20px;
-
-  border-radius: 10px;
-
-  font-size: 14px;
-
-  max-width: 90%;
-
-  text-align: center;
+  position: absolute; left: 50%; bottom: 25px; transform: translateX(-50%); z-index: 10000; display: none;
+  background: rgba(127,29,29,.95); border: 1px solid #ef4444; color: white;
+  padding: 12px 20px; border-radius: 10px; font-size: 14px; max-width: 90%; text-align: center;
 }
 
-
-/* =========================================================
-   ESCONDE BOTÃO PADRÃO DO A-FRAME
-========================================================= */
-
-.a-enter-vr {
-
-  display: none !important;
-
-}
-
+.a-enter-vr { display: none !important; }
 </style>
-
-
 
 <script>
 /* =========================================================
-   SYNCHROARM - CARREGAMENTO DO MODELO 3D
-   Apenas carrega, centraliza e dimensiona o GLB.
-   A movimentação do braço será feita em uma etapa posterior.
+   SYNCHROARM - CARREGAMENTO DO MODELO 3D (INALTERADO)
 ========================================================= */
 AFRAME.registerComponent('synchroarm-model', {
-  schema: {
-    targetHeight: { type: 'number', default: 1.15 }
-  },
-
+  schema: { targetHeight: { type: 'number', default: 1.15 } },
   init: function () {
     const el = this.el;
-
     el.addEventListener('model-loaded', () => {
       const object = el.getObject3D('mesh');
+      if (!object) { console.error('SynchroArm: objeto 3D não encontrado.'); return; }
 
-      if (!object) {
-        console.error('SynchroArm: objeto 3D não encontrado.');
-        return;
-      }
-
-      // IMPORTANTE: THREE.Box3().setFromObject() calcula a caixa em
-      // coordenadas de MUNDO, ou seja, ela já inclui a posição da própria
-      // entidade (ex: position="0 0.88 0", a altura da mesa). Por isso,
-      // zeramos temporariamente a transformação da entidade antes de medir
-      // o modelo — assim o cálculo fica em espaço local e o braço não é
-      // deslocado para dentro da mesa. A posição original é restaurada
-      // no final.
       const rig = el.object3D;
       const savedPosition = rig.position.clone();
       const savedQuaternion = rig.quaternion.clone();
@@ -466,7 +109,6 @@ AFRAME.registerComponent('synchroarm-model', {
 
       const box = new THREE.Box3().setFromObject(object);
       const size = new THREE.Vector3();
-
       box.getSize(size);
 
       const restoreEntityTransform = () => {
@@ -482,11 +124,9 @@ AFRAME.registerComponent('synchroarm-model', {
         return;
       }
 
-      // Ajusta a altura do modelo para aproximadamente 1,15 m.
       const scale = this.data.targetHeight / size.y;
       object.scale.setScalar(scale);
 
-      // Centraliza X/Z e coloca a base do modelo sobre Y=0 (agora em espaço local correto).
       const scaledBox = new THREE.Box3().setFromObject(object);
       const center = new THREE.Vector3();
       scaledBox.getCenter(center);
@@ -498,25 +138,18 @@ AFRAME.registerComponent('synchroarm-model', {
       object.position.y -= finalBox.min.y;
 
       object.traverse((node) => {
-        if (node.isMesh) {
-          node.castShadow = true;
-          node.receiveShadow = true;
-        }
+        if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
       });
 
-      // Restaura a posição/rotação/escala originais da entidade (ex: sobre a mesa).
       restoreEntityTransform();
-
       console.log('SynchroArm carregado e ajustado com sucesso.');
     });
 
     el.addEventListener('model-error', (event) => {
       console.error('SynchroArm: erro ao carregar o GLB.', event);
-
       const error = document.getElementById('error-message');
       if (error) {
-        error.textContent =
-          'Erro ao carregar o SynchroArm. Verifique se models/dolphin_arm.glb existe.';
+        error.textContent = 'Erro ao carregar o SynchroArm. Verifique se models/dolphin_arm.glb existe.';
         error.style.display = 'block';
       }
     });
@@ -525,2539 +158,636 @@ AFRAME.registerComponent('synchroarm-model', {
 </script>
 
 <script>
-
 /* =========================================================
-   NEXUS ATLAS
-   SISTEMA DE MOVIMENTO VR
+   NEXUS ATLAS - SISTEMA DE MOVIMENTO VR (INALTERADO)
 ========================================================= */
-
-AFRAME.registerComponent(
-  'nexus-movement-controller',
-  {
-
-    schema: {
-
-      speed: {
-        type: 'number',
-        default: 2.8
-      },
-
-      turnSpeed: {
-        type: 'number',
-        default: 2.2
-      },
-
-      jumpForce: {
-        type: 'number',
-        default: 5.2
-      },
-
-      gravity: {
-        type: 'number',
-        default: 14
-      },
-
-      boundsX: {
-        type: 'array',
-        default: [-5.35, 5.35]
-      },
-
-      boundsZ: {
-        type: 'array',
-        default: [-5.35, 5.35]
-      }
-
-    },
-
-
-    init: function () {
-
-      console.log(
-        'NEXUS ATLAS: controlador iniciado.'
-      );
-
-
-      /* =====================================================
-         REFERÊNCIAS
-      ===================================================== */
-
-      this.rig = this.el;
-
-      this.camera =
-        this.el.querySelector('[camera]');
-
-
-      /* =====================================================
-         VALORES DOS ANALÓGICOS
-      ===================================================== */
-
-      this.leftStickX = 0;
-
-      this.leftStickY = 0;
-
-      this.rightStickX = 0;
-
-
-      /* =====================================================
-         PULO
-      ===================================================== */
-
-      this.velocityY = 0;
-
-      this.grounded = true;
-
-
-      /* =====================================================
-         TECLADO
-      ===================================================== */
-
-      this.keys = {};
-
-      this.spaceWasPressed = false;
-
-
-      window.addEventListener(
-        'keydown',
-        (event) => {
-
-          this.keys[event.code] = true;
-
-        }
-      );
-
-
-      window.addEventListener(
-        'keyup',
-        (event) => {
-
-          this.keys[event.code] = false;
-
-        }
-      );
-
-
-      /* =====================================================
-         CONTROLE ESQUERDO
-      ===================================================== */
-
-      this.setupLeftController();
-
-
-      /* =====================================================
-         CONTROLE DIREITO
-      ===================================================== */
-
-      this.setupRightController();
-
-
-      /* =====================================================
-         STATUS VR
-      ===================================================== */
-
-      const scene =
-        this.el.sceneEl;
-
-
-      scene.addEventListener(
-        'enter-vr',
-        () => {
-
-          const status =
-            document.getElementById(
-              'vr-status'
-            );
-
-          if (status) {
-
-            status.textContent =
-              '● META QUEST 2 CONECTADO';
-
-            status.style.opacity = '1';
-
-          }
-
-        }
-      );
-
-
-      scene.addEventListener(
-        'exit-vr',
-        () => {
-
-          const status =
-            document.getElementById(
-              'vr-status'
-            );
-
-          if (status) {
-
-            status.style.opacity = '0';
-
-          }
-
-        }
-      );
-
-    },
-
-
-    /* =========================================================
-       CONTROLE ESQUERDO
-    ========================================================= */
-
-    setupLeftController:
-    function () {
-
-      const controller =
-        document.getElementById(
-          'leftController'
-        );
-
-
-      if (!controller) {
-
-        console.warn(
-          'Controle esquerdo não encontrado.'
-        );
-
-        return;
-
-      }
-
-
-      /* ANALÓGICO */
-
-      controller.addEventListener(
-        'thumbstickmoved',
-        (event) => {
-
-          if (
-            !event.detail
-          ) return;
-
-
-          this.leftStickX =
-            Number(
-              event.detail.x
-            ) || 0;
-
-
-          this.leftStickY =
-            Number(
-              event.detail.y
-            ) || 0;
-
-
-          console.log(
-            'STICK ESQUERDO:',
-            this.leftStickX,
-            this.leftStickY
-          );
-
-        }
-      );
-
-
-      /* BOTÃO X */
-
-      controller.addEventListener(
-        'xbuttondown',
-        () => {
-
-          this.jump();
-
-        }
-      );
-
-
-      /* TAMBÉM ACEITA GAMEPAD BUTTON 4
-         COMO SEGURANÇA */
-
-      controller.addEventListener(
-        'abuttondown',
-        () => {
-
-          this.jump();
-
-        }
-      );
-
-    },
-
-
-    /* =========================================================
-       CONTROLE DIREITO
-    ========================================================= */
-
-    setupRightController:
-    function () {
-
-      const controller =
-        document.getElementById(
-          'rightController'
-        );
-
-
-      if (!controller) {
-
-        console.warn(
-          'Controle direito não encontrado.'
-        );
-
-        return;
-
-      }
-
-
-      controller.addEventListener(
-        'thumbstickmoved',
-        (event) => {
-
-          if (
-            !event.detail
-          ) return;
-
-
-          this.rightStickX =
-            Number(
-              event.detail.x
-            ) || 0;
-
-        }
-      );
-
-    },
-
-
-    /* =========================================================
-       FUNÇÃO DE PULO
-    ========================================================= */
-
-    jump:
-    function () {
-
-      if (
-        !this.grounded
-      ) return;
-
-
-      this.velocityY =
-        this.data.jumpForce;
-
-
-      this.grounded =
-        false;
-
-    },
-
-
-    /* =========================================================
-       TICK
-    ========================================================= */
-
-    tick:
-    function (time, delta) {
-
-      let dt =
-        delta / 1000;
-
-
-      if (
-        !isFinite(dt) ||
-        dt <= 0
-      ) return;
-
-
-      dt =
-        Math.min(
-          dt,
-          .05
-        );
-
-
-      /* =====================================================
-         MOVIMENTO
-      ===================================================== */
-
-      let moveX =
-        this.leftStickX;
-
-
-      let moveZ =
-        this.leftStickY;
-
-
-      let turn =
-        this.rightStickX;
-
-
-      /* =====================================================
-         DEADZONE
-      ===================================================== */
-
-      const deadzone =
-        0.15;
-
-
-      if (
-        Math.abs(moveX)
-        < deadzone
-      ) {
-
-        moveX = 0;
-
-      }
-
-
-      if (
-        Math.abs(moveZ)
-        < deadzone
-      ) {
-
-        moveZ = 0;
-
-      }
-
-
-      if (
-        Math.abs(turn)
-        < deadzone
-      ) {
-
-        turn = 0;
-
-      }
-
-
-      /* =====================================================
-         TECLADO
-      ===================================================== */
-
-      if (
-        this.keys['KeyW'] ||
-        this.keys['ArrowUp']
-      ) {
-
-        moveZ = -1;
-
-      }
-
-
-      if (
-        this.keys['KeyS'] ||
-        this.keys['ArrowDown']
-      ) {
-
-        moveZ = 1;
-
-      }
-
-
-      if (
-        this.keys['KeyA']
-      ) {
-
-        moveX = -1;
-
-      }
-
-
-      if (
-        this.keys['KeyD']
-      ) {
-
-        moveX = 1;
-
-      }
-
-
-      /* =====================================================
-         SETAS PARA ROTAÇÃO NO PC
-      ===================================================== */
-
-      if (
-        this.keys['ArrowLeft']
-      ) {
-
-        turn = -1;
-
-      }
-
-
-      if (
-        this.keys['ArrowRight']
-      ) {
-
-        turn = 1;
-
-      }
-
-
-      /* =====================================================
-         ESPAÇO
-      ===================================================== */
-
-      if (
-        this.keys['Space'] &&
-        !this.spaceWasPressed
-      ) {
-
-        this.jump();
-
-      }
-
-
-      this.spaceWasPressed =
-        !!this.keys['Space'];
-
-
-      /* =====================================================
-         ROTAÇÃO
-      ===================================================== */
-
-      if (
-        Math.abs(turn) > 0
-      ) {
-
-        const rotation =
-          this.rig.getAttribute(
-            'rotation'
-          );
-
-
-        rotation.y -=
-          turn *
-          this.data.turnSpeed *
-          dt;
-
-
-        this.rig.setAttribute(
-          'rotation',
-          rotation
-        );
-
-      }
-
-
-      /* =====================================================
-         MOVIMENTO RELATIVO À CÂMERA
-      ===================================================== */
-
-      if (
-        moveX !== 0 ||
-        moveZ !== 0
-      ) {
-
-        const length =
-          Math.hypot(
-            moveX,
-            moveZ
-          );
-
-
-        if (
-          length > 1
-        ) {
-
-          moveX /=
-            length;
-
-          moveZ /=
-            length;
-
-        }
-
-
-        const rigRotation =
-          this.rig.getAttribute(
-            'rotation'
-          );
-
-
-        const cameraRotation =
-          this.camera
-            ? this.camera.getAttribute(
-                'rotation'
-              )
-            : { y: 0 };
-
-
-        const angle =
-          (
-            rigRotation.y +
-            cameraRotation.y
-          ) *
-          Math.PI /
-          180;
-
-
-        const dx =
-          moveX *
-          Math.cos(angle) +
-
-          moveZ *
-          Math.sin(angle);
-
-
-        const dz =
-          moveZ *
-          Math.cos(angle) -
-
-          moveX *
-          Math.sin(angle);
-
-
-        const pos =
-          this.rig.getAttribute(
-            'position'
-          );
-
-
-        const targetX =
-          pos.x +
-          dx *
-          this.data.speed *
-          dt;
-
-
-        const targetZ =
-          pos.z +
-          dz *
-          this.data.speed *
-          dt;
-
-
-        pos.x =
-          Math.max(
-            this.data.boundsX[0],
-            Math.min(
-              this.data.boundsX[1],
-              targetX
-            )
-          );
-
-
-        pos.z =
-          Math.max(
-            this.data.boundsZ[0],
-            Math.min(
-              this.data.boundsZ[1],
-              targetZ
-            )
-          );
-
-
-        this.rig.setAttribute(
-          'position',
-          pos
-        );
-
-      }
-
-
-      /* =====================================================
-         GRAVIDADE
-      ===================================================== */
-
-      if (
-        !this.grounded
-      ) {
-
-        const pos =
-          this.rig.getAttribute(
-            'position'
-          );
-
-
-        this.velocityY -=
-          this.data.gravity *
-          dt;
-
-
-        pos.y +=
-          this.velocityY *
-          dt;
-
-
-        if (
-          pos.y <= 0
-        ) {
-
-          pos.y = 0;
-
-          this.velocityY = 0;
-
-          this.grounded =
-            true;
-
-        }
-
-
-        this.rig.setAttribute(
-          'position',
-          pos
-        );
-
-      }
-
+AFRAME.registerComponent('nexus-movement-controller', {
+  schema: {
+    speed: { type: 'number', default: 2.8 },
+    turnSpeed: { type: 'number', default: 2.2 },
+    jumpForce: { type: 'number', default: 5.2 },
+    gravity: { type: 'number', default: 14 },
+    boundsX: { type: 'array', default: [-5.35, 5.35] },
+    boundsZ: { type: 'array', default: [-5.35, 5.35] }
+  },
+
+  init: function () {
+    console.log('NEXUS ATLAS: controlador iniciado.');
+
+    this.rig = this.el;
+    this.camera = this.el.querySelector('[camera]');
+
+    this.leftStickX = 0;
+    this.leftStickY = 0;
+    this.rightStickX = 0;
+
+    this.velocityY = 0;
+    this.grounded = true;
+
+    this.keys = {};
+    this.spaceWasPressed = false;
+
+    window.addEventListener('keydown', (event) => { this.keys[event.code] = true; });
+    window.addEventListener('keyup', (event) => { this.keys[event.code] = false; });
+
+    this.setupLeftController();
+    this.setupRightController();
+
+    const scene = this.el.sceneEl;
+
+    scene.addEventListener('enter-vr', () => {
+      const status = document.getElementById('vr-status');
+      if (status) { status.textContent = '● META QUEST 2 CONECTADO'; status.style.opacity = '1'; }
+    });
+
+    scene.addEventListener('exit-vr', () => {
+      const status = document.getElementById('vr-status');
+      if (status) { status.style.opacity = '0'; }
+    });
+  },
+
+  setupLeftController: function () {
+    const controller = document.getElementById('leftController');
+    if (!controller) { console.warn('Controle esquerdo não encontrado.'); return; }
+
+    controller.addEventListener('thumbstickmoved', (event) => {
+      if (!event.detail) return;
+      this.leftStickX = Number(event.detail.x) || 0;
+      this.leftStickY = Number(event.detail.y) || 0;
+      console.log('STICK ESQUERDO:', this.leftStickX, this.leftStickY);
+    });
+
+    controller.addEventListener('xbuttondown', () => { this.jump(); });
+    controller.addEventListener('abuttondown', () => { this.jump(); });
+  },
+
+  setupRightController: function () {
+    const controller = document.getElementById('rightController');
+    if (!controller) { console.warn('Controle direito não encontrado.'); return; }
+
+    controller.addEventListener('thumbstickmoved', (event) => {
+      if (!event.detail) return;
+      this.rightStickX = Number(event.detail.x) || 0;
+    });
+  },
+
+  jump: function () {
+    if (!this.grounded) return;
+    this.velocityY = this.data.jumpForce;
+    this.grounded = false;
+  },
+
+  tick: function (time, delta) {
+    let dt = delta / 1000;
+    if (!isFinite(dt) || dt <= 0) return;
+    dt = Math.min(dt, .05);
+
+    let moveX = this.leftStickX;
+    let moveZ = this.leftStickY;
+    let turn = this.rightStickX;
+
+    const deadzone = 0.15;
+    if (Math.abs(moveX) < deadzone) moveX = 0;
+    if (Math.abs(moveZ) < deadzone) moveZ = 0;
+    if (Math.abs(turn) < deadzone) turn = 0;
+
+    if (this.keys['KeyW'] || this.keys['ArrowUp']) moveZ = -1;
+    if (this.keys['KeyS'] || this.keys['ArrowDown']) moveZ = 1;
+    if (this.keys['KeyA']) moveX = -1;
+    if (this.keys['KeyD']) moveX = 1;
+
+    if (this.keys['ArrowLeft']) turn = -1;
+    if (this.keys['ArrowRight']) turn = 1;
+
+    if (this.keys['Space'] && !this.spaceWasPressed) this.jump();
+    this.spaceWasPressed = !!this.keys['Space'];
+
+    if (Math.abs(turn) > 0) {
+      const rotation = this.rig.getAttribute('rotation');
+      rotation.y -= turn * this.data.turnSpeed * dt;
+      this.rig.setAttribute('rotation', rotation);
     }
 
-  }
-);
+    if (moveX !== 0 || moveZ !== 0) {
+      const length = Math.hypot(moveX, moveZ);
+      if (length > 1) { moveX /= length; moveZ /= length; }
 
+      const rigRotation = this.rig.getAttribute('rotation');
+      const cameraRotation = this.camera ? this.camera.getAttribute('rotation') : { y: 0 };
+      const angle = (rigRotation.y + cameraRotation.y) * Math.PI / 180;
 
-/* =========================================================
-   TEXTURA SENAI
-========================================================= */
+      const dx = moveX * Math.cos(angle) + moveZ * Math.sin(angle);
+      const dz = moveZ * Math.cos(angle) - moveX * Math.sin(angle);
 
-AFRAME.registerComponent(
-  'senai-texture-generator',
-  {
+      const pos = this.rig.getAttribute('position');
+      const targetX = pos.x + dx * this.data.speed * dt;
+      const targetZ = pos.z + dz * this.data.speed * dt;
 
-    init: function () {
+      pos.x = Math.max(this.data.boundsX[0], Math.min(this.data.boundsX[1], targetX));
+      pos.z = Math.max(this.data.boundsZ[0], Math.min(this.data.boundsZ[1], targetZ));
 
-      const canvas =
-        document.createElement(
-          'canvas'
-        );
-
-
-      canvas.width = 1024;
-
-      canvas.height = 512;
-
-
-      const ctx =
-        canvas.getContext(
-          '2d'
-        );
-
-
-      /* FUNDO */
-
-      ctx.fillStyle =
-        '#005696';
-
-      ctx.fillRect(
-        0,
-        0,
-        1024,
-        512
-      );
-
-
-      /* BORDA */
-
-      ctx.strokeStyle =
-        '#ffffff';
-
-      ctx.lineWidth = 12;
-
-      ctx.strokeRect(
-        30,
-        30,
-        964,
-        452
-      );
-
-
-      ctx.strokeStyle =
-        '#06b6d4';
-
-      ctx.lineWidth = 4;
-
-      ctx.strokeRect(
-        45,
-        45,
-        934,
-        422
-      );
-
-
-      /* SENAI */
-
-      ctx.fillStyle =
-        '#ffffff';
-
-      ctx.fillRect(
-        80,
-        240,
-        120,
-        10
-      );
-
-      ctx.fillRect(
-        824,
-        240,
-        120,
-        10
-      );
-
-
-      ctx.font =
-        'bold 120px "Titillium Web", sans-serif';
-
-      ctx.textAlign =
-        'center';
-
-      ctx.textBaseline =
-        'middle';
-
-      ctx.fillText(
-        'SENAI',
-        512,
-        236
-      );
-
-
-      ctx.font =
-        '600 28px "Titillium Web", sans-serif';
-
-      ctx.fillStyle =
-        '#38bdf8';
-
-
-      ctx.fillText(
-        'SÃO CARLOS • MECATRÔNICA',
-        512,
-        326
-      );
-
-
-      ctx.font =
-        '400 20px "Titillium Web", sans-serif';
-
-      ctx.fillStyle =
-        '#e0f2fe';
-
-
-      ctx.fillText(
-        'PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR',
-        512,
-        366
-      );
-
-
-      /* TEXTURA */
-
-      const texture =
-        new THREE.CanvasTexture(
-          canvas
-        );
-
-
-      const mesh =
-        this.el.getObject3D(
-          'mesh'
-        );
-
-
-      if (
-        mesh &&
-        mesh.material
-      ) {
-
-        mesh.material.map =
-          texture;
-
-        mesh.material.needsUpdate =
-          true;
-
-      }
-
+      this.rig.setAttribute('position', pos);
     }
 
-  }
-);
+    if (!this.grounded) {
+      const pos = this.rig.getAttribute('position');
+      this.velocityY -= this.data.gravity * dt;
+      pos.y += this.velocityY * dt;
 
+      if (pos.y <= 0) { pos.y = 0; this.velocityY = 0; this.grounded = true; }
+      this.rig.setAttribute('position', pos);
+    }
+  }
+});
 
 /* =========================================================
-   TEXTURA DE PISO (CONCRETO INDUSTRIAL PROCEDURAL)
+   TEXTURA SENAI (INALTERADO)
 ========================================================= */
+AFRAME.registerComponent('senai-texture-generator', {
+  init: function () {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
 
-AFRAME.registerComponent(
-  'floor-texture-generator',
-  {
+    ctx.fillStyle = '#005696';
+    ctx.fillRect(0, 0, 1024, 512);
 
-    init: function () {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(30, 30, 964, 452);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(45, 45, 934, 422);
 
-      const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(80, 240, 120, 10);
+    ctx.fillRect(824, 240, 120, 10);
 
-      /* BASE DE CONCRETO */
-      ctx.fillStyle = '#14202e';
-      ctx.fillRect(0, 0, 512, 512);
+    ctx.font = 'bold 120px "Titillium Web", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SENAI', 512, 236);
 
-      /* RUÍDO SUTIL PARA SIMULAR TEXTURA DE CONCRETO */
-      for (let i = 0; i < 4000; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 512;
-        const shade = Math.random() * 18 - 9;
-        ctx.fillStyle = `rgba(${180 + shade},${200 + shade},${215 + shade},${Math.random() * 0.05})`;
-        ctx.fillRect(x, y, 2, 2);
-      }
+    ctx.font = '600 28px "Titillium Web", sans-serif';
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('SÃO CARLOS • MECATRÔNICA', 512, 326);
 
-      /* JUNTAS DE PLACA (ESTILO PISO INDUSTRIAL) */
-      ctx.strokeStyle = 'rgba(6,182,212,.15)';
-      ctx.lineWidth = 2;
+    ctx.font = '400 20px "Titillium Web", sans-serif';
+    ctx.fillStyle = '#e0f2fe';
+    ctx.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR', 512, 366);
 
-      for (let i = 0; i <= 512; i += 128) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, 512);
-        ctx.stroke();
+    const texture = new THREE.CanvasTexture(canvas);
+    const mesh = this.el.getObject3D('mesh');
+    if (mesh && mesh.material) { mesh.material.map = texture; mesh.material.needsUpdate = true; }
+  }
+});
 
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(512, i);
-        ctx.stroke();
-      }
+/* =========================================================
+   TEXTURA DE PISO — versão escura/reflexiva estilo laboratório
+========================================================= */
+AFRAME.registerComponent('floor-texture-generator', {
+  init: function () {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
 
-      /* FAIXA DE SEGURANÇA AMARELO/PRETO NA BORDA DA ÁREA DE TRABALHO */
-      ctx.save();
-      ctx.translate(256, 256);
-      ctx.strokeStyle = '#eab308';
-      ctx.lineWidth = 6;
-      ctx.setLineDash([14, 10]);
-      ctx.strokeRect(-150, -150, 300, 300);
-      ctx.restore();
+    /* BASE ESCURA QUASE PRETA, COM LEVE TOM AZULADO */
+    ctx.fillStyle = '#050a12';
+    ctx.fillRect(0, 0, 512, 512);
 
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(6, 6);
-
-      const mesh = this.el.getObject3D('mesh');
-
-      if (mesh && mesh.material) {
-        mesh.material.map = texture;
-        mesh.material.roughness = 0.55;
-        mesh.material.metalness = 0.25;
-        mesh.material.needsUpdate = true;
-      }
-
+    /* RUÍDO SUTIL */
+    for (let i = 0; i < 3500; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const shade = Math.random() * 14 - 7;
+      ctx.fillStyle = `rgba(${60 + shade},${95 + shade},${115 + shade},${Math.random() * 0.06})`;
+      ctx.fillRect(x, y, 2, 2);
     }
 
-  }
-);
+    /* JUNTAS DE PLACA */
+    ctx.strokeStyle = 'rgba(6,182,212,.22)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i <= 512; i += 128) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(512, i); ctx.stroke();
+    }
 
+    /* LINHAS DE DESTAQUE CYAN MAIS BRILHANTES (REFLEXO) */
+    ctx.strokeStyle = 'rgba(56,189,248,.4)';
+    ctx.lineWidth = 1;
+    for (let i = 64; i <= 512; i += 128) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(6, 6);
+
+    const mesh = this.el.getObject3D('mesh');
+    if (mesh && mesh.material) {
+      mesh.material.map = texture;
+      mesh.material.roughness = 0.2;
+      mesh.material.metalness = 0.55;
+      mesh.material.needsUpdate = true;
+    }
+  }
+});
 
 /* =========================================================
-   ENTRAR NO VR
+   ENTRAR NO VR (INALTERADO)
 ========================================================= */
-
 function enterExperience() {
+  const intro = document.getElementById('intro-screen');
+  intro.classList.add('fade-out');
 
-  const intro =
-    document.getElementById(
-      'intro-screen'
-    );
+  const scene = document.querySelector('a-scene');
+  if (!scene) { showError('A cena VR não foi encontrada.'); return; }
 
-
-  intro.classList.add(
-    'fade-out'
-  );
-
-
-  const scene =
-    document.querySelector(
-      'a-scene'
-    );
-
-
-  if (!scene) {
-
-    showError(
-      'A cena VR não foi encontrada.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    scene.hasLoaded
-  ) {
-
-    tryEnterVR(
-      scene
-    );
-
-  } else {
-
-    scene.addEventListener(
-      'loaded',
-      () => {
-
-        tryEnterVR(
-          scene
-        );
-
-      },
-      {
-        once: true
-      }
-    );
-
-  }
-
+  if (scene.hasLoaded) { tryEnterVR(scene); }
+  else { scene.addEventListener('loaded', () => { tryEnterVR(scene); }, { once: true }); }
 }
-
-
-/* =========================================================
-   TENTAR ENTRAR NO VR
-========================================================= */
 
 function tryEnterVR(scene) {
-
-  try {
-
-    scene.enterVR();
-
-  }
-
+  try { scene.enterVR(); }
   catch (error) {
-
-    console.error(
-      error
-    );
-
-    showError(
-      'Não foi possível iniciar o modo VR. Verifique se o Quest 2 está conectado e se o navegador permite WebXR.'
-    );
-
+    console.error(error);
+    showError('Não foi possível iniciar o modo VR. Verifique se o Quest 2 está conectado e se o navegador permite WebXR.');
   }
-
 }
-
-
-/* =========================================================
-   ERROS
-========================================================= */
 
 function showError(message) {
-
-  const box =
-    document.getElementById(
-      'error-message'
-    );
-
-
+  const box = document.getElementById('error-message');
   if (!box) return;
-
-
-  box.textContent =
-    message;
-
-
-  box.style.display =
-    'block';
-
-
-  setTimeout(
-    () => {
-
-      box.style.display =
-        'none';
-
-    },
-    6000
-  );
-
+  box.textContent = message;
+  box.style.display = 'block';
+  setTimeout(() => { box.style.display = 'none'; }, 6000);
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const scene = document.querySelector('a-scene');
 
-/* =========================================================
-   DEBUG
-========================================================= */
+  scene.addEventListener('loaded', () => {
+    console.log('=================================');
+    console.log('NEXUS ATLAS CARREGADO');
+    console.log('Controle esquerdo: movimento');
+    console.log('Controle direito: rotação');
+    console.log('Botão X: pulo');
+    console.log('Stick direito: teleporte');
+    console.log('=================================');
+  });
 
-document.addEventListener(
-  'DOMContentLoaded',
-  () => {
-
-    const scene =
-      document.querySelector(
-        'a-scene'
-      );
-
-
-    scene.addEventListener(
-      'loaded',
-      () => {
-
-        console.log(
-          '================================='
-        );
-
-        console.log(
-          'NEXUS ATLAS CARREGADO'
-        );
-
-        console.log(
-          'Controle esquerdo: movimento'
-        );
-
-        console.log(
-          'Controle direito: rotação'
-        );
-
-        console.log(
-          'Botão X: pulo'
-        );
-
-        console.log(
-          'Stick direito: teleporte'
-        );
-
-        console.log(
-          '================================='
-        );
-
-      }
-    );
-
-
-    scene.addEventListener(
-      'enter-vr',
-      () => {
-
-        console.log(
-          'VR ATIVADO'
-        );
-
-      }
-    );
-
-
-    scene.addEventListener(
-      'exit-vr',
-      () => {
-
-        console.log(
-          'VR DESATIVADO'
-        );
-
-      }
-    );
-
-
-    scene.addEventListener(
-      'teleported',
-      (event) => {
-
-        console.log(
-          'Teleporte:',
-          event.detail
-        );
-
-      }
-    );
-
-  }
-);
-
+  scene.addEventListener('enter-vr', () => { console.log('VR ATIVADO'); });
+  scene.addEventListener('exit-vr', () => { console.log('VR DESATIVADO'); });
+  scene.addEventListener('teleported', (event) => { console.log('Teleporte:', event.detail); });
+});
 </script>
 
 </head>
-
-
 <body>
 
-
-<!-- =========================================================
-     INTRO
-========================================================= -->
-
 <div id="intro-screen">
-
   <div class="intro-card">
-
-    <span class="badge-senai">
-      SENAI SÃO CARLOS — MECATRÔNICA
-    </span>
-
-
-    <h1>
-      NEXUS ATLAS
-    </h1>
-
-
-    <h2>
-      SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR
-    </h2>
-
-
+    <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
+    <h1>NEXUS ATLAS</h1>
+    <h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
     <p>
-
-      Bem-vindo ao ambiente virtual de testes
-      do projeto <strong>NEXUS ATLAS</strong>.
-
-      Este laboratório foi desenvolvido para
-      testar navegação em realidade virtual,
-      rastreamento de mãos e, futuramente, a
-      integração entre o braço robótico virtual
+      Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>.
+      Este laboratório foi desenvolvido para testar navegação em realidade virtual,
+      rastreamento de mãos e, futuramente, a integração entre o braço robótico virtual
       e o braço físico utilizando ESP32.
-
     </p>
-
-
-    <button
-      class="btn-enter-vr"
-      onclick="enterExperience()"
-    >
-
-      <span>🥽</span>
-
-      ENTRAR NO MODO VR
-
+    <button class="btn-enter-vr" onclick="enterExperience()">
+      <span>🥽</span> ENTRAR NO MODO VR
     </button>
-
-
     <div class="controls-guide">
-
-      <div>
-        <strong>ANDAR</strong>
-        Analógico esquerdo
-      </div>
-
-      <div>
-        <strong>GIRAR</strong>
-        Analógico direito
-      </div>
-
-      <div>
-        <strong>PULAR</strong>
-        Botão X
-      </div>
-
-      <div>
-        <strong>TELEPORTE</strong>
-        Clique no stick direito
-      </div>
-
+      <div><strong>ANDAR</strong>Analógico esquerdo</div>
+      <div><strong>GIRAR</strong>Analógico direito</div>
+      <div><strong>PULAR</strong>Botão X</div>
+      <div><strong>TELEPORTE</strong>Clique no stick direito</div>
     </div>
-
   </div>
-
 </div>
 
-
-<!-- =========================================================
-     STATUS
-========================================================= -->
-
-<div id="vr-status">
-  ● META QUEST 2
-</div>
-
-
-<!-- =========================================================
-     ERRO
-========================================================= -->
-
+<div id="vr-status">● META QUEST 2</div>
 <div id="error-message"></div>
 
-
-<!-- =========================================================
-     CENA
-========================================================= -->
-
 <a-scene
-
-  renderer="
-    antialias:true;
-    colorManagement:true;
-    exposure:1.1;
-    toneMapping:ACESFilmic;
-    physicallyCorrectLights:true;
-  "
-
-  shadow="
-    type:pcfsoft;
-    autoUpdate:true;
-  "
-
-  fog="
-    type:linear;
-    color:#0a0f1a;
-    near:9;
-    far:15;
-  "
-
-  vr-mode-ui="
-    enabled:true
-  "
-
-  webxr="
-    optionalFeatures:
-    local-floor,
-    bounded-floor,
-    hand-tracking
-  "
-
+  renderer="antialias:true; colorManagement:true; exposure:1.0; toneMapping:ACESFilmic; physicallyCorrectLights:true"
+  shadow="type:pcfsoft; autoUpdate:true"
+  fog="type:linear; color:#04070d; near:8; far:16"
+  vr-mode-ui="enabled:true"
+  webxr="optionalFeatures: local-floor, bounded-floor, hand-tracking"
 >
-
-
-<!-- =========================================================
-     ASSETS
-========================================================= -->
 
 <a-assets>
-
-  <img
-    id="grid-pattern"
-    src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg"
-    crossorigin="anonymous"
-  >
-  <!-- =====================================================
-       MODELO 3D DO SYNCHROARM
-       Arquivo: models/dolphin_arm.glb
-  ====================================================== -->
-  <a-asset-item
-    id="synchroarm-model"
-    src="models/dolphin_arm.glb">
-  </a-asset-item>
-
-
+  <img id="grid-pattern" src="[cdn.jsdelivr.net](https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg)" crossorigin="anonymous">
+  <a-asset-item id="synchroarm-model" src="models/dolphin_arm.glb"></a-asset-item>
 </a-assets>
 
-
 <!-- =========================================================
-     CAMERA RIG
+     CAMERA RIG (COMANDOS INALTERADOS)
 ========================================================= -->
+<a-entity id="cameraRig" position="0 0 3" nexus-movement-controller>
 
-<a-entity
+  <a-camera id="headCamera" position="0 1.6 0" look-controls="pointerLockEnabled:false" wasd-controls="enabled:false"></a-camera>
 
-  id="cameraRig"
+  <a-entity id="leftHand" hand-tracking-controls="hand:left; modelStyle:mesh; modelColor:#e0b08a; modelOpacity:1"></a-entity>
+  <a-entity id="rightHand" hand-tracking-controls="hand:right; modelStyle:mesh; modelColor:#e0b08a; modelOpacity:1"></a-entity>
 
-  position="0 0 3"
-
-  nexus-movement-controller
-
->
-
-
-  <!-- =======================================================
-       CÂMERA
-  ======================================================== -->
-
-  <a-camera
-
-    id="headCamera"
-
-    position="0 1.6 0"
-
-    look-controls="
-      pointerLockEnabled:false
-    "
-
-    wasd-controls="
-      enabled:false
-    "
-
-  ></a-camera>
-
-
-  <!-- =======================================================
-       MÃO ESQUERDA
-  ======================================================== -->
+  <a-entity id="leftController" oculus-touch-controls="hand:left"></a-entity>
 
   <a-entity
-
-    id="leftHand"
-
-    hand-tracking-controls="
-      hand:left;
-      modelStyle:mesh;
-      modelColor:#e0b08a;
-      modelOpacity:1
-    "
-
-  ></a-entity>
-
-
-  <!-- =======================================================
-       MÃO DIREITA
-  ======================================================== -->
-
-  <a-entity
-
-    id="rightHand"
-
-    hand-tracking-controls="
-      hand:right;
-      modelStyle:mesh;
-      modelColor:#e0b08a;
-      modelOpacity:1
-    "
-
-  ></a-entity>
-
-
-  <!-- =======================================================
-       CONTROLE ESQUERDO
-       
-       ANALÓGICO ESQUERDO:
-       ANDAR
-       
-       X:
-       PULAR
-  ======================================================== -->
-
-  <a-entity
-
-    id="leftController"
-
-    oculus-touch-controls="
-      hand:left
-    "
-
-  ></a-entity>
-
-
-  <!-- =======================================================
-       CONTROLE DIREITO
-       
-       ANALÓGICO DIREITO:
-       GIRAR
-       
-       CLIQUE:
-       TELEPORTE
-  ======================================================== -->
-
-  <a-entity
-
     id="rightController"
-
-    oculus-touch-controls="
-      hand:right
-    "
-
-    blink-controls="
-      cameraRig:#cameraRig;
-      teleportOrigin:#headCamera;
-      button:thumbstick;
-      collisionEntities:#floor;
-      landingNormal:0 1 0;
-      maxLength:8;
-      curveShootingSpeed:6;
-      curveHitColor:#06b6d4;
-      curveMissColor:#ef4444
-    "
-
+    oculus-touch-controls="hand:right"
+    blink-controls="cameraRig:#cameraRig; teleportOrigin:#headCamera; button:thumbstick; collisionEntities:#floor; landingNormal:0 1 0; maxLength:8; curveShootingSpeed:6; curveHitColor:#06b6d4; curveMissColor:#ef4444"
   ></a-entity>
 
-
 </a-entity>
 
+<!-- =========================================================
+     ILUMINAÇÃO — tons mais frios/escuros, com toques verdes
+========================================================= -->
+<a-light type="hemisphere" color="#cfe9ff" ground-color="#050a12" intensity="0.4"></a-light>
+<a-light type="ambient" color="#0a1220" intensity="0.3"></a-light>
+
+<a-light type="point" position="0 4.2 1.5" color="#dff4ff" intensity="1.2" distance="12" decay="1.7"></a-light>
+<a-light type="point" position="0 4.2 -2.5" color="#22d3ee" intensity="1.3" distance="13" decay="1.7"></a-light>
+<a-light type="point" position="-4.4 2.6 0" color="#4ade80" intensity="0.7" distance="6" decay="2"></a-light>
+<a-light type="point" position="4.4 2.6 -2" color="#4ade80" intensity="0.6" distance="6" decay="2"></a-light>
+
+<a-light
+  type="spot" position="0 4.4 0" target="#worktable" color="#ffffff" intensity="2.3"
+  angle="45" penumbra=".6" castShadow="true" shadow-map-height="1024" shadow-map-width="1024"
+></a-light>
+
+<a-light type="directional" position="2 3 4" color="#a9d4ff" intensity="0.3"></a-light>
 
 <!-- =========================================================
-     ILUMINAÇÃO
-     Camada 1: luz hemisférica para preencher sombras (bounce)
-     Camada 2: pontos de luz frios/quentes para volume
-     Camada 3: spot principal com sombra projetada sobre a mesa
+     CHÃO — escuro e reflexivo, estilo laboratório
 ========================================================= -->
+<a-plane id="floor" position="0 0 0" rotation="-90 0 0" width="12" height="12" color="#0b131e" floor-texture-generator shadow="receive:true"></a-plane>
 
-<a-light
-
-  type="hemisphere"
-
-  color="#e8f4ff"
-
-  ground-color="#0b1220"
-
-  intensity="0.55"
-
-></a-light>
-
-
-<a-light
-
-  type="ambient"
-
-  color="#0f172a"
-
-  intensity="0.35"
-
-></a-light>
-
-
-<a-light
-
-  type="point"
-
-  position="0 4.2 1.5"
-
-  color="#e0f2fe"
-
-  intensity="1.4"
-
-  distance="12"
-
-  decay="1.7"
-
-></a-light>
-
-
-<a-light
-
-  type="point"
-
-  position="0 4.2 -2.5"
-
-  color="#38bdf8"
-
-  intensity="1.1"
-
-  distance="12"
-
-  decay="1.7"
-
-></a-light>
-
-
-<a-light
-
-  type="spot"
-
-  position="0 4.4 0"
-
-  target="#worktable"
-
-  color="#ffffff"
-
-  intensity="2.6"
-
-  angle="45"
-
-  penumbra=".6"
-
-  castShadow="true"
-
-  shadow-map-height="1024"
-
-  shadow-map-width="1024"
-
-></a-light>
-
-
-<!-- LUZ DE PREENCHIMENTO SUAVE, TIPO "SOFTBOX", VINDA DA CÂMERA -->
-
-<a-light
-
-  type="directional"
-
-  position="2 3 4"
-
-  color="#bcd9ff"
-
-  intensity="0.4"
-
-></a-light>
-
+<a-grid position="0 .01 0" width="12" height="12" cell-size="1" color-center="#06b6d4" color-grid="#111b2b"></a-grid>
 
 <!-- =========================================================
-     CHÃO
+     TETO — mais escuro, com trelicas e barras de luz
 ========================================================= -->
+<a-plane position="0 4.8 0" rotation="90 0 0" width="12" height="12" color="#060a12" material="roughness:.85; metalness:.1; side:double"></a-plane>
 
-<a-plane
+<!-- TRELICAS METÁLICAS -->
+<a-box position="-3 4.7 0" width=".12" height=".12" depth="12" color="#1e293b" material="roughness:.5;metalness:.7"></a-box>
+<a-box position="3 4.7 0" width=".12" height=".12" depth="12" color="#1e293b" material="roughness:.5;metalness:.7"></a-box>
+<a-box position="0 4.7 -3" rotation="0 90 0" width=".12" height=".12" depth="12" color="#1e293b" material="roughness:.5;metalness:.7"></a-box>
 
-  id="floor"
+<!-- BARRAS DE LUZ NO TETO, ESTILO INDUSTRIAL -->
+<a-box position="-2 4.6 0" rotation="0 0 4" width="9" height=".08" depth=".22" color="#e2f6ff" material="emissive:#dff4ff; emissiveIntensity:1.1"></a-box>
+<a-box position="2.5 4.6 -1.5" rotation="0 0 -3" width="7.5" height=".08" depth=".22" color="#e2f6ff" material="emissive:#dff4ff; emissiveIntensity:1"></a-box>
 
-  position="0 0 0"
-
-  rotation="-90 0 0"
-
-  width="12"
-
-  height="12"
-
-  color="#c7d2e0"
-
-  floor-texture-generator
-
-  shadow="receive:true"
-
-></a-plane>
-
-
-<!-- GRID -->
-
-<a-grid
-
-  position="0 .01 0"
-
-  width="12"
-
-  height="12"
-
-  cell-size="1"
-
-  color-center="#06b6d4"
-
-  color-grid="#1e293b"
-
-></a-grid>
-
-
-<!-- =========================================================
-     TETO
-========================================================= -->
-
-<a-plane
-
-  position="0 4.8 0"
-
-  rotation="90 0 0"
-
-  width="12"
-
-  height="12"
-
-  color="#0f172a"
-
-  material="
-    roughness:.85;
-    metalness:.1;
-    side:double
-  "
-
-></a-plane>
-
-
-<!-- DUTO DE VENTILAÇÃO (DETALHE DE REALISMO NO TETO) -->
-
-<a-entity position="-2 4.55 0" rotation="0 0 0">
-
-  <a-box
-    width="1.6"
-    height=".22"
-    depth=".22"
-    color="#334155"
-    material="roughness:.4;metalness:.75"
-  ></a-box>
-
-  <a-box
-    width=".2"
-    height=".22"
-    depth=".22"
-    position="-.9 0 0"
-    color="#1e293b"
-  ></a-box>
-
-  <a-box
-    width=".2"
-    height=".22"
-    depth=".22"
-    position=".9 0 0"
-    color="#1e293b"
-  ></a-box>
-
+<!-- DUTO DE VENTILAÇÃO -->
+<a-entity position="-2 4.5 2" rotation="0 0 0">
+  <a-box width="1.6" height=".22" depth=".22" color="#334155" material="roughness:.4;metalness:.75"></a-box>
+  <a-box width=".2" height=".22" depth=".22" position="-.9 0 0" color="#1e293b"></a-box>
+  <a-box width=".2" height=".22" depth=".22" position=".9 0 0" color="#1e293b"></a-box>
 </a-entity>
 
+<!-- =========================================================
+     PAREDES — mais escuras, quase pretas
+========================================================= -->
+<a-plane position="0 2.4 -6" width="12" height="5" color="#0d1420" material="roughness:.75;metalness:.15" shadow="receive:true"></a-plane>
+<a-plane position="0 2.4 6" rotation="0 180 0" width="12" height="5" color="#0d1420" material="roughness:.75;metalness:.15"></a-plane>
+<a-plane position="-6 2.4 0" rotation="0 90 0" width="12" height="5" color="#070c14" material="roughness:.75;metalness:.15" shadow="receive:true"></a-plane>
+<a-plane position="6 2.4 0" rotation="0 -90 0" width="12" height="5" color="#070c14" material="roughness:.75;metalness:.15"></a-plane>
+
+<a-box position="0 .15 -5.93" width="12" height=".3" depth=".04" color="#020408"></a-box>
+<a-box position="0 .15 5.93" width="12" height=".3" depth=".04" color="#020408"></a-box>
+<a-box position="-5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#020408"></a-box>
+<a-box position="5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#020408"></a-box>
 
 <!-- =========================================================
-     PAREDES
+     LEDS DE PERÍMETRO
 ========================================================= -->
-
-<a-plane
-
-  position="0 2.4 -6"
-
-  width="12"
-
-  height="5"
-
-  color="#232f3f"
-
-  material="roughness:.75;metalness:.15"
-
-  shadow="receive:true"
-
-></a-plane>
-
-
-<a-plane
-
-  position="0 2.4 6"
-
-  rotation="0 180 0"
-
-  width="12"
-
-  height="5"
-
-  color="#232f3f"
-
-  material="roughness:.75;metalness:.15"
-
-></a-plane>
-
-
-<a-plane
-
-  position="-6 2.4 0"
-
-  rotation="0 90 0"
-
-  width="12"
-
-  height="5"
-
-  color="#161f2b"
-
-  material="roughness:.75;metalness:.15"
-
-  shadow="receive:true"
-
-></a-plane>
-
-
-<a-plane
-
-  position="6 2.4 0"
-
-  rotation="0 -90 0"
-
-  width="12"
-
-  height="5"
-
-  color="#161f2b"
-
-  material="roughness:.75;metalness:.15"
-
-></a-plane>
-
-
-<!-- RODAPÉ NAS PAREDES (DETALHE DE ACABAMENTO) -->
-
-<a-box position="0 .15 -5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
-<a-box position="0 .15 5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
-<a-box position="-5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
-<a-box position="5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
-
+<a-box position="0 .1 -5.9" width="11.8" height=".1" depth=".05" color="#06b6d4" material="emissive:#06b6d4; emissiveIntensity:.9"></a-box>
+<a-box position="0 .1 5.9" width="11.8" height=".1" depth=".05" color="#06b6d4" material="emissive:#06b6d4; emissiveIntensity:.9"></a-box>
+<a-box position="0 4.5 -5.9" width="11.8" height=".08" depth=".05" color="#0284c7" material="emissive:#0284c7; emissiveIntensity:.9"></a-box>
 
 <!-- =========================================================
-     LEDS
+     PAINEL SENAI — AGORA FLUTUANTE
 ========================================================= -->
-
-<a-box
-
-  position="0 .1 -5.9"
-
-  width="11.8"
-
-  height=".1"
-
-  depth=".05"
-
-  color="#06b6d4"
-
-  material="
-    emissive:#06b6d4;
-    emissiveIntensity:.8
-  "
-
-></a-box>
-
-
-<a-box
-
-  position="0 .1 5.9"
-
-  width="11.8"
-
-  height=".1"
-
-  depth=".05"
-
-  color="#06b6d4"
-
-  material="
-    emissive:#06b6d4;
-    emissiveIntensity:.8
-  "
-
-></a-box>
-
-
-<a-box
-
-  position="0 4.5 -5.9"
-
-  width="11.8"
-
-  height=".08"
-
-  depth=".05"
-
-  color="#0284c7"
-
-  material="
-    emissive:#0284c7;
-    emissiveIntensity:.8
-  "
-
-></a-box>
-
-
-<!-- =========================================================
-     PAINEL SENAI
-     (Corrigido: estava sobreposto ao Painel de Comandos na
-     mesma parede de fundo. Foi movido para a parede lateral
-     direita, longe do rack, para não colidir com nada.)
-========================================================= -->
-
 <a-entity
-  position="5.75 2.6 2"
+  position="5.3 2.6 2"
   rotation="0 -90 0"
+  animation__float="property: position; to: 5.3 2.78 2; dir: alternate; dur: 2600; loop: true; easing: easeInOutSine"
 >
-
-  <a-box
-
-    width="4.2"
-
-    height="2.1"
-
-    depth=".1"
-
-    color="#090d16"
-
-  ></a-box>
-
-
-  <a-plane
-
-    width="4"
-
-    height="1.9"
-
-    position="0 0 .06"
-
-    senai-texture-generator
-
-  ></a-plane>
-
-
-  <a-light
-
-    type="point"
-
-    color="#005696"
-
-    intensity=".8"
-
-    distance="3"
-
-    position="0 0 .5"
-
-  ></a-light>
-
+  <a-box width="4.2" height="2.1" depth=".1" color="#090d16"></a-box>
+  <a-plane width="4" height="1.9" position="0 0 .06" senai-texture-generator></a-plane>
+  <a-light type="point" color="#005696" intensity=".8" distance="3" position="0 0 .5"></a-light>
 </a-entity>
 
-
 <!-- =========================================================
-     MESA
+     MESA (INALTERADA)
 ========================================================= -->
-
-<a-entity
-
-  id="worktable"
-
-  position="0 0 0"
-
->
-
-
-  <a-box
-
-    position="0 .85 0"
-
-    width="2.4"
-
-    height=".1"
-
-    depth="1.4"
-
-    color="#1e293b"
-
-    material="
-      roughness:.3;
-      metalness:.7
-    "
-
-    shadow="cast:true;receive:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="0 .86 0"
-
-    width="2.2"
-
-    height=".09"
-
-    depth="1.2"
-
-    color="#0f172a"
-
-    shadow="receive:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="0 .87 0"
-
-    width="2"
-
-    height=".01"
-
-    depth=".02"
-
-    color="#06b6d4"
-
-    material="
-      emissive:#06b6d4;
-      emissiveIntensity:.9
-    "
-
-  ></a-box>
-
-
-  <!-- PERNAS -->
-
-  <a-box
-
-    position="-1 .4 -.5"
-
-    width=".12"
-
-    height=".8"
-
-    depth=".12"
-
-    color="#334155"
-
-    shadow="cast:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="1 .4 -.5"
-
-    width=".12"
-
-    height=".8"
-
-    depth=".12"
-
-    color="#334155"
-
-    shadow="cast:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="-1 .4 .5"
-
-    width=".12"
-
-    height=".8"
-
-    depth=".12"
-
-    color="#334155"
-
-    shadow="cast:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="1 .4 .5"
-
-    width=".12"
-
-    height=".8"
-
-    depth=".12"
-
-    color="#334155"
-
-    shadow="cast:true"
-
-  ></a-box>
-
-
-  <!-- IDENTIFICAÇÃO -->
-
-  <a-plane
-
-    position="0 .86 .71"
-
-    width="1.2"
-
-    height=".2"
-
-    color="#005696"
-
-  >
-
-    <a-text
-
-      value="MESA DE MANIPULACAO - NEXUS ATLAS"
-
-      align="center"
-
-      width="2"
-
-      color="#ffffff"
-
-      position="0 0 .01"
-
-    ></a-text>
-
+<a-entity id="worktable" position="0 0 0">
+  <a-box position="0 .85 0" width="2.4" height=".1" depth="1.4" color="#1e293b" material="roughness:.3; metalness:.7" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .86 0" width="2.2" height=".09" depth="1.2" color="#0f172a" shadow="receive:true"></a-box>
+  <a-box position="0 .87 0" width="2" height=".01" depth=".02" color="#06b6d4" material="emissive:#06b6d4; emissiveIntensity:.9"></a-box>
+
+  <a-box position="-1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+  <a-box position="1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+  <a-box position="-1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+  <a-box position="1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+
+  <a-plane position="0 .86 .71" width="1.2" height=".2" color="#005696">
+    <a-text value="MESA DE MANIPULACAO - NEXUS ATLAS" align="center" width="2" color="#ffffff" position="0 0 .01"></a-text>
   </a-plane>
-
-
 </a-entity>
 
-
-<!-- TAPETE ANTIDERRAPANTE SOB A MESA (REFORÇA REALISMO E ESCALA) -->
-
-<a-plane
-
-  position="0 .012 0"
-
-  rotation="-90 0 0"
-
-  width="3.2"
-
-  height="2.2"
-
-  color="#1a2432"
-
-  material="roughness:.9;metalness:.05;opacity:.9"
-
-  shadow="receive:true"
-
-></a-plane>
-
+<a-plane position="0 .012 0" rotation="-90 0 0" width="3.2" height="2.2" color="#111a26" material="roughness:.9;metalness:.05;opacity:.9" shadow="receive:true"></a-plane>
 
 <!-- =========================================================
-     SYNCHROARM - BRAÇO ROBÓTICO
+     SYNCHROARM (INALTERADO)
+========================================================= -->
+<a-entity id="synchroarm" gltf-model="#synchroarm-model" synchroarm-model="targetHeight:1.15" position="0 0.88 0" rotation="0 0 0" shadow="cast:true; receive:true"></a-entity>
 
-     Nesta etapa o braço NÃO é movimentado.
-     Ele apenas aparece sobre a mesa.
+<!-- =========================================================
+     PLACA DE SEGURANÇA — AGORA FLUTUANTE
 ========================================================= -->
 <a-entity
-  id="synchroarm"
-  gltf-model="#synchroarm-model"
-  synchroarm-model="targetHeight:1.15"
-  position="0 0.88 0"
-  rotation="0 0 0"
-  shadow="cast:true; receive:true">
-</a-entity>
-
-
-<!-- =========================================================
-     PLACA DE SEGURANÇA JUNTO AO BRAÇO ROBÓTICO
-========================================================= -->
-
-<a-entity position="1.4 1.1 .6" rotation="0 -35 0">
-
+  position="1.4 1.1 .6"
+  rotation="0 -35 0"
+  animation__float="property: position; to: 1.4 1.28 .6; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"
+>
   <a-box width=".5" height=".5" depth=".02" color="#eab308"></a-box>
-
-  <a-text
-    value="!"
-    position="0 .08 .012"
-    align="center"
-    width="1.4"
-    color="#111827"
-  ></a-text>
-
-  <a-text
-    value="AREA DE TESTE
-MANTENHA DISTANCIA"
-    position="0 -.15 .012"
-    align="center"
-    width="1"
-    color="#111827"
-  ></a-text>
-
+  <a-text value="!" position="0 .08 .012" align="center" width="1.4" color="#111827"></a-text>
+  <a-text value="AREA DE TESTE
+MANTENHA DISTANCIA" position="0 -.15 .012" align="center" width="1" color="#111827"></a-text>
 </a-entity>
-
 
 <!-- =========================================================
      RACK
 ========================================================= -->
-
-<a-entity
-
-  position="5.2 0 -2"
-
->
-
-  <a-box
-
-    position="0 1.5 0"
-
-    width=".8"
-
-    height="3"
-
-    depth="1.6"
-
-    color="#0f172a"
-
-    material="roughness:.4;metalness:.6"
-
-    shadow="cast:true;receive:true"
-
-  ></a-box>
-
-
-  <a-box
-
-    position="-.38 2.2 0"
-
-    width=".02"
-
-    height=".15"
-
-    depth="1.2"
-
-    color="#22c55e"
-
-    material="
-      emissive:#22c55e;
-      emissiveIntensity:1
-    "
-
-  ></a-box>
-
-
-  <a-box
-
-    position="-.38 1.8 0"
-
-    width=".02"
-
-    height=".15"
-
-    depth="1.2"
-
-    color="#06b6d4"
-
-    material="
-      emissive:#06b6d4;
-      emissiveIntensity:1
-    "
-
-  ></a-box>
-
-
-  <a-box
-
-    position="-.38 1.4 0"
-
-    width=".02"
-
-    height=".15"
-
-    depth="1.2"
-
-    color="#eab308"
-
-    material="
-      emissive:#eab308;
-      emissiveIntensity:1
-    "
-
-  ></a-box>
-
-
-  <!-- CABOS SAINDO DO RACK ATÉ O CHÃO (DETALHE DE REALISMO) -->
-
-  <a-cylinder
-    position="-.3 .3 .6"
-    rotation="0 0 12"
-    radius=".025"
-    height=".8"
-    color="#111827"
-  ></a-cylinder>
-
-  <a-cylinder
-    position="-.2 .3 .5"
-    rotation="0 0 -8"
-    radius=".025"
-    height=".8"
-    color="#1e293b"
-  ></a-cylinder>
-
+<a-entity position="5.2 0 -2">
+  <a-box position="0 1.5 0" width=".8" height="3" depth="1.6" color="#0a0f18" material="roughness:.4;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="-.38 2.2 0" width=".02" height=".15" depth="1.2" color="#22c55e" material="emissive:#22c55e; emissiveIntensity:1"></a-box>
+  <a-box position="-.38 1.8 0" width=".02" height=".15" depth="1.2" color="#06b6d4" material="emissive:#06b6d4; emissiveIntensity:1"></a-box>
+  <a-box position="-.38 1.4 0" width=".02" height=".15" depth="1.2" color="#eab308" material="emissive:#eab308; emissiveIntensity:1"></a-box>
+  <a-cylinder position="-.3 .3 .6" rotation="0 0 12" radius=".025" height=".8" color="#111827"></a-cylinder>
+  <a-cylinder position="-.2 .3 .5" rotation="0 0 -8" radius=".025" height=".8" color="#1e293b"></a-cylinder>
 </a-entity>
 
-
 <!-- =========================================================
-     CARRINHO DE FERRAMENTAS (NOVO — REFORÇA O CLIMA DE OFICINA)
+     CARRINHO DE FERRAMENTAS (INALTERADO)
 ========================================================= -->
-
 <a-entity position="3.6 0 1.8" rotation="0 20 0">
-
-  <a-box
-    position="0 .55 0"
-    width=".7"
-    height=".08"
-    depth=".45"
-    color="#b91c1c"
-    material="roughness:.35;metalness:.6"
-    shadow="cast:true;receive:true"
-  ></a-box>
-
-  <a-box
-    position="0 .3 0"
-    width=".68"
-    height=".42"
-    depth=".43"
-    color="#991b1b"
-    material="roughness:.4;metalness:.55"
-  ></a-box>
-
-  <a-box
-    position="0 .38 .22"
-    width=".5"
-    height=".08"
-    depth=".02"
-    color="#1f2937"
-  ></a-box>
-
-  <a-box
-    position="0 .2 .22"
-    width=".5"
-    height=".08"
-    depth=".02"
-    color="#1f2937"
-  ></a-box>
-
-  <!-- RODÍZIOS -->
+  <a-box position="0 .55 0" width=".7" height=".08" depth=".45" color="#b91c1c" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .3 0" width=".68" height=".42" depth=".43" color="#991b1b" material="roughness:.4;metalness:.55"></a-box>
+  <a-box position="0 .38 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
+  <a-box position="0 .2 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
   <a-cylinder position="-.3 .08 -.18" radius=".07" height=".05" color="#111827"></a-cylinder>
   <a-cylinder position=".3 .08 -.18" radius=".07" height=".05" color="#111827"></a-cylinder>
   <a-cylinder position="-.3 .08 .18" radius=".07" height=".05" color="#111827"></a-cylinder>
   <a-cylinder position=".3 .08 .18" radius=".07" height=".05" color="#111827"></a-cylinder>
-
-  <!-- FERRAMENTAS SOBRE O CARRINHO -->
-  <a-cylinder
-    position="-.15 .61 0"
-    rotation="0 0 90"
-    radius=".012"
-    height=".22"
-    color="#facc15"
-  ></a-cylinder>
-
-  <a-box
-    position=".12 .6 -.05"
-    width=".16"
-    height=".02"
-    depth=".05"
-    color="#38bdf8"
-  ></a-box>
-
+  <a-cylinder position="-.15 .61 0" rotation="0 0 90" radius=".012" height=".22" color="#facc15"></a-cylinder>
+  <a-box position=".12 .6 -.05" width=".16" height=".02" depth=".05" color="#38bdf8"></a-box>
 </a-entity>
 
+<!-- =========================================================
+     PLATAFORMA ELEVADA COM CORRIMÃO E ESCADA (novo — estilo do print)
+========================================================= -->
+<a-entity position="-4.4 0 0">
+  <a-box position="0 .1 0" width="1.6" height=".2" depth="6.5" color="#070c14" material="roughness:.3;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .05 0" width="1.5" height=".02" depth="6.4" color="#06b6d4" material="emissive:#06b6d4; emissiveIntensity:.6"></a-box>
+
+  <!-- CORRIMÃO -->
+  <a-cylinder position=".78 .55 -3" radius=".02" height=".9" color="#cbd5e1"></a-cylinder>
+  <a-cylinder position=".78 .55 0" radius=".02" height=".9" color="#cbd5e1"></a-cylinder>
+  <a-cylinder position=".78 .55 3" radius=".02" height=".9" color="#cbd5e1"></a-cylinder>
+  <a-box position=".78 1 -1.5" rotation="0 0 0" width=".02" height=".02" depth="3" color="#e2e8f0"></a-box>
+  <a-box position=".78 1 1.5" rotation="0 0 0" width=".02" height=".02" depth="3" color="#e2e8f0"></a-box>
+
+  <!-- ESCADA -->
+  <a-box position="0 .04 3.4" width="1.4" height=".08" depth=".3" color="#1e293b"></a-box>
+  <a-box position="0 -.02 3.7" width="1.4" height=".08" depth=".3" color="#1e293b"></a-box>
+</a-entity>
 
 <!-- =========================================================
-     PAINEL DE COMANDOS UNIFICADO
-     Um único painel, organizado em duas colunas:
-     esquerda = controles VR, direita = controles PC
+     CONSOLES BAIXOS COM TELA (novo — estilo do print)
 ========================================================= -->
+<a-entity position="-4.1 0 -3.4" rotation="0 18 0">
+  <a-box position="0 .32 0" width="1" height=".64" depth=".55" color="#080d16" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .05 0" width="1" height=".02" depth=".55" color="#22d3ee" material="emissive:#22d3ee; emissiveIntensity:.9"></a-box>
+  <a-plane position="0 .66 0" rotation="-90 0 0" width=".8" height=".4" color="#38bdf8" material="emissive:#38bdf8; emissiveIntensity:.6"></a-plane>
+</a-entity>
 
+<a-entity position="3.9 0 -4.5" rotation="0 -25 0">
+  <a-box position="0 .32 0" width="1" height=".64" depth=".55" color="#080d16" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .05 0" width="1" height=".02" depth=".55" color="#22d3ee" material="emissive:#22d3ee; emissiveIntensity:.9"></a-box>
+  <a-plane position="0 .66 0" rotation="-90 0 0" width=".8" height=".4" color="#38bdf8" material="emissive:#38bdf8; emissiveIntensity:.6"></a-plane>
+</a-entity>
+
+<a-entity position="-4.6 0 3.7" rotation="0 90 0">
+  <a-box position="0 .32 0" width="1" height=".64" depth=".55" color="#080d16" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
+  <a-box position="0 .05 0" width="1" height=".02" depth=".55" color="#22d3ee" material="emissive:#22d3ee; emissiveIntensity:.9"></a-box>
+  <a-plane position="0 .66 0" rotation="-90 0 0" width=".8" height=".4" color="#38bdf8" material="emissive:#38bdf8; emissiveIntensity:.6"></a-plane>
+</a-entity>
+
+<!-- =========================================================
+     ORBES VERDES FLUTUANTES (novo — estilo do print)
+========================================================= -->
+<a-sphere position="-4.1 2.05 -3.4" radius=".06" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.4" animation__float="property: position; to: -4.1 2.25 -3.4; dir: alternate; dur: 2400; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="3.9 1.95 -4.5" radius=".06" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.4" animation__float="property: position; to: 3.9 2.15 -4.5; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="-4.6 2.15 3.7" radius=".06" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.4" animation__float="property: position; to: -4.6 2.35 3.7; dir: alternate; dur: 2600; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="5.2 3.1 -2" radius=".06" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.4" animation__float="property: position; to: 5.2 3.3 -2; dir: alternate; dur: 2300; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="0 1.5 0" radius=".05" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.3" animation__float="property: position; to: 0 1.68 0; dir: alternate; dur: 2100; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="-1 1.4 -.5" radius=".05" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.3" animation__float="property: position; to: -1 1.6 -.5; dir: alternate; dur: 1900; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="3.6 1.15 1.8" radius=".05" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.3" animation__float="property: position; to: 3.6 1.33 1.8; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"></a-sphere>
+<a-sphere position="-4.4 1.3 0" radius=".05" color="#4ade80" material="emissive:#4ade80; emissiveIntensity:1.3" animation__float="property: position; to: -4.4 1.5 0; dir: alternate; dur: 2200; loop: true; easing: easeInOutSine"></a-sphere>
+
+<!-- =========================================================
+     PAINEL DE COMANDOS — AGORA FLUTUANTE (conteúdo inalterado)
+========================================================= -->
 <a-entity
-
   id="controlPanel"
-
-  position="0 1.8 -5.7"
-
+  position="0 1.8 -5.3"
   rotation="0 0 0"
-
+  animation__float="property: position; to: 0 1.95 -5.3; dir: alternate; dur: 3000; loop: true; easing: easeInOutSine"
 >
 
+  <a-box width="5.6" height="3.1" depth=".1" color="#060a12" material="roughness:.4;metalness:.55"></a-box>
+  <a-box width="5.48" height="2.98" depth=".035" position="0 0 .06" color="#0284c7"></a-box>
+  <a-plane width="5.36" height="2.86" position="0 0 .09" color="#0b1220" material="roughness:.6;metalness:.1"></a-plane>
 
-  <!-- MOLDURA EXTERNA -->
+  <a-plane width="5.36" height=".42" position="0 1.22 .095" color="#0f3f66"></a-plane>
+  <a-text value="PAINEL DE COMANDOS" position="0 1.22 .11" align="center" anchor="center" baseline="center" width="4" color="#e0f2fe"></a-text>
+  <a-text value="NEXUS ATLAS" position="0 .98 .11" align="center" anchor="center" baseline="center" width="2.4" color="#38bdf8"></a-text>
 
-  <a-box
+  <a-box width=".012" height="2.05" depth=".01" position="0 -.06 .1" color="#1e3a5f"></a-box>
 
-    width="5.6"
-
-    height="3.1"
-
-    depth=".1"
-
-    color="#060a12"
-
-    material="roughness:.4;metalness:.55"
-
-  ></a-box>
-
-
-  <!-- FILETE AZUL -->
-
-  <a-box
-
-    width="5.48"
-
-    height="2.98"
-
-    depth=".035"
-
-    position="0 0 .06"
-
-    color="#0284c7"
-
-  ></a-box>
-
-
-  <!-- FUNDO INTERNO -->
-
-  <a-plane
-
-    width="5.36"
-
-    height="2.86"
-
-    position="0 0 .09"
-
-    color="#0b1220"
-
-    material="roughness:.6;metalness:.1"
-
-  ></a-plane>
-
-
-  <!-- CABEÇALHO -->
-
-  <a-plane
-
-    width="5.36"
-
-    height=".42"
-
-    position="0 1.22 .095"
-
-    color="#0f3f66"
-
-  ></a-plane>
-
-  <a-text
-
-    value="PAINEL DE COMANDOS"
-
-    position="0 1.22 .11"
-
-    align="center"
-
-    anchor="center"
-
-    baseline="center"
-
-    width="4"
-
-    color="#e0f2fe"
-
-  ></a-text>
-
-  <a-text
-
-    value="NEXUS ATLAS"
-
-    position="0 .98 .11"
-
-    align="center"
-
-    anchor="center"
-
-    baseline="center"
-
-    width="2.4"
-
-    color="#38bdf8"
-
-  ></a-text>
-
-
-  <!-- LINHA DIVISÓRIA VERTICAL ENTRE AS DUAS COLUNAS -->
-
-  <a-box
-
-    width=".012"
-
-    height="2.05"
-
-    depth=".01"
-
-    position="0 -.06 .1"
-
-    color="#1e3a5f"
-
-  ></a-box>
-
-
-  <!-- ===================================================
-       COLUNA ESQUERDA — CONTROLES VR
-  =================================================== -->
-
-  <a-text
-
-    value="CONTROLES VR"
-
-    position="-2.55 .78 .11"
-
-    align="left"
-
-    width="2.6"
-
-    color="#22d3ee"
-
-  ></a-text>
-
+  <!-- COLUNA ESQUERDA — CONTROLES VR -->
+  <a-text value="CONTROLES VR" position="-2.55 .78 .11" align="left" width="2.6" color="#22d3ee"></a-text>
   <a-box width="1.3" height=".012" depth=".01" position="-1.9 .68 .1" color="#164e63"></a-box>
-
-
-  <!-- LINHA: ANALOGICO ESQUERDO -->
 
   <a-box width=".26" height=".26" depth=".02" position="-2.5 .42 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
   <a-circle radius=".07" position="-2.5 .42 .112" color="#67e8f9"></a-circle>
   <a-text value="ANALOGICO ESQUERDO" position="-2.28 .47 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Mover o personagem" position="-2.28 .30 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- LINHA: ANALOGICO DIREITO -->
-
   <a-box width=".26" height=".26" depth=".02" position="-2.5 .04 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
   <a-circle radius=".07" position="-2.5 .04 .112" color="#67e8f9"></a-circle>
   <a-text value="ANALOGICO DIREITO" position="-2.28 .09 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Girar a visao / o corpo" position="-2.28 -.08 .11" align="left" width="2.2" color="#94a3b8"></a-text>
-
-
-  <!-- LINHA: BOTAO X -->
 
   <a-box width=".26" height=".26" depth=".02" position="-2.5 -.34 .1" color="#1d4ed8" material="roughness:.4;metalness:.3"></a-box>
   <a-text value="X" position="-2.5 -.34 .112" align="center" baseline="center" width="1.4" color="#dbeafe"></a-text>
   <a-text value="BOTAO X" position="-2.28 -.29 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Pular" position="-2.28 -.46 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- LINHA: CLIQUE STICK DIREITO -->
-
   <a-box width=".26" height=".26" depth=".02" position="-2.5 -.72 .1" color="#0e7490" material="roughness:.4;metalness:.3"></a-box>
   <a-circle radius=".05" position="-2.5 -.72 .112" color="#67e8f9"></a-circle>
   <a-text value="CLIQUE STICK DIREITO" position="-2.28 -.67 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Aponte e solte p/ teleportar" position="-2.28 -.84 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- LINHA: MAOS -->
-
   <a-box width=".26" height=".26" depth=".02" position="-2.5 -1.1 .1" color="#15803d" material="roughness:.4;metalness:.3"></a-box>
   <a-text value="MAOS" position="-2.28 -1.05 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Rastreamento de maos" position="-2.28 -1.22 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- ===================================================
-       COLUNA DIREITA — CONTROLES PC
-  =================================================== -->
-
-  <a-text
-
-    value="CONTROLES PC"
-
-    position=".25 .78 .11"
-
-    align="left"
-
-    width="2.6"
-
-    color="#facc15"
-
-  ></a-text>
-
+  <!-- COLUNA DIREITA — CONTROLES PC -->
+  <a-text value="CONTROLES PC" position=".25 .78 .11" align="left" width="2.6" color="#facc15"></a-text>
   <a-box width="1.3" height=".012" depth=".01" position=".9 .68 .1" color="#78350f"></a-box>
-
-
-  <!-- LINHA: WASD -->
 
   <a-box width=".26" height=".26" depth=".02" position=".3 .42 .1" color="#a16207" material="roughness:.4;metalness:.3"></a-box>
   <a-text value="WASD" position=".3 .42 .112" align="center" baseline="center" width="1.1" color="#fef9c3"></a-text>
   <a-text value="W A S D" position=".52 .47 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Andar" position=".52 .30 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- LINHA: SETAS -->
-
   <a-box width=".26" height=".26" depth=".02" position=".3 .04 .1" color="#a16207" material="roughness:.4;metalness:.3"></a-box>
   <a-text value="SETAS" position=".3 .04 .112" align="center" baseline="center" width="1" color="#fef9c3"></a-text>
   <a-text value="SETAS DIRECIONAIS" position=".52 .09 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Cima/baixo = andar, esq/dir = girar" position=".52 -.08 .11" align="left" width="2.2" color="#94a3b8"></a-text>
-
-
-  <!-- LINHA: ESPACO -->
 
   <a-box width=".26" height=".26" depth=".02" position=".3 -.34 .1" color="#1d4ed8" material="roughness:.4;metalness:.3"></a-box>
   <a-text value="SPC" position=".3 -.34 .112" align="center" baseline="center" width="1.1" color="#dbeafe"></a-text>
   <a-text value="ESPACO" position=".52 -.29 .11" align="left" width="2.4" color="#ffffff"></a-text>
   <a-text value="Pular" position=".52 -.46 .11" align="left" width="2.2" color="#94a3b8"></a-text>
 
-
-  <!-- RODAPÉ -->
-
   <a-box width="5.36" height=".26" depth=".005" position="0 -1.32 .095" color="#0f3f66"></a-box>
-
-  <a-text
-    value="SENAI SAO CARLOS - MECATRONICA"
-    position="0 -1.32 .11"
-    align="center"
-    baseline="center"
-    width="4.6"
-    color="#e0f2fe"
-  ></a-text>
-
+  <a-text value="SENAI SAO CARLOS - MECATRONICA" position="0 -1.32 .11" align="center" baseline="center" width="4.6" color="#e0f2fe"></a-text>
 
 </a-entity>
-
-
 
 <!-- =========================================================
      NOME DA SALA
 ========================================================= -->
-
 <a-text
-
   value="NEXUS ATLAS"
-
   position="0 4.3 -5.8"
-
   align="center"
-
   width="6"
-
   color="#38bdf8"
-
   side="double"
-
+  animation__float="property: position; to: 0 4.4 -5.8; dir: alternate; dur: 3200; loop: true; easing: easeInOutSine"
 ></a-text>
-
 
 </a-scene>
 
