@@ -90,27 +90,24 @@ function fail(msg){console.error(msg);loaded();showError(msg,false,true)}
 
 
 
-/* ============ 1) CONFIGURAÇÃO DOS 5 EIXOS ============
-   Esta versão foi adaptada ao GLB novo: braco_robotico_em_pe_nexus_atlas(1).glb.
-   Os pivôs e eixos são medidos diretamente do modelo carregado, evitando depender
-   das coordenadas do braço antigo. Os limites abaixo são PROVISÓRIOS para teste. */
+/* ============ 1) CONFIGURAÇÃO DOS 5 EIXOS — PIVÔS CORRIGIDOS ============
+   IMPORTANTE: o GLB novo exporta os grupos das peças com origem em (0,0,0).
+   Por isso, usar a origem do nó como pivô faz as peças "escaparem" ao girar.
+   Nesta versão os pivôs são calculados a partir dos furos reais da geometria. */
 
 const AXES = [
-  // LIMITES SEGUROS / TRAVAS MECÂNICAS DO MODELO VIRTUAL.
-  // Se depois quisermos ampliar um eixo, alteramos apenas min/max aqui.
-  {id:'waist',    nome:'Base',     min:-80, max: 80, home:0, speed: 85, tau:.12},
-  {id:'shoulder', nome:'Ombro',    min:-45, max: 45, home:0, speed: 75, tau:.13},
-  {id:'elbow',    nome:'Cotovelo', min:-60, max: 60, home:0, speed: 75, tau:.13},
-  {id:'pitch',    nome:'Pulso',    min:-35, max: 35, home:0, speed: 80, tau:.12},
-  {id:'grip',     nome:'Garra',    min:  0, max: 18, home:0, speed: 90, tau:.10}
+  {id:'waist',    nome:'Base',     min:-80, max: 80, home:0, speed:80, tau:.14},
+  {id:'shoulder', nome:'Ombro',    min:-45, max: 45, home:0, speed:70, tau:.15},
+  {id:'elbow',    nome:'Cotovelo', min:-60, max: 60, home:0, speed:70, tau:.15},
+  {id:'pitch',    nome:'Pulso',    min:-30, max: 30, home:0, speed:70, tau:.14},
+  {id:'grip',     nome:'Garra',    min:  0, max: 14, home:0, speed:80, tau:.12}
 ];
 AXES.forEach((a,i)=>a.i=i);
 
 const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:false},
   set(id,val){
-    if(this.halt) return;
-    const a=AXES.find(x=>x.id===id);
-    if(!a) return;
+    if(this.halt)return;
+    const a=AXES.find(x=>x.id===id); if(!a)return;
     this.t[id]=clamp(val,a.min,a.max);
   },
   freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
@@ -120,100 +117,99 @@ const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:f
 };
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
 
-/* ============ 2) NOVO GLB + CINEMÁTICA DINÂMICA ============ */
+/* ============ 2) MODELO + CINEMÁTICA COM PIVÔS REAIS ============ */
 AFRAME.registerComponent('braco-rig',{
   schema:{height:{default:1.15},table:{type:'selector',default:'#tableTop'}},
 
   init(){
     this.ready=false;
-    this.el.addEventListener('model-loaded',()=>{
-      try{this.build()}catch(e){console.error(e);fail('Braço: '+e.message)}
-    });
-    this.el.addEventListener('model-error',()=>
-      fail('Falha ao carregar models/braco.glb. Use servidor HTTP/HTTPS e confira a pasta models.')
-    );
+    this.el.addEventListener('model-loaded',()=>{try{this.build()}catch(e){console.error(e);fail('Braço: '+e.message)}});
+    this.el.addEventListener('model-error',()=>fail('Falha ao carregar models/braco.glb. Use servidor HTTP/HTTPS e confira a pasta models.'));
     window.addEventListener('keydown',e=>{if(e.code==='KeyP')this.setDebug(!this.dbgOn)});
   },
 
   build(){
-    const T=THREE, el=this.el, root=el.getObject3D('mesh');
-    if(!root) throw new Error('GLB sem cena.');
+    const T=THREE,el=this.el,root=el.getObject3D('mesh');
+    if(!root)throw new Error('GLB sem cena.');
 
-    // O modelo novo contém estes nomes exportados do CAD.
-    const find=(name)=>{
+    const find=name=>{
       let r=null;
       root.traverse(o=>{
-        const n=o.userData && o.userData.name;
-        if(!r && (o.name===name || n===name || o.name===T.PropertyBinding.sanitizeNodeName(name))) r=o;
+        const n=o.userData&&o.userData.name;
+        if(!r&&(o.name===name||n===name||o.name===T.PropertyBinding.sanitizeNodeName(name)))r=o;
       });
-      if(!r) throw new Error('peça não encontrada no GLB: '+name);
+      if(!r)throw new Error('peça não encontrada no GLB: '+name);
       return r;
     };
 
     const P={
-      waist:find('Waist:1'),
-      arm1:find('Arm 01:1'),
-      arm2:find('Arm 02 v3:1'),
-      arm3:find('Arm 03:1'),
-      wrist:find('Gripper base:1'),
-      gear1:find('gear1:1'),
-      gear2:find('gear2:1'),
-      link1:find('grip link 1:1'),
-      link2:find('grip link 1:2'),
-      finger1:find('Gripper 1 (1):1'),
-      finger2:find('Gripper 1:1')
+      waist:find('Waist:1'), arm1:find('Arm 01:1'), arm2:find('Arm 02 v3:1'),
+      arm3:find('Arm 03:1'), wrist:find('Gripper base:1'),
+      gear1:find('gear1:1'), gear2:find('gear2:1'),
+      link1:find('grip link 1:1'), link2:find('grip link 1:2'),
+      finger1:find('Gripper 1 (1):1'), finger2:find('Gripper 1:1')
     };
 
-    // Grupo de normalização. O GLB permanece intacto e as juntas são criadas ao redor dele.
-    const stage=new T.Group();
-    stage.name='synchroarm-stage';
-    el.object3D.add(stage);
-    stage.add(root);
-    stage.updateMatrixWorld(true);
-    root.updateMatrixWorld(true);
+    const stage=new T.Group(); stage.name='synchroarm-stage'; el.object3D.add(stage); stage.add(root);
+    stage.updateMatrixWorld(true); root.updateMatrixWorld(true);
 
-    const tmpP=new T.Vector3(), tmpQ=new T.Quaternion(), stageQ=new T.Quaternion();
-    stage.getWorldQuaternion(stageQ);
-    const invStageQ=stageQ.clone().invert();
-
-    // Posição do origin de uma peça convertida para coordenadas do stage.
-    const pointOf=(obj)=>{
-      obj.getWorldPosition(tmpP);
-      return stage.worldToLocal(tmpP.clone());
+    // Retorna a malha principal de cada conjunto. No Arm 01 escolhemos a maior,
+    // pois é nela que estão os dois furos mecânicos do ombro/cotovelo.
+    const mainMesh=obj=>{
+      let best=null,bestSize=-1;
+      obj.traverse(o=>{
+        if(!o.isMesh||!o.geometry)return;
+        o.geometry.computeBoundingBox();
+        const b=o.geometry.boundingBox,sz=new T.Vector3(); b.getSize(sz);
+        const score=sz.length();
+        if(score>bestSize){best=o;bestSize=score;}
+      });
+      if(!best)throw new Error('malha interna não encontrada em '+obj.name);
+      return best;
     };
 
-    // Eixo local de uma peça convertido para coordenadas do stage.
-    const axisOf=(obj,axis)=>{
-      obj.getWorldQuaternion(tmpQ);
-      return axis.clone().applyQuaternion(tmpQ).applyQuaternion(invStageQ).normalize();
+    const MW=mainMesh(P.waist), MA1=mainMesh(P.arm1), MA3=mainMesh(P.arm3), MG1=mainMesh(P.gear1), MG2=mainMesh(P.gear2);
+
+    // Converte um ponto em coordenadas CAD da própria malha para coordenadas do stage.
+    const point=(mesh,xyz)=>{
+      const p=new T.Vector3(xyz[0],xyz[1],xyz[2]);
+      mesh.localToWorld(p); return stage.worldToLocal(p);
+    };
+    // Converte uma direção local da malha para a direção equivalente no stage.
+    const axis=(mesh,xyz)=>{
+      const qM=new T.Quaternion(),qS=new T.Quaternion();
+      mesh.getWorldQuaternion(qM); stage.getWorldQuaternion(qS);
+      return new T.Vector3(xyz[0],xyz[1],xyz[2]).applyQuaternion(qM).applyQuaternion(qS.invert()).normalize();
     };
 
-    const pW=pointOf(P.waist);
-    const pS=pointOf(P.arm1);
-    const pE=pointOf(P.arm2);
-    const pP=pointOf(P.wrist);
-    const pG1=pointOf(P.gear1);
-    const pG2=pointOf(P.gear2);
+    /* PIVÔS medidos nos furos circulares do GLB:
+       Arm 01: furo inferior ≈ (0,0,1.05), furo superior ≈ (0,11.93,1.05)
+       Arm 03: furo inferior do pulso ≈ (0,0.92,0)
+       Engrenagens: centros aproximados dos círculos dentados. */
+    const pW=point(MW,[0,0,0]);
+    const pS=point(MA1,[0,0,1.05]);
+    const pE=point(MA1,[0,11.93,1.05]);
+    const pP=point(MA3,[0,0.92,0]);
+    const pG1=point(MG1,[-1.04,.20,-.18]);
+    const pG2=point(MG2,[-.96,.20,-.27]);
 
-    // No GLB novo, estes eixos correspondem aos referenciais das peças do CAD.
-    const aWaist=axisOf(P.waist,new T.Vector3(0,1,0));       // eixo vertical da base
-    const aShoulder=axisOf(P.arm1,new T.Vector3(0,0,1));    // eixo do ombro
-    const aElbow=axisOf(P.arm2,new T.Vector3(0,0,-1));      // mesmo sentido físico do ombro
-    const aPitch=axisOf(P.wrist,new T.Vector3(1,0,0));      // eixo transversal do pulso
-    const aGrip=axisOf(P.gear1,new T.Vector3(0,1,0));       // normal do plano das engrenagens
+    const aWaist=axis(MW,[0,1,0]);
+    const aArm=axis(MA1,[0,0,1]);
+    const aPitch=axis(MA3,[0,0,1]);
+    const aGrip1=axis(MG1,[0,1,0]);
+    const aGrip2=axis(MG2,[0,1,0]);
 
-    // Junta em posição absoluta do stage; quando filha de outra junta, converte para local.
     const joint=(name,abs,parent)=>{
-      const j=new T.Object3D();
-      j.name=name;
-      parent.add(j);
-      if(parent===stage){
-        j.position.copy(abs);
-      }else{
+      const j=new T.Object3D(); j.name=name; parent.add(j);
+      if(parent===stage)j.position.copy(abs);
+      else{
         parent.updateMatrixWorld(true);
-        const world=stage.localToWorld(abs.clone());
-        j.position.copy(parent.worldToLocal(world));
+        const w=stage.localToWorld(abs.clone());
+        j.position.copy(parent.worldToLocal(w));
       }
+      j.userData.lockP=j.position.clone();
+      j.userData.lockS=j.scale.clone();
+      j.userData.q0=j.quaternion.clone();
       return j;
     };
 
@@ -221,164 +217,82 @@ AFRAME.registerComponent('braco-rig',{
     const J2=joint('j_ombro',pS,J1);
     const J3=joint('j_cotovelo',pE,J2);
     const J4=joint('j_pulso',pP,J3);
-    const G1=joint('j_garra_esq',pG1,J4);
-    const G2=joint('j_garra_dir',pG2,J4);
+    const G1=joint('j_garra_1',pG1,J4);
+    const G2=joint('j_garra_2',pG2,J4);
 
-    // Reparenting preservando a pose original.
-    // Tudo a partir do ombro herda a rotação da base; a partir do cotovelo herda o ombro etc.
+    // Reparenting preserva a pose HOME, mas agora cada conjunto gira em torno do furo correto.
     stage.updateMatrixWorld(true);
     J1.attach(P.waist);
     J2.attach(P.arm1);
-    J3.attach(P.arm2);
-    J3.attach(P.arm3);
+    J3.attach(P.arm2); J3.attach(P.arm3);
     J4.attach(P.wrist);
-
-    // Cada lado da garra acompanha sua engrenagem. É uma aproximação visual estável
-    // do mecanismo; o valor de abertura pode depois ser calibrado contra o servo real.
     G1.attach(P.gear1); G1.attach(P.link1); G1.attach(P.finger1);
     G2.attach(P.gear2); G2.attach(P.link2); G2.attach(P.finger2);
 
-    /* ===== TRAVA RÍGIDA DAS ARTICULAÇÕES =====
-       Guardamos a pose local ORIGINAL de cada junta e de cada peça logo após o
-       reparenting. Em cada frame restauramos posição e escala; somente a rotação
-       autorizada do eixo pode mudar. Isso evita que uma peça 'ande', deslize ou
-       acumule erro quando o usuário movimenta os sliders várias vezes. */
-    const JOINTS=[J1,J2,J3,J4,G1,G2];
-    JOINTS.forEach(j=>{
-      j.userData.lockP=j.position.clone();
-      j.userData.lockS=j.scale.clone();
-      j.userData.q0=j.quaternion.clone();
-    });
+    // Base fixa do robô e pés ficam fora das juntas móveis.
+    // Assim eles nunca acompanham acidentalmente um eixo.
 
-    const PIECES=[P.waist,P.arm1,P.arm2,P.arm3,P.wrist,P.gear1,P.gear2,P.link1,P.link2,P.finger1,P.finger2];
-    PIECES.forEach(o=>{
-      o.userData.nxLock={
-        p:o.position.clone(),
-        q:o.quaternion.clone(),
-        s:o.scale.clone()
-      };
-    });
-
-    const enforceLocks=()=>{
-      JOINTS.forEach(j=>{
-        j.position.copy(j.userData.lockP);
-        j.scale.copy(j.userData.lockS);
-      });
-      PIECES.forEach(o=>{
-        const L=o.userData.nxLock;
-        o.position.copy(L.p);
-        o.quaternion.copy(L.q);
-        o.scale.copy(L.s);
-      });
-    };
-
-    const setRot=(j,axis,deg)=>{
-      // TRAVA ABSOLUTA: a junta nunca muda de posição; apenas gira no próprio pivô.
+    const setRot=(j,ax,deg)=>{
       j.position.copy(j.userData.lockP);
       j.scale.copy(j.userData.lockS);
       j.quaternion.copy(j.userData.q0);
-      const q=new T.Quaternion().setFromAxisAngle(axis,deg*D2R);
-      j.quaternion.multiply(q);
+      j.quaternion.multiply(new T.Quaternion().setFromAxisAngle(ax,deg*D2R));
     };
 
     this.pose=()=>{
-      enforceLocks();
       const s=NX.v;
       setRot(J1,aWaist,clamp(s.waist,-80,80));
-      setRot(J2,aShoulder,clamp(s.shoulder,-45,45));
-      setRot(J3,aElbow,clamp(s.elbow,-60,60));
-      setRot(J4,aPitch,clamp(s.pitch,-35,35));
-
-      // Garra com abertura reduzida para não escapar do mecanismo visual.
-      const g=clamp(s.grip,0,18);
-      setRot(G1,aGrip, g*0.65);
-      setRot(G2,aGrip,-g*0.65);
+      setRot(J2,aArm,clamp(s.shoulder,-45,45));
+      setRot(J3,aArm,clamp(s.elbow,-60,60));
+      setRot(J4,aPitch,clamp(s.pitch,-30,30));
+      const g=clamp(s.grip,0,14);
+      setRot(G1,aGrip1, g*.55);
+      setRot(G2,aGrip2,-g*.55);
     };
 
-    // Primeira pose antes de medir/normalizar.
-    this.pose();
-    stage.updateMatrixWorld(true);
+    this.pose(); stage.updateMatrixWorld(true);
 
-    const box=new T.Box3().setFromObject(stage,true);
-    const h=box.max.y-box.min.y;
-    if(!isFinite(h)||h<=0) throw new Error('não foi possível medir o modelo.');
+    const box=new T.Box3().setFromObject(stage,true),h=box.max.y-box.min.y;
+    if(!isFinite(h)||h<=0)throw new Error('não foi possível medir o modelo.');
+    const sc=this.data.height/h; stage.scale.setScalar(sc);
 
-    const sc=this.data.height/h;
-    stage.scale.setScalar(sc);
-
-    // Centraliza pelo eixo da cintura e apoia os pés em y=0 local.
+    // Centraliza pela base real e apoia o modelo sobre a mesa.
     stage.position.set(-sc*pW.x,-sc*box.min.y,-sc*pW.z);
-
-    // Coloca o braço sobre a mesa.
-    el.object3D.position.set(0,0,0);
-    el.object3D.updateMatrixWorld(true);
-    const table=this.data.table;
-    const tb=table ? new T.Box3().setFromObject(table.object3D) : null;
-    const top=tb && isFinite(tb.max.y) ? tb.max.y : .905;
-    el.object3D.position.y=top;
+    el.object3D.position.set(0,0,0); el.object3D.updateMatrixWorld(true);
+    const tb=this.data.table?new T.Box3().setFromObject(this.data.table.object3D):null;
+    const top=tb&&isFinite(tb.max.y)?tb.max.y:.905; el.object3D.position.y=top;
 
     root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
 
-    // Debug: P mostra pivôs/eixos.
-    const lab=(txt)=>{
-      const c=document.createElement('canvas');c.width=320;c.height=64;
-      const x=c.getContext('2d');x.fillStyle='rgba(0,0,0,.75)';x.fillRect(0,0,320,64);
-      x.fillStyle='#fff';x.font='bold 28px sans-serif';x.fillText(txt,8,42);
-      const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false}));
-      sp.scale.set(.08,.016,1);sp.position.set(0,.025,0);sp.renderOrder=999;return sp;
+    const lab=txt=>{
+      const c=document.createElement('canvas');c.width=320;c.height=64;const x=c.getContext('2d');
+      x.fillStyle='rgba(0,0,0,.75)';x.fillRect(0,0,320,64);x.fillStyle='#fff';x.font='bold 28px sans-serif';x.fillText(txt,8,42);
+      const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false}));sp.scale.set(.08,.016,1);sp.position.set(0,.025,0);sp.renderOrder=999;return sp;
     };
-    const dbgData=[
-      [J1,aWaist,'Base',0xff5555],
-      [J2,aShoulder,'Ombro',0xffaa00],
-      [J3,aElbow,'Cotovelo',0x55ff55],
-      [J4,aPitch,'Pulso',0x55aaff],
-      [G1,aGrip,'Garra',0xff55ff]
-    ];
     this.dbg=[];
-    dbgData.forEach(([j,a,n,c])=>{
-      const g=new T.Group();g.userData.dbg=true;
-      g.add(new T.ArrowHelper(a.clone().normalize(),new T.Vector3(),.06,c));
-      g.add(new T.Mesh(new T.SphereGeometry(.004),new T.MeshBasicMaterial({color:0xffffff,depthTest:false})));
-      g.add(lab(n));g.visible=false;j.add(g);this.dbg.push(g);
+    [[J1,aWaist,'Base',0xff5555],[J2,aArm,'Ombro',0xffaa00],[J3,aArm,'Cotovelo',0x55ff55],[J4,aPitch,'Pulso',0x55aaff],[G1,aGrip1,'Garra',0xff55ff]].forEach(([j,a,n,c])=>{
+      const d=new T.Group();d.userData.dbg=true;d.add(new T.ArrowHelper(a.clone(),new T.Vector3(),.06,c));
+      d.add(new T.Mesh(new T.SphereGeometry(.004),new T.MeshBasicMaterial({color:0xffffff,depthTest:false})));d.add(lab(n));d.visible=false;j.add(d);this.dbg.push(d);
     });
 
-    this.joints=[J1,J2,J3,J4,G1,G2];
-    this.axes={aWaist,aShoulder,aElbow,aPitch,aGrip};
-    this.stage=stage;
-    this.ready=true;
-    this.dbgOn=/debug=1/.test(location.search);
-    this.setDebug(this.dbgOn);
-
-    console.info('[SynchroArm novo]',{
-      altura:h*sc,escala:sc,topoMesa:top,
-      pivots:{base:pW.toArray(),ombro:pS.toArray(),cotovelo:pE.toArray(),pulso:pP.toArray()},
-      axes:{base:aWaist.toArray(),ombro:aShoulder.toArray(),cotovelo:aElbow.toArray(),pulso:aPitch.toArray(),garra:aGrip.toArray()}
-    });
-
-    loaded();
-    showError('SynchroArm carregado — eixos com travas de posição e limites seguros.',true);
+    this.stage=stage;this.ready=true;this.dbgOn=/debug=1/.test(location.search);this.setDebug(this.dbgOn);
+    console.info('[SynchroArm pivôs corrigidos]',{pivots:{base:pW.toArray(),ombro:pS.toArray(),cotovelo:pE.toArray(),pulso:pP.toArray(),g1:pG1.toArray(),g2:pG2.toArray()}});
+    loaded();showError('SynchroArm v3 — pivôs mecânicos corrigidos e eixos travados.',true);
   },
 
-  setDebug(on){
-    this.dbgOn=on;
-    if(this.dbg)this.dbg.forEach(g=>g.visible=on);
-  },
+  setDebug(on){this.dbgOn=on;if(this.dbg)this.dbg.forEach(g=>g.visible=on)},
 
   tick(t,dtm){
     if(!this.ready)return;
-    const dt=Math.min(dtm/1000,.05);
-    let changed=false;
+    const dt=Math.min(dtm/1000,.05);let changed=false;
     for(const a of AXES){
       const d=NX.t[a.id]-NX.v[a.id];
       if(Math.abs(d)>.005){
         const m=a.speed*dt;
-        NX.v[a.id]=clamp(NX.v[a.id]+clamp(d*(1-Math.exp(-dt/a.tau)),-m,m),a.min,a.max);
-        changed=true;
-      }else if(d!==0){
-        NX.v[a.id]=NX.t[a.id];changed=true;
-      }
+        NX.v[a.id]=clamp(NX.v[a.id]+clamp(d*(1-Math.exp(-dt/a.tau)),-m,m),a.min,a.max);changed=true;
+      }else if(d!==0){NX.v[a.id]=NX.t[a.id];changed=true;}
     }
-    if(changed){this.pose();NX.ver++}
+    if(changed){this.pose();NX.ver++;}
   }
 });
 
@@ -838,7 +752,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 <div id="nx-load">Carregando braço robótico…</div>
 
-<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><small>Mesmo estado do painel VR. Tecla P: pivôs/eixos.</small></div>
+<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><small>v3 PIVÔS CORRIGIDOS • Tecla P: mostrar pivôs/eixos.</small></div>
 
 
 
