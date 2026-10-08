@@ -96,11 +96,13 @@ function fail(msg){console.error(msg);loaded();showError(msg,false,true)}
    das coordenadas do braço antigo. Os limites abaixo são PROVISÓRIOS para teste. */
 
 const AXES = [
-  {id:'waist',    nome:'Base',     min:-90, max: 90, home:0, speed:100, tau:.10},
-  {id:'shoulder', nome:'Ombro',    min:-65, max: 65, home:0, speed: 90, tau:.11},
-  {id:'elbow',    nome:'Cotovelo', min:-95, max: 95, home:0, speed: 90, tau:.11},
-  {id:'pitch',    nome:'Pulso',    min:-70, max: 70, home:0, speed:100, tau:.10},
-  {id:'grip',     nome:'Garra',    min:  0, max: 32, home:0, speed:120, tau:.08}
+  // LIMITES SEGUROS / TRAVAS MECÂNICAS DO MODELO VIRTUAL.
+  // Se depois quisermos ampliar um eixo, alteramos apenas min/max aqui.
+  {id:'waist',    nome:'Base',     min:-80, max: 80, home:0, speed: 85, tau:.12},
+  {id:'shoulder', nome:'Ombro',    min:-45, max: 45, home:0, speed: 75, tau:.13},
+  {id:'elbow',    nome:'Cotovelo', min:-60, max: 60, home:0, speed: 75, tau:.13},
+  {id:'pitch',    nome:'Pulso',    min:-35, max: 35, home:0, speed: 80, tau:.12},
+  {id:'grip',     nome:'Garra',    min:  0, max: 18, home:0, speed: 90, tau:.10}
 ];
 AXES.forEach((a,i)=>a.i=i);
 
@@ -236,25 +238,61 @@ AFRAME.registerComponent('braco-rig',{
     G1.attach(P.gear1); G1.attach(P.link1); G1.attach(P.finger1);
     G2.attach(P.gear2); G2.attach(P.link2); G2.attach(P.finger2);
 
-    // Quaternions base ficam guardados para evitar acumulação numérica.
-    [J1,J2,J3,J4,G1,G2].forEach(j=>j.userData.q0=j.quaternion.clone());
+    /* ===== TRAVA RÍGIDA DAS ARTICULAÇÕES =====
+       Guardamos a pose local ORIGINAL de cada junta e de cada peça logo após o
+       reparenting. Em cada frame restauramos posição e escala; somente a rotação
+       autorizada do eixo pode mudar. Isso evita que uma peça 'ande', deslize ou
+       acumule erro quando o usuário movimenta os sliders várias vezes. */
+    const JOINTS=[J1,J2,J3,J4,G1,G2];
+    JOINTS.forEach(j=>{
+      j.userData.lockP=j.position.clone();
+      j.userData.lockS=j.scale.clone();
+      j.userData.q0=j.quaternion.clone();
+    });
+
+    const PIECES=[P.waist,P.arm1,P.arm2,P.arm3,P.wrist,P.gear1,P.gear2,P.link1,P.link2,P.finger1,P.finger2];
+    PIECES.forEach(o=>{
+      o.userData.nxLock={
+        p:o.position.clone(),
+        q:o.quaternion.clone(),
+        s:o.scale.clone()
+      };
+    });
+
+    const enforceLocks=()=>{
+      JOINTS.forEach(j=>{
+        j.position.copy(j.userData.lockP);
+        j.scale.copy(j.userData.lockS);
+      });
+      PIECES.forEach(o=>{
+        const L=o.userData.nxLock;
+        o.position.copy(L.p);
+        o.quaternion.copy(L.q);
+        o.scale.copy(L.s);
+      });
+    };
 
     const setRot=(j,axis,deg)=>{
+      // TRAVA ABSOLUTA: a junta nunca muda de posição; apenas gira no próprio pivô.
+      j.position.copy(j.userData.lockP);
+      j.scale.copy(j.userData.lockS);
       j.quaternion.copy(j.userData.q0);
       const q=new T.Quaternion().setFromAxisAngle(axis,deg*D2R);
       j.quaternion.multiply(q);
     };
 
     this.pose=()=>{
+      enforceLocks();
       const s=NX.v;
-      setRot(J1,aWaist,s.waist);
-      setRot(J2,aShoulder,s.shoulder);
-      setRot(J3,aElbow,s.elbow);
-      setRot(J4,aPitch,s.pitch);
+      setRot(J1,aWaist,clamp(s.waist,-80,80));
+      setRot(J2,aShoulder,clamp(s.shoulder,-45,45));
+      setRot(J3,aElbow,clamp(s.elbow,-60,60));
+      setRot(J4,aPitch,clamp(s.pitch,-35,35));
 
-      // Garra: lados opostos. Multiplicador visual evita abertura exagerada.
-      setRot(G1,aGrip, s.grip*0.90);
-      setRot(G2,aGrip,-s.grip*0.90);
+      // Garra com abertura reduzida para não escapar do mecanismo visual.
+      const g=clamp(s.grip,0,18);
+      setRot(G1,aGrip, g*0.65);
+      setRot(G2,aGrip,-g*0.65);
     };
 
     // Primeira pose antes de medir/normalizar.
@@ -318,7 +356,7 @@ AFRAME.registerComponent('braco-rig',{
     });
 
     loaded();
-    showError('Novo SynchroArm carregado — teste os 5 eixos pelo painel.',true);
+    showError('SynchroArm carregado — eixos com travas de posição e limites seguros.',true);
   },
 
   setDebug(on){
@@ -432,7 +470,7 @@ AFRAME.registerComponent('axis-panel',{
 
    const val=tx('0°',.33,y,.8,'#ffffff');
 
-   const lim=tx('lim. provisório '+a.min+'° … '+a.max+'°',X0,y-.05,.9,'#94a3b8');
+   const lim=tx('TRAVADO '+a.min+'° … '+a.max+'°',X0,y-.05,.9,'#94a3b8');
 
    const hit=add('a-plane',{width:.58,height:.1,position:(X0+L/2)+' '+y+' .006',material:'opacity:0;transparent:true',class:'hit'});hit.dataset.axis=i;
 
