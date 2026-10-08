@@ -191,7 +191,7 @@ AFRAME.registerComponent('axis-panel',{
   this.sensT=tx('SENS ×1.00',.31,-.35,.5,'#e0f2fe','center');
   this.stT=tx('',-.47,-.44,1.15,'#cbd5e1');
   this.tmp=new THREE.Vector3();this.pl=new THREE.Plane();this.q=new THREE.Quaternion();this.drag=null;this.lv=-1;this.lst='';
-  const sc=this.el.sceneEl;this.hands=sc.components['nexus-hands'];
+  const sc=this.el.sceneEl;Object.defineProperty(this,'hands',{get:()=>sc.components['nexus-hands']});
   sc.addEventListener('nx-pinch',e=>this.onPinch(e.detail));
   sc.addEventListener('exit-vr',()=>this.release());
   ['leftController','rightController'].forEach(id=>{const c=document.getElementById(id);if(!c)return;
@@ -221,6 +221,7 @@ AFRAME.registerComponent('axis-panel',{
   const hit=el.dataset.btn?{t:'b',id:el.dataset.btn}:{t:'s',i:+el.dataset.axis};
   this.begin(Object.assign(hit,{ctrl:c,x0:p.x,lx:p.x,v0:hit.t==='s'?NX.v[AXES[hit.i].id]:0}))},
  tick(){
+  if(!this.hands)return;
   const d=this.drag,o=this.el.object3D;
   if(d){let lx=null;
    if(d.hand){const H=this.hands.h[d.hand];if(!H.tr)this.release();else lx=this.loc(H.f).x}
@@ -371,10 +372,10 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 <a-entity id="cameraRig" position="0 0 3" nexus-movement-controller>
  <a-camera id="headCamera" position="0 1.6 0" look-controls="pointerLockEnabled:false" wasd-controls="enabled:false"></a-camera>
- <a-entity id="leftHand" hand-tracking-controls="hand:left;modelStyle:mesh;modelColor:#e0b08a;modelOpacity:1"></a-entity>
- <a-entity id="rightHand" hand-tracking-controls="hand:right;modelStyle:mesh;modelColor:#e0b08a;modelOpacity:1"></a-entity>
+ <a-entity id="leftHand" hand-tracking-controls="hand:left;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
+ <a-entity id="rightHand" hand-tracking-controls="hand:right;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
  <a-entity id="leftController" oculus-touch-controls="hand:left" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true"></a-entity>
- <a-entity id="rightController" oculus-touch-controls="hand:right" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true" blink-controls="cameraRig:#cameraRig;teleportOrigin:#headCamera;button:thumbstick;collisionEntities:#floor;landingNormal:0 1 0;maxLength:8;curveShootingSpeed:6;curveHitColor:#06b6d4;curveMissColor:#ef4444"></a-entity>
+ <a-entity id="rightController" oculus-touch-controls="hand:right" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true" blink-controls="cameraRig:#cameraRig;teleportOrigin:#headCamera;button:thumbstick;collisionEntities:#floor;landingNormal:0 1 0;curveShootingSpeed:6;curveHitColor:#06b6d4;curveMissColor:#ef4444"></a-entity>
 </a-entity>
 
 <!-- ILUMINAÇÃO -->
