@@ -1,468 +1,1001 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>NEXUS ATLAS - Laboratório VR</title>
+
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
 <script src="https://unpkg.com/aframe-blink-controls@0.4.3/dist/aframe-blink-controls.min.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
 <style>
+
 *{box-sizing:border-box;margin:0;padding:0;user-select:none}
+
 html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',sans-serif;background:#030712;color:#f3f4f6}
+
 #intro-screen{position:absolute;inset:0;z-index:9999;background:radial-gradient(circle at center,rgba(15,23,42,.95),rgba(3,7,18,.99));display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(10px);transition:opacity .8s,visibility .8s}
+
 .intro-card{background:rgba(17,24,39,.94);border:1px solid rgba(6,182,212,.3);border-radius:16px;padding:40px;max-width:700px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.8),0 0 30px rgba(6,182,212,.15);position:relative;overflow:hidden}
+
 .intro-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,#005696,#06b6d4,#005696)}
+
 .badge-senai{display:inline-block;background:#005696;color:#fff;padding:4px 14px;border-radius:20px;font-size:.85rem;font-weight:700;letter-spacing:2px;margin-bottom:15px;text-transform:uppercase}
+
 .intro-card h1{font-size:3.2rem;font-weight:700;letter-spacing:4px;background:linear-gradient(135deg,#fff,#06b6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+
 .intro-card h2{font-size:1.2rem;color:#9ca3af;font-weight:400;letter-spacing:3px;margin-bottom:25px}
+
 .intro-card p{font-size:1.05rem;line-height:1.6;color:#d1d5db;margin-bottom:30px;text-align:justify;text-align-last:center}
+
 .btn-enter-vr{background:linear-gradient(135deg,#005696,#0284c7);color:#fff;border:1px solid #38bdf8;padding:18px 36px;font-size:1.3rem;font-weight:700;font-family:inherit;border-radius:50px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;transition:.3s;box-shadow:0 0 20px rgba(2,132,199,.4);display:inline-flex;align-items:center;gap:12px}
+
 .btn-enter-vr:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 0 35px rgba(6,182,212,.7)}
+
 .btn-pc{background:transparent;border-color:#64748b;font-size:1rem;padding:12px 24px;margin:10px 0 0;box-shadow:none}
+
 .controls-guide{margin-top:30px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-wrap:wrap;justify-content:space-around;gap:12px;font-size:.85rem;color:#9ca3af}
+
 .controls-guide strong{color:#38bdf8;display:block;margin-bottom:4px}
+
 .fade-out{opacity:0;visibility:hidden;pointer-events:none}
+
 #vr-status{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(3,7,18,.85);border:1px solid rgba(56,189,248,.4);padding:8px 18px;border-radius:30px;font-size:14px;letter-spacing:1px;color:#38bdf8;pointer-events:none;opacity:0;transition:.4s}
+
 #error-message{position:absolute;left:50%;bottom:25px;transform:translateX(-50%);z-index:10000;display:none;background:rgba(127,29,29,.95);border:1px solid #ef4444;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;max-width:90%;text-align:center}
+
 #nx-load{position:absolute;top:12px;left:12px;z-index:900;font-size:13px;color:#38bdf8;background:rgba(3,7,18,.8);padding:6px 12px;border-radius:8px}
+
 #dui{position:absolute;right:10px;bottom:10px;z-index:900;width:290px;padding:10px 12px;border-radius:12px;background:rgba(3,7,18,.88);border:1px solid rgba(56,189,248,.35);font-size:13px;display:none}
+
 #dui h3{font-size:14px;color:#38bdf8;margin-bottom:6px}
+
 #dui .r{display:grid;grid-template-columns:62px 1fr 48px;gap:6px;align-items:center;margin:4px 0}
+
 #dui output{text-align:right;color:#cbd5e1}
+
 #dui input{width:100%;accent-color:#06b6d4}
+
 #dui .b{display:flex;gap:6px;margin-top:8px}
+
 #dui button{flex:1;padding:6px;border:0;border-radius:8px;background:#0284c7;color:#fff;font:600 13px inherit;cursor:pointer}
+
 #dui small{display:block;margin-top:6px;color:#94a3b8;font-size:11px}
+
 .a-enter-vr{display:none!important}
+
 </style>
+
 <script>
+
 /* ============ UTIL ============ */
+
 const D2R=Math.PI/180,R2D=180/Math.PI,clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
 function showError(msg,ok,keep){const b=document.getElementById('error-message');if(!b)return;b.textContent=msg;b.style.background=ok?'rgba(3,60,90,.95)':'rgba(127,29,29,.95)';b.style.borderColor=ok?'#38bdf8':'#ef4444';b.style.display='block';clearTimeout(showError.t);if(!keep)showError.t=setTimeout(()=>b.style.display='none',6000)}
+
 function loaded(){const l=document.getElementById('nx-load');if(l)l.remove()}
+
 function fail(msg){console.error(msg);loaded();showError(msg,false,true)}
 
-/* ============ 1) CONFIGURAÇÃO DAS ARTICULAÇÕES (fonte única) ============
-   Pivôs/eixos/geometria da garra: calibração do protótipo Babylon, conferida contra o braco.glb
-   (ajuste de círculo nos furos, ver relatório). Limites = PARÂMETROS PROVISÓRIOS DE SIMULAÇÃO.
-   Velocidade 120°/s = MAX_SPEED do esp32_braco.ino. tau = suavização (s). */
-const K={"W":[0.3554,0.0565,0.18927],"S":[0.35292577566560457,0.09682742678627118,0.18292994423007594],"N":[0.68647,-1e-05,-0.72715],"El":[0.4023,0.1847,0.2383],"O3":[0.43602,0.25325,0.28705],"A":[0.48615,0.74366,0.45894],"E":[-0.82099,0.5686,-0.0517],"P":[0.45147,0.27709,0.30396],"ng":[0.29645,0.50191,0.81252],"roll0":58.264463883196576,"gearRatio":0.9991905192159031,
-"G4":{"A":{"P1":[0.033958087726439615,-0.01662875440100447],"P3":[0.0473674150091588,-0.03369378384312004],"Ld":0.031177681253959606,"Ll":0.033301384837220366,"Lf":0.021840208904305707,"th0":-0.047047568199852376,"P2r":[0.06510126985635029,-0.018095047412894295],"P4r":[0.08066762805154899,-0.0334144213401305],"phase":0},"B":{"P1":[0.021346422359354977,-0.03883727246430234],"P3":[0.0422679038477658,-0.04285889724994292],"Ld":0.03150575955148798,"Ll":0.02995518705517801,"Lf":0.022909162301274724,"th0":-1.5786892254023095,"P2r":[0.02109775317561017,-0.07034205065036853],"P4r":[0.04387780878593841,-0.07277079183388313],"phase":30}}};
-const AXES=[
- {id:'waist',nome:'Cintura',node:'Waist:1',pivot:K.W,axis:[0,1,0],min:-180,max:180,home:0,speed:120,tau:.08},
- {id:'shoulder',nome:'Ombro',node:'Arm 01:1',pivot:K.S,axis:K.N,min:-70,max:70,home:0,speed:120,tau:.08},
- {id:'elbow',nome:'Cotovelo',node:'Arm 02 v3:1',pivot:K.El,axis:K.N,min:-120,max:120,home:0,speed:120,tau:.08},
- {id:'pitch',nome:'Pulso',node:'Gripper base:1 (+garra)',pivot:K.P,axis:K.E,min:-80,max:80,home:0,speed:120,tau:.08},
- {id:'grip',nome:'Garra',node:'gear1/gear2/links/Gripper 1',pivot:K.P,axis:K.ng,min:0,max:30,home:0,speed:120,tau:.08}];
+
+
+/* ============ 1) CONFIGURAÇÃO DOS 5 EIXOS ============
+   Esta versão foi adaptada ao GLB novo: braco_robotico_em_pe_nexus_atlas(1).glb.
+   Os pivôs e eixos são medidos diretamente do modelo carregado, evitando depender
+   das coordenadas do braço antigo. Os limites abaixo são PROVISÓRIOS para teste. */
+
+const AXES = [
+  {id:'waist',    nome:'Base',     min:-90, max: 90, home:0, speed:100, tau:.10},
+  {id:'shoulder', nome:'Ombro',    min:-65, max: 65, home:0, speed: 90, tau:.11},
+  {id:'elbow',    nome:'Cotovelo', min:-95, max: 95, home:0, speed: 90, tau:.11},
+  {id:'pitch',    nome:'Pulso',    min:-70, max: 70, home:0, speed:100, tau:.10},
+  {id:'grip',     nome:'Garra',    min:  0, max: 32, home:0, speed:120, tau:.08}
+];
 AXES.forEach((a,i)=>a.i=i);
 
-/* estado único dos 5 eixos: v = valor atual, t = alvo */
 const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:false},
- set(id,val){if(this.halt)return;const a=AXES.find(x=>x.id===id);this.t[id]=clamp(val,a.min,a.max)},
- freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
- home(){if(!this.halt)AXES.forEach(a=>this.t[a.id]=a.home)},
- stop(){this.freeze();this.halt=true;this.ver++},resume(){this.halt=false;this.ver++}};
+  set(id,val){
+    if(this.halt) return;
+    const a=AXES.find(x=>x.id===id);
+    if(!a) return;
+    this.t[id]=clamp(val,a.min,a.max);
+  },
+  freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
+  home(){if(!this.halt)AXES.forEach(a=>this.t[a.id]=a.home)},
+  stop(){this.freeze();this.halt=true;this.ver++},
+  resume(){this.halt=false;this.ver++}
+};
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
 
-/* ============ 2) MODELO + CINEMÁTICA ============ */
+/* ============ 2) NOVO GLB + CINEMÁTICA DINÂMICA ============ */
 AFRAME.registerComponent('braco-rig',{
- schema:{height:{default:1.15},table:{type:'selector',default:'#tableTop'}},
- init(){
-  this.ready=false;
-  this.el.addEventListener('model-loaded',()=>{try{this.build()}catch(e){fail('Braço: '+e.message)}});
-  this.el.addEventListener('model-error',()=>fail('Falha ao carregar models/braco.glb. Hospede o projeto por HTTP/HTTPS (não file://) e confira o caminho.'));
-  window.addEventListener('keydown',e=>{if(e.code==='KeyP')this.setDebug(!this.dbgOn)});
- },
- build(){
-  const T=THREE,el=this.el,root=el.getObject3D('mesh');
-  if(!root)throw new Error('GLB sem cena.');
-  const stage=new T.Group();stage.name='stage';el.object3D.add(stage);stage.add(root);
-  const V=a=>new T.Vector3(a[0],a[1],a[2]);
-  const find=n=>{let r=null;root.traverse(o=>{if(!r&&(o.userData.name===n||o.name===n||o.name===T.PropertyBinding.sanitizeNodeName(n)))r=o});if(!r)throw new Error('modelo incompatível, peça não encontrada: '+n);return r};
-  const mk=(name,pos,par)=>{const n=new T.Object3D();n.name=name;par.add(n);n._p=V(pos);n.position.copy(n._p);if(par._p)n.position.sub(par._p);return n};
-  const J1=mk('j_waist',K.W,stage),J2=mk('j_shoulder',K.S,J1),J3=mk('j_elbow',K.El,J2),J4=mk('j_roll',K.O3,J3),J5=mk('j_pitch',K.P,J4);
-  /* garra: paralelogramo de 4 barras (base -> engrenagem/link -> dedo) */
-  const ng=V(K.ng).normalize(),aux=Math.abs(ng.x)<.9?new T.Vector3(1,0,0):new T.Vector3(0,1,0);
-  const uV=new T.Vector3().crossVectors(ng,aux).normalize(),vV=new T.Vector3().crossVectors(ng,uV).normalize(),KP=V(K.P);
-  const w3=p=>KP.clone().addScaledVector(uV,p[0]).addScaledVector(vV,p[1]);
-  const side=(tag,sign)=>{const g=K.G4[tag];return{g,sign,gear:mk('j_gear'+tag,w3(g.P1).toArray(),J5),link:mk('j_link'+tag,w3(g.P3).toArray(),J5),fing:mk('j_fing'+tag,w3(g.P2r).toArray(),J5)}};
-  const sA=side('A',1),sB=side('B',-1);
-  stage.updateMatrixWorld(true);
-  [[J1,'Waist:1'],[J2,'Arm 01:1'],[J3,'Arm 02 v3:1'],[J4,'Arm 03:1'],[J5,'Gripper base:1'],[sA.gear,'gear2:1'],[sA.link,'grip link 1:2'],[sA.fing,'Gripper 1:1'],[sB.gear,'gear1:1'],[sB.link,'grip link 1:1'],[sB.fing,'Gripper 1 (1):1']].forEach(([j,n])=>j.attach(find(n)));
-  const Y=new T.Vector3(0,1,0),AN=V(K.N).normalize(),AA=V(K.A).normalize(),AE=V(K.E).normalize();
-  const rot=(o,ax,deg)=>o.quaternion.setFromAxisAngle(ax,deg*D2R);
-  const solve2=(g,dth)=>{const th=g.th0+dth,P2=[g.P1[0]+g.Ld*Math.cos(th),g.P1[1]+g.Ld*Math.sin(th)],dx=P2[0]-g.P3[0],dy=P2[1]-g.P3[1];
-   const d=Math.max(Math.abs(g.Ll-g.Lf)+1e-6,Math.min(g.Ll+g.Lf-1e-6,Math.hypot(dx,dy)));
-   const a=(g.Ll*g.Ll-g.Lf*g.Lf+d*d)/(2*d),h=Math.sqrt(Math.max(g.Ll*g.Ll-a*a,0)),ux=dx/d,uy=dy/d,M=[g.P3[0]+a*ux,g.P3[1]+a*uy];
-   const c1=[M[0]-h*uy,M[1]+h*ux],c2=[M[0]+h*uy,M[1]-h*ux];
-   const e1=(c1[0]-g.P4r[0])**2+(c1[1]-g.P4r[1])**2,e2=(c2[0]-g.P4r[0])**2+(c2[1]-g.P4r[1])**2;return{P2,P4:e1<e2?c1:c2}};
-  const applySide=(s,d0)=>{const g=s.g,dth=d0+(g.phase||0)*D2R,{P2,P4}=solve2(g,dth);
-   rot(s.gear,ng,dth*R2D);
-   rot(s.link,ng,(Math.atan2(P4[1]-g.P3[1],P4[0]-g.P3[0])-Math.atan2(g.P4r[1]-g.P3[1],g.P4r[0]-g.P3[0]))*R2D);
-   s.fing.position.copy(w3(P2)).sub(J5._p);
-   rot(s.fing,ng,(Math.atan2(P4[1]-P2[1],P4[0]-P2[0])-Math.atan2(g.P4r[1]-g.P2r[1],g.P4r[0]-g.P2r[0]))*R2D)};
-  this.pose=()=>{const s=NX.v;rot(J1,Y,s.waist);rot(J2,AN,s.shoulder);rot(J3,AN,s.elbow);rot(J4,AA,K.roll0);rot(J5,AE,s.pitch);
-   const d=s.grip*D2R;applySide(sA,d);applySide(sB,-K.gearRatio*d)};
-  /* depuração: pivôs, eixos e nomes */
-  const lab=t=>{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='rgba(0,0,0,.7)';x.fillRect(0,0,256,64);x.fillStyle='#fff';x.font='bold 30px sans-serif';x.fillText(t,8,44);
-   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false}));s.scale.set(.06,.015,1);s.position.set(0,.02,0);s.renderOrder=999;return s};
-  this.dbg=new T.Group();this.dbg.visible=false;
-  [[J1,AXES[0]],[J2,AXES[1]],[J3,AXES[2]],[J5,AXES[3]],[J5,AXES[4]]].forEach(([j,a],i)=>{const g=new T.Group();
-   g.add(new T.ArrowHelper(V(a.axis).normalize(),new T.Vector3(),.05,[0xff5555,0xffaa00,0x55ff55,0x55aaff,0xff55ff][i]));
-   if(i===4){g.position.copy(V(K.ng).multiplyScalar(0));}
-   g.add(new T.Mesh(new T.SphereGeometry(.004),new T.MeshBasicMaterial({color:0xffffff,depthTest:false})));g.add(lab(a.nome));g.children.forEach(c=>c.renderOrder=999);j.add(g);g.userData.dbg=1;});
-  J1.traverse(()=>{});this.joints=[J1,J2,J3,J5];
-  /* normalização ÚNICA na pose de referência (valores 'home', roll fixo incluso) */
-  this.pose();stage.updateMatrixWorld(true);
-  const box=new T.Box3().setFromObject(stage,true),h=box.max.y-box.min.y;
-  if(!isFinite(h)||h<=0)throw new Error('não foi possível medir o modelo.');
-  const s=this.data.height/h;stage.scale.setScalar(s);
-  stage.position.set(-s*K.W[0],-s*box.min.y,-s*K.W[2]); /* eixo da cintura sobre o centro da mesa; pés do modelo em y=0 local */
-  /* apoio: topo real do tampo, medido pela geometria */
-  el.object3D.position.set(0,0,0);el.object3D.updateMatrixWorld(true);
-  const tb=new T.Box3().setFromObject(this.data.table.object3D);
-  const top=isFinite(tb.max.y)?tb.max.y:.905;el.object3D.position.y=top;
-  root.traverse(o=>{if(o.isMesh){o.castShadow=o.receiveShadow=true}});
-  this.stage=stage;this.ready=true;this.dbgOn=/debug=1/.test(location.search);this.setDebug(this.dbgOn);
-  this.report={alturaRef:h*s,escala:s,alturaCruaModelo:h,topoMesa:top};console.info('[braco-rig]',this.report);
-  loaded();
- },
- setDebug(on){this.dbgOn=on;if(this.joints)this.joints.forEach(j=>j.children.forEach(c=>{if(c.userData.dbg)c.visible=on}))},
- tick(t,dtm){
-  if(!this.ready)return;const dt=Math.min(dtm/1000,.05);let ch=false;
-  for(const a of AXES){const d=NX.t[a.id]-NX.v[a.id];
-   if(Math.abs(d)>.005){const m=a.speed*dt;NX.v[a.id]=clamp(NX.v[a.id]+clamp(d*(1-Math.exp(-dt/a.tau)),-m,m),a.min,a.max);ch=true}
-   else if(d!==0){NX.v[a.id]=NX.t[a.id];ch=true}}
-  if(ch){this.pose();NX.ver++}
- }});
+  schema:{height:{default:1.15},table:{type:'selector',default:'#tableTop'}},
+
+  init(){
+    this.ready=false;
+    this.el.addEventListener('model-loaded',()=>{
+      try{this.build()}catch(e){console.error(e);fail('Braço: '+e.message)}
+    });
+    this.el.addEventListener('model-error',()=>
+      fail('Falha ao carregar models/braco.glb. Use servidor HTTP/HTTPS e confira a pasta models.')
+    );
+    window.addEventListener('keydown',e=>{if(e.code==='KeyP')this.setDebug(!this.dbgOn)});
+  },
+
+  build(){
+    const T=THREE, el=this.el, root=el.getObject3D('mesh');
+    if(!root) throw new Error('GLB sem cena.');
+
+    // O modelo novo contém estes nomes exportados do CAD.
+    const find=(name)=>{
+      let r=null;
+      root.traverse(o=>{
+        const n=o.userData && o.userData.name;
+        if(!r && (o.name===name || n===name || o.name===T.PropertyBinding.sanitizeNodeName(name))) r=o;
+      });
+      if(!r) throw new Error('peça não encontrada no GLB: '+name);
+      return r;
+    };
+
+    const P={
+      waist:find('Waist:1'),
+      arm1:find('Arm 01:1'),
+      arm2:find('Arm 02 v3:1'),
+      arm3:find('Arm 03:1'),
+      wrist:find('Gripper base:1'),
+      gear1:find('gear1:1'),
+      gear2:find('gear2:1'),
+      link1:find('grip link 1:1'),
+      link2:find('grip link 1:2'),
+      finger1:find('Gripper 1 (1):1'),
+      finger2:find('Gripper 1:1')
+    };
+
+    // Grupo de normalização. O GLB permanece intacto e as juntas são criadas ao redor dele.
+    const stage=new T.Group();
+    stage.name='synchroarm-stage';
+    el.object3D.add(stage);
+    stage.add(root);
+    stage.updateMatrixWorld(true);
+    root.updateMatrixWorld(true);
+
+    const tmpP=new T.Vector3(), tmpQ=new T.Quaternion(), stageQ=new T.Quaternion();
+    stage.getWorldQuaternion(stageQ);
+    const invStageQ=stageQ.clone().invert();
+
+    // Posição do origin de uma peça convertida para coordenadas do stage.
+    const pointOf=(obj)=>{
+      obj.getWorldPosition(tmpP);
+      return stage.worldToLocal(tmpP.clone());
+    };
+
+    // Eixo local de uma peça convertido para coordenadas do stage.
+    const axisOf=(obj,axis)=>{
+      obj.getWorldQuaternion(tmpQ);
+      return axis.clone().applyQuaternion(tmpQ).applyQuaternion(invStageQ).normalize();
+    };
+
+    const pW=pointOf(P.waist);
+    const pS=pointOf(P.arm1);
+    const pE=pointOf(P.arm2);
+    const pP=pointOf(P.wrist);
+    const pG1=pointOf(P.gear1);
+    const pG2=pointOf(P.gear2);
+
+    // No GLB novo, estes eixos correspondem aos referenciais das peças do CAD.
+    const aWaist=axisOf(P.waist,new T.Vector3(0,1,0));       // eixo vertical da base
+    const aShoulder=axisOf(P.arm1,new T.Vector3(0,0,1));    // eixo do ombro
+    const aElbow=axisOf(P.arm2,new T.Vector3(0,0,-1));      // mesmo sentido físico do ombro
+    const aPitch=axisOf(P.wrist,new T.Vector3(1,0,0));      // eixo transversal do pulso
+    const aGrip=axisOf(P.gear1,new T.Vector3(0,1,0));       // normal do plano das engrenagens
+
+    // Junta em posição absoluta do stage; quando filha de outra junta, converte para local.
+    const joint=(name,abs,parent)=>{
+      const j=new T.Object3D();
+      j.name=name;
+      parent.add(j);
+      if(parent===stage){
+        j.position.copy(abs);
+      }else{
+        parent.updateMatrixWorld(true);
+        const world=stage.localToWorld(abs.clone());
+        j.position.copy(parent.worldToLocal(world));
+      }
+      return j;
+    };
+
+    const J1=joint('j_base',pW,stage);
+    const J2=joint('j_ombro',pS,J1);
+    const J3=joint('j_cotovelo',pE,J2);
+    const J4=joint('j_pulso',pP,J3);
+    const G1=joint('j_garra_esq',pG1,J4);
+    const G2=joint('j_garra_dir',pG2,J4);
+
+    // Reparenting preservando a pose original.
+    // Tudo a partir do ombro herda a rotação da base; a partir do cotovelo herda o ombro etc.
+    stage.updateMatrixWorld(true);
+    J1.attach(P.waist);
+    J2.attach(P.arm1);
+    J3.attach(P.arm2);
+    J3.attach(P.arm3);
+    J4.attach(P.wrist);
+
+    // Cada lado da garra acompanha sua engrenagem. É uma aproximação visual estável
+    // do mecanismo; o valor de abertura pode depois ser calibrado contra o servo real.
+    G1.attach(P.gear1); G1.attach(P.link1); G1.attach(P.finger1);
+    G2.attach(P.gear2); G2.attach(P.link2); G2.attach(P.finger2);
+
+    // Quaternions base ficam guardados para evitar acumulação numérica.
+    [J1,J2,J3,J4,G1,G2].forEach(j=>j.userData.q0=j.quaternion.clone());
+
+    const setRot=(j,axis,deg)=>{
+      j.quaternion.copy(j.userData.q0);
+      const q=new T.Quaternion().setFromAxisAngle(axis,deg*D2R);
+      j.quaternion.multiply(q);
+    };
+
+    this.pose=()=>{
+      const s=NX.v;
+      setRot(J1,aWaist,s.waist);
+      setRot(J2,aShoulder,s.shoulder);
+      setRot(J3,aElbow,s.elbow);
+      setRot(J4,aPitch,s.pitch);
+
+      // Garra: lados opostos. Multiplicador visual evita abertura exagerada.
+      setRot(G1,aGrip, s.grip*0.90);
+      setRot(G2,aGrip,-s.grip*0.90);
+    };
+
+    // Primeira pose antes de medir/normalizar.
+    this.pose();
+    stage.updateMatrixWorld(true);
+
+    const box=new T.Box3().setFromObject(stage,true);
+    const h=box.max.y-box.min.y;
+    if(!isFinite(h)||h<=0) throw new Error('não foi possível medir o modelo.');
+
+    const sc=this.data.height/h;
+    stage.scale.setScalar(sc);
+
+    // Centraliza pelo eixo da cintura e apoia os pés em y=0 local.
+    stage.position.set(-sc*pW.x,-sc*box.min.y,-sc*pW.z);
+
+    // Coloca o braço sobre a mesa.
+    el.object3D.position.set(0,0,0);
+    el.object3D.updateMatrixWorld(true);
+    const table=this.data.table;
+    const tb=table ? new T.Box3().setFromObject(table.object3D) : null;
+    const top=tb && isFinite(tb.max.y) ? tb.max.y : .905;
+    el.object3D.position.y=top;
+
+    root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+
+    // Debug: P mostra pivôs/eixos.
+    const lab=(txt)=>{
+      const c=document.createElement('canvas');c.width=320;c.height=64;
+      const x=c.getContext('2d');x.fillStyle='rgba(0,0,0,.75)';x.fillRect(0,0,320,64);
+      x.fillStyle='#fff';x.font='bold 28px sans-serif';x.fillText(txt,8,42);
+      const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false}));
+      sp.scale.set(.08,.016,1);sp.position.set(0,.025,0);sp.renderOrder=999;return sp;
+    };
+    const dbgData=[
+      [J1,aWaist,'Base',0xff5555],
+      [J2,aShoulder,'Ombro',0xffaa00],
+      [J3,aElbow,'Cotovelo',0x55ff55],
+      [J4,aPitch,'Pulso',0x55aaff],
+      [G1,aGrip,'Garra',0xff55ff]
+    ];
+    this.dbg=[];
+    dbgData.forEach(([j,a,n,c])=>{
+      const g=new T.Group();g.userData.dbg=true;
+      g.add(new T.ArrowHelper(a.clone().normalize(),new T.Vector3(),.06,c));
+      g.add(new T.Mesh(new T.SphereGeometry(.004),new T.MeshBasicMaterial({color:0xffffff,depthTest:false})));
+      g.add(lab(n));g.visible=false;j.add(g);this.dbg.push(g);
+    });
+
+    this.joints=[J1,J2,J3,J4,G1,G2];
+    this.axes={aWaist,aShoulder,aElbow,aPitch,aGrip};
+    this.stage=stage;
+    this.ready=true;
+    this.dbgOn=/debug=1/.test(location.search);
+    this.setDebug(this.dbgOn);
+
+    console.info('[SynchroArm novo]',{
+      altura:h*sc,escala:sc,topoMesa:top,
+      pivots:{base:pW.toArray(),ombro:pS.toArray(),cotovelo:pE.toArray(),pulso:pP.toArray()},
+      axes:{base:aWaist.toArray(),ombro:aShoulder.toArray(),cotovelo:aElbow.toArray(),pulso:aPitch.toArray(),garra:aGrip.toArray()}
+    });
+
+    loaded();
+    showError('Novo SynchroArm carregado — teste os 5 eixos pelo painel.',true);
+  },
+
+  setDebug(on){
+    this.dbgOn=on;
+    if(this.dbg)this.dbg.forEach(g=>g.visible=on);
+  },
+
+  tick(t,dtm){
+    if(!this.ready)return;
+    const dt=Math.min(dtm/1000,.05);
+    let changed=false;
+    for(const a of AXES){
+      const d=NX.t[a.id]-NX.v[a.id];
+      if(Math.abs(d)>.005){
+        const m=a.speed*dt;
+        NX.v[a.id]=clamp(NX.v[a.id]+clamp(d*(1-Math.exp(-dt/a.tau)),-m,m),a.min,a.max);
+        changed=true;
+      }else if(d!==0){
+        NX.v[a.id]=NX.t[a.id];changed=true;
+      }
+    }
+    if(changed){this.pose();NX.ver++}
+  }
+});
 
 /* ============ 3) RASTREAMENTO DE MÃOS E PINÇA ============ */
+
 AFRAME.registerComponent('nexus-hands',{
- init(){
-  const mkH=()=>({tr:false,pin:false,f:new THREE.Vector3(),seen:-1});
-  this.h={left:mkH(),right:mkH()};this.a=new THREE.Vector3();this.b=new THREE.Vector3();this.n=0;
-  this.rig=document.getElementById('cameraRig');
-  const off=()=>Object.keys(this.h).forEach(k=>this.lose(k));
-  this.el.addEventListener('exit-vr',off);
- },
- lose(k){const H=this.h[k];if(H.pin)this.el.emit('nx-pinch',{hand:k,type:'lost'});H.tr=false;H.pin=false;NX.hands[k]=false},
- tick(t,dtm){
-  const sc=this.el,fr=sc.frame,xr=sc.renderer&&sc.renderer.xr,ses=xr&&xr.isPresenting&&xr.getSession();
-  if(!ses||!fr){if(this.h.left.tr||this.h.right.tr||this.h.left.pin||this.h.right.pin)Object.keys(this.h).forEach(k=>this.lose(k));return}
-  const ref=xr.getReferenceSpace(),n=++this.n,k1=1-Math.exp(-(dtm/1000)/.03);
-  for(const src of ses.inputSources){
-   if(!src.hand||!this.h[src.handedness])continue;const k=src.handedness,H=this.h[k];H.seen=n;
-   const pt=fr.getJointPose(src.hand.get('thumb-tip'),ref),pi=fr.getJointPose(src.hand.get('index-finger-tip'),ref);
-   if(!pt||!pi){if(H.tr)this.lose(k);continue}
-   this.a.set(pt.transform.position.x,pt.transform.position.y,pt.transform.position.z);
-   this.b.set(pi.transform.position.x,pi.transform.position.y,pi.transform.position.z);
-   const d=this.a.distanceTo(this.b);this.a.add(this.b).multiplyScalar(.5);this.rig.object3D.localToWorld(this.a);
-   if(!H.tr){H.f.copy(this.a);H.tr=true;NX.hands[k]=true;H.pin=false} else H.f.lerp(this.a,k1); /* filtro exponencial anti-tremor */
-   if(!H.pin&&d<.022){H.pin=true;sc.emit('nx-pinch',{hand:k,type:'start'})}
-   else if(H.pin&&d>.04){H.pin=false;sc.emit('nx-pinch',{hand:k,type:'end'})}
-  }
-  for(const k in this.h)if(this.h[k].tr&&this.h[k].seen!==n)this.lose(k);
- }});
+
+ init(){
+
+  const mkH=()=>({tr:false,pin:false,f:new THREE.Vector3(),seen:-1});
+
+  this.h={left:mkH(),right:mkH()};this.a=new THREE.Vector3();this.b=new THREE.Vector3();this.n=0;
+
+  this.rig=document.getElementById('cameraRig');
+
+  const off=()=>Object.keys(this.h).forEach(k=>this.lose(k));
+
+  this.el.addEventListener('exit-vr',off);
+
+ },
+
+ lose(k){const H=this.h[k];if(H.pin)this.el.emit('nx-pinch',{hand:k,type:'lost'});H.tr=false;H.pin=false;NX.hands[k]=false},
+
+ tick(t,dtm){
+
+  const sc=this.el,fr=sc.frame,xr=sc.renderer&&sc.renderer.xr,ses=xr&&xr.isPresenting&&xr.getSession();
+
+  if(!ses||!fr){if(this.h.left.tr||this.h.right.tr||this.h.left.pin||this.h.right.pin)Object.keys(this.h).forEach(k=>this.lose(k));return}
+
+  const ref=xr.getReferenceSpace(),n=++this.n,k1=1-Math.exp(-(dtm/1000)/.03);
+
+  for(const src of ses.inputSources){
+
+   if(!src.hand||!this.h[src.handedness])continue;const k=src.handedness,H=this.h[k];H.seen=n;
+
+   const pt=fr.getJointPose(src.hand.get('thumb-tip'),ref),pi=fr.getJointPose(src.hand.get('index-finger-tip'),ref);
+
+   if(!pt||!pi){if(H.tr)this.lose(k);continue}
+
+   this.a.set(pt.transform.position.x,pt.transform.position.y,pt.transform.position.z);
+
+   this.b.set(pi.transform.position.x,pi.transform.position.y,pi.transform.position.z);
+
+   const d=this.a.distanceTo(this.b);this.a.add(this.b).multiplyScalar(.5);this.rig.object3D.localToWorld(this.a);
+
+   if(!H.tr){H.f.copy(this.a);H.tr=true;NX.hands[k]=true;H.pin=false} else H.f.lerp(this.a,k1); /* filtro exponencial anti-tremor */
+
+   if(!H.pin&&d<.022){H.pin=true;sc.emit('nx-pinch',{hand:k,type:'start'})}
+
+   else if(H.pin&&d>.04){H.pin=false;sc.emit('nx-pinch',{hand:k,type:'end'})}
+
+  }
+
+  for(const k in this.h)if(this.h[k].tr&&this.h[k].seen!==n)this.lose(k);
+
+ }});
+
+
 
 /* ============ 4) PAINEL 3D DOS EIXOS ============ */
+
 AFRAME.registerComponent('axis-panel',{
- init(){
-  const el=this.el,P=this,L=.4,X0=-.1,RY=[.27,.15,.03,-.09,-.21];Object.assign(this,{L,X0,RY});
-  const add=(tag,at,par)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);(par||el).appendChild(e);return e};
-  const tx=(v,x,y,w,c,al,par)=>add('a-text',{value:v,position:x+' '+y+' .012',width:w,color:c,align:al||'left',baseline:'center'},par);
-  add('a-box',{width:1.04,height:1.1,depth:.03,color:'#060a12',material:'roughness:.4;metalness:.5',position:'0 0 -.016'});
-  add('a-plane',{width:1,height:1.06,color:'#0b1220'});
-  add('a-plane',{width:1,height:.1,position:'0 .48 .002',color:'#0f3f66'});
-  tx('CONTROLE DO BRAÇO — 5 EIXOS',0,.48,1.5,'#e0f2fe','center');
-  tx('Faça pinça e arraste para mover',0,.395,1.2,'#facc15','center');
-  this.rows=AXES.map((a,i)=>{const y=RY[i];
-   tx(a.nome.toUpperCase(),-.47,y,1.05,'#ffffff');
-   add('a-box',{width:L,height:.01,depth:.006,position:(X0+L/2)+' '+y+' .004',color:'#334155'});
-   const knob=add('a-sphere',{radius:.026,color:'#38bdf8',position:X0+' '+y+' .02'});
-   const val=tx('0°',.33,y,.8,'#ffffff');
-   const lim=tx('lim. provisório '+a.min+'° … '+a.max+'°',X0,y-.05,.9,'#94a3b8');
-   const hit=add('a-plane',{width:.58,height:.1,position:(X0+L/2)+' '+y+' .006',material:'opacity:0;transparent:true',class:'hit'});hit.dataset.axis=i;
-   return{knob,val,col:'',txt:''}});
-  const bt=[['home','INÍCIO',-.33,.3],['stop','PARAR',-.01,.3],['sm','−',.2,.11],['sp','+',.42,.11]];
-  this.btns=bt.map(([id,l,x,w])=>{const p=add('a-plane',{width:w,height:.085,position:x+' -.35 .004',color:'#0e7490',class:'hit'});p.dataset.btn=id;
-   const t=tx(l,0,0,w*5,'#fff','center',p);return{id,x,w,p,t,col:''}});
-  this.sensT=tx('SENS ×1.00',.31,-.35,.5,'#e0f2fe','center');
-  this.stT=tx('',-.47,-.44,1.15,'#cbd5e1');
-  this.tmp=new THREE.Vector3();this.pl=new THREE.Plane();this.q=new THREE.Quaternion();this.drag=null;this.lv=-1;this.lst='';
-  const sc=this.el.sceneEl;Object.defineProperty(this,'hands',{get:()=>sc.components['nexus-hands']});
-  sc.addEventListener('nx-pinch',e=>this.onPinch(e.detail));
-  sc.addEventListener('exit-vr',()=>this.release());
-  ['leftController','rightController'].forEach(id=>{const c=document.getElementById(id);if(!c)return;
-   c.addEventListener('triggerdown',()=>this.rayDown(c));c.addEventListener('triggerup',()=>{if(this.drag&&this.drag.ctrl===c)this.release()})});
- },
- loc(v){this.tmp.copy(v);return this.el.object3D.worldToLocal(this.tmp)},
- pick(p){
-  if(Math.abs(p.z)>.16)return null;
-  for(const r of this.rows.keys()){const a=AXES[r],kx=this.X0+(NX.v[a.id]-a.min)/(a.max-a.min)*this.L;
-   if(Math.abs(p.x-kx)<.08&&Math.abs(p.y-this.RY[r])<.055)return{t:'s',i:r}}
-  for(const b of this.btns)if(Math.abs(p.x-b.x)<b.w/2+.015&&Math.abs(p.y+.35)<.055)return{t:'b',id:b.id};
-  return null},
- press(id){if(id==='home')NX.home();else if(id==='stop')NX.halt?NX.resume():NX.stop();
-  else{NX.sens=clamp(NX.sens+(id==='sp'?.25:-.25),.25,2);NX.ver++}},
- begin(d){if(this.drag)return false;if(d.t==='b'){this.press(d.id);return false}
-  if(NX.halt){showError('Movimento interrompido: toque em RETOMAR.',true);return false}
-  this.drag=d;NX.busy=true;NX.ver++;return true},
- release(){if(!this.drag)return;this.drag=null;NX.busy=false;NX.freeze();NX.ver++}, /* sem movimento residual */
- onPinch(e){
-  if(e.type!=='start'){if(this.drag&&this.drag.hand===e.hand)this.release();return}
-  if(this.drag)return; /* evita comandos conflitantes das duas mãos */
-  const p=this.loc(this.hands.h[e.hand].f),hit=this.pick(p);
-  if(hit)this.begin(Object.assign(hit,{hand:e.hand,x0:p.x,lx:p.x,v0:hit.t==='s'?NX.v[AXES[hit.i].id]:0}))},
- rayDown(c){
-  const rc=c.components.raycaster;if(!rc)return;const el=rc.intersectedEls.find(e=>e.classList.contains('hit'));if(!el)return;
-  const ix=rc.getIntersection(el);if(!ix)return;const p=this.loc(ix.point);
-  const hit=el.dataset.btn?{t:'b',id:el.dataset.btn}:{t:'s',i:+el.dataset.axis};
-  this.begin(Object.assign(hit,{ctrl:c,x0:p.x,lx:p.x,v0:hit.t==='s'?NX.v[AXES[hit.i].id]:0}))},
- tick(){
-  if(!this.hands)return;
-  const d=this.drag,o=this.el.object3D;
-  if(d){let lx=null;
-   if(d.hand){const H=this.hands.h[d.hand];if(!H.tr)this.release();else lx=this.loc(H.f).x}
-   else{o.getWorldQuaternion(this.q);const n=new THREE.Vector3(0,0,1).applyQuaternion(this.q),pos=new THREE.Vector3();o.getWorldPosition(pos);
-    this.pl.setFromNormalAndCoplanarPoint(n,pos);const r=d.ctrl.components.raycaster.raycaster.ray;if(r.intersectPlane(this.pl,this.tmp))lx=this.loc(this.tmp).x}
-   if(this.drag&&lx!==null&&Math.abs(lx-d.lx)>.0015){d.lx=lx;const a=AXES[d.i];
-    NX.set(a.id,d.v0+(lx-d.x0)/this.L*(a.max-a.min)*NX.sens)}} /* parte do valor atual: sem salto */
-  /* proximidade */
-  const near=[];if(!d)for(const k of['left','right']){const H=this.hands.h[k];if(H.tr&&!H.pin){const h=this.pick(this.loc(H.f));if(h)near.push(h)}}
-  const sel=d&&d.t==='s'?d.i:-1,nr=new Set(near.filter(h=>h.t==='s').map(h=>h.i)),nb=new Set(near.filter(h=>h.t==='b').map(h=>h.id));
-  this.rows.forEach((r,i)=>{const a=AXES[i],c=i===sel?'#22c55e':nr.has(i)?'#facc15':NX.halt?'#64748b':'#38bdf8';
-   if(c!==r.col){r.col=c;r.knob.setAttribute('color',c)}
-   r.knob.object3D.position.x=this.X0+(NX.v[a.id]-a.min)/(a.max-a.min)*this.L;
-   const t=NX.v[a.id].toFixed(1)+'°';if(t!==r.txt){r.txt=t;r.val.setAttribute('value',t)}});
-  this.btns.forEach(b=>{const c=nb.has(b.id)?'#facc15':b.id==='stop'?(NX.halt?'#15803d':'#b91c1c'):'#0e7490';if(c!==b.col){b.col=c;b.p.setAttribute('color',c)}});
-  if(this.lv!==NX.ver){this.lv=NX.ver;this.btns[1].t.setAttribute('value',NX.halt?'RETOMAR':'PARAR');this.sensT.setAttribute('value','SENS ×'+NX.sens.toFixed(2))}
-  const hv=NX.hands.left||NX.hands.right,ha=d?(d.hand==='left'?'esquerda':d.hand==='right'?'direita':'controle VR'):'—';
-  const s=(hv?'Mãos: rastreadas':'Mãos: indisponíveis (use controles VR ou mouse)')+' | Mão ativa: '+ha+' | Eixo: '+(d&&d.t==='s'?AXES[d.i].nome:'—')+(NX.halt?' | PARADO':'');
-  if(s!==this.lst){this.lst=s;this.stT.setAttribute('value',s)}
- }});
+
+ init(){
+
+  const el=this.el,P=this,L=.4,X0=-.1,RY=[.27,.15,.03,-.09,-.21];Object.assign(this,{L,X0,RY});
+
+  const add=(tag,at,par)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);(par||el).appendChild(e);return e};
+
+  const tx=(v,x,y,w,c,al,par)=>add('a-text',{value:v,position:x+' '+y+' .012',width:w,color:c,align:al||'left',baseline:'center'},par);
+
+  add('a-box',{width:1.04,height:1.1,depth:.03,color:'#060a12',material:'roughness:.4;metalness:.5',position:'0 0 -.016'});
+
+  add('a-plane',{width:1,height:1.06,color:'#0b1220'});
+
+  add('a-plane',{width:1,height:.1,position:'0 .48 .002',color:'#0f3f66'});
+
+  tx('CONTROLE DO BRAÇO — 5 EIXOS',0,.48,1.5,'#e0f2fe','center');
+
+  tx('Faça pinça e arraste para mover',0,.395,1.2,'#facc15','center');
+
+  this.rows=AXES.map((a,i)=>{const y=RY[i];
+
+   tx(a.nome.toUpperCase(),-.47,y,1.05,'#ffffff');
+
+   add('a-box',{width:L,height:.01,depth:.006,position:(X0+L/2)+' '+y+' .004',color:'#334155'});
+
+   const knob=add('a-sphere',{radius:.026,color:'#38bdf8',position:X0+' '+y+' .02'});
+
+   const val=tx('0°',.33,y,.8,'#ffffff');
+
+   const lim=tx('lim. provisório '+a.min+'° … '+a.max+'°',X0,y-.05,.9,'#94a3b8');
+
+   const hit=add('a-plane',{width:.58,height:.1,position:(X0+L/2)+' '+y+' .006',material:'opacity:0;transparent:true',class:'hit'});hit.dataset.axis=i;
+
+   return{knob,val,col:'',txt:''}});
+
+  const bt=[['home','INÍCIO',-.33,.3],['stop','PARAR',-.01,.3],['sm','−',.2,.11],['sp','+',.42,.11]];
+
+  this.btns=bt.map(([id,l,x,w])=>{const p=add('a-plane',{width:w,height:.085,position:x+' -.35 .004',color:'#0e7490',class:'hit'});p.dataset.btn=id;
+
+   const t=tx(l,0,0,w*5,'#fff','center',p);return{id,x,w,p,t,col:''}});
+
+  this.sensT=tx('SENS ×1.00',.31,-.35,.5,'#e0f2fe','center');
+
+  this.stT=tx('',-.47,-.44,1.15,'#cbd5e1');
+
+  this.tmp=new THREE.Vector3();this.pl=new THREE.Plane();this.q=new THREE.Quaternion();this.drag=null;this.lv=-1;this.lst='';
+
+  const sc=this.el.sceneEl;Object.defineProperty(this,'hands',{get:()=>sc.components['nexus-hands']});
+
+  sc.addEventListener('nx-pinch',e=>this.onPinch(e.detail));
+
+  sc.addEventListener('exit-vr',()=>this.release());
+
+  ['leftController','rightController'].forEach(id=>{const c=document.getElementById(id);if(!c)return;
+
+   c.addEventListener('triggerdown',()=>this.rayDown(c));c.addEventListener('triggerup',()=>{if(this.drag&&this.drag.ctrl===c)this.release()})});
+
+ },
+
+ loc(v){this.tmp.copy(v);return this.el.object3D.worldToLocal(this.tmp)},
+
+ pick(p){
+
+  if(Math.abs(p.z)>.16)return null;
+
+  for(const r of this.rows.keys()){const a=AXES[r],kx=this.X0+(NX.v[a.id]-a.min)/(a.max-a.min)*this.L;
+
+   if(Math.abs(p.x-kx)<.08&&Math.abs(p.y-this.RY[r])<.055)return{t:'s',i:r}}
+
+  for(const b of this.btns)if(Math.abs(p.x-b.x)<b.w/2+.015&&Math.abs(p.y+.35)<.055)return{t:'b',id:b.id};
+
+  return null},
+
+ press(id){if(id==='home')NX.home();else if(id==='stop')NX.halt?NX.resume():NX.stop();
+
+  else{NX.sens=clamp(NX.sens+(id==='sp'?.25:-.25),.25,2);NX.ver++}},
+
+ begin(d){if(this.drag)return false;if(d.t==='b'){this.press(d.id);return false}
+
+  if(NX.halt){showError('Movimento interrompido: toque em RETOMAR.',true);return false}
+
+  this.drag=d;NX.busy=true;NX.ver++;return true},
+
+ release(){if(!this.drag)return;this.drag=null;NX.busy=false;NX.freeze();NX.ver++}, /* sem movimento residual */
+
+ onPinch(e){
+
+  if(e.type!=='start'){if(this.drag&&this.drag.hand===e.hand)this.release();return}
+
+  if(this.drag)return; /* evita comandos conflitantes das duas mãos */
+
+  const p=this.loc(this.hands.h[e.hand].f),hit=this.pick(p);
+
+  if(hit)this.begin(Object.assign(hit,{hand:e.hand,x0:p.x,lx:p.x,v0:hit.t==='s'?NX.v[AXES[hit.i].id]:0}))},
+
+ rayDown(c){
+
+  const rc=c.components.raycaster;if(!rc)return;const el=rc.intersectedEls.find(e=>e.classList.contains('hit'));if(!el)return;
+
+  const ix=rc.getIntersection(el);if(!ix)return;const p=this.loc(ix.point);
+
+  const hit=el.dataset.btn?{t:'b',id:el.dataset.btn}:{t:'s',i:+el.dataset.axis};
+
+  this.begin(Object.assign(hit,{ctrl:c,x0:p.x,lx:p.x,v0:hit.t==='s'?NX.v[AXES[hit.i].id]:0}))},
+
+ tick(){
+
+  if(!this.hands)return;
+
+  const d=this.drag,o=this.el.object3D;
+
+  if(d){let lx=null;
+
+   if(d.hand){const H=this.hands.h[d.hand];if(!H.tr)this.release();else lx=this.loc(H.f).x}
+
+   else{o.getWorldQuaternion(this.q);const n=new THREE.Vector3(0,0,1).applyQuaternion(this.q),pos=new THREE.Vector3();o.getWorldPosition(pos);
+
+    this.pl.setFromNormalAndCoplanarPoint(n,pos);const r=d.ctrl.components.raycaster.raycaster.ray;if(r.intersectPlane(this.pl,this.tmp))lx=this.loc(this.tmp).x}
+
+   if(this.drag&&lx!==null&&Math.abs(lx-d.lx)>.0015){d.lx=lx;const a=AXES[d.i];
+
+    NX.set(a.id,d.v0+(lx-d.x0)/this.L*(a.max-a.min)*NX.sens)}} /* parte do valor atual: sem salto */
+
+  /* proximidade */
+
+  const near=[];if(!d)for(const k of['left','right']){const H=this.hands.h[k];if(H.tr&&!H.pin){const h=this.pick(this.loc(H.f));if(h)near.push(h)}}
+
+  const sel=d&&d.t==='s'?d.i:-1,nr=new Set(near.filter(h=>h.t==='s').map(h=>h.i)),nb=new Set(near.filter(h=>h.t==='b').map(h=>h.id));
+
+  this.rows.forEach((r,i)=>{const a=AXES[i],c=i===sel?'#22c55e':nr.has(i)?'#facc15':NX.halt?'#64748b':'#38bdf8';
+
+   if(c!==r.col){r.col=c;r.knob.setAttribute('color',c)}
+
+   r.knob.object3D.position.x=this.X0+(NX.v[a.id]-a.min)/(a.max-a.min)*this.L;
+
+   const t=NX.v[a.id].toFixed(1)+'°';if(t!==r.txt){r.txt=t;r.val.setAttribute('value',t)}});
+
+  this.btns.forEach(b=>{const c=nb.has(b.id)?'#facc15':b.id==='stop'?(NX.halt?'#15803d':'#b91c1c'):'#0e7490';if(c!==b.col){b.col=c;b.p.setAttribute('color',c)}});
+
+  if(this.lv!==NX.ver){this.lv=NX.ver;this.btns[1].t.setAttribute('value',NX.halt?'RETOMAR':'PARAR');this.sensT.setAttribute('value','SENS ×'+NX.sens.toFixed(2))}
+
+  const hv=NX.hands.left||NX.hands.right,ha=d?(d.hand==='left'?'esquerda':d.hand==='right'?'direita':'controle VR'):'—';
+
+  const s=(hv?'Mãos: rastreadas':'Mãos: indisponíveis (use controles VR ou mouse)')+' | Mão ativa: '+ha+' | Eixo: '+(d&&d.t==='s'?AXES[d.i].nome:'—')+(NX.halt?' | PARADO':'');
+
+  if(s!==this.lst){this.lst=s;this.stT.setAttribute('value',s)}
+
+ }});
+
+
 
 /* ============ 5) FALLBACK DESKTOP (mouse) — mesmo estado NX ============ */
+
 AFRAME.registerComponent('nexus-desktop-ui',{
- init(){
-  const box=document.getElementById('dui'),sl=document.getElementById('dsl');this.in={};this.lv=-1;
-  AXES.forEach(a=>{const r=document.createElement('div');r.className='r';r.innerHTML='<span>'+a.nome+'</span><input type="range" min="'+a.min+'" max="'+a.max+'" step="0.5" value="'+a.home+'"><output>0°</output>';sl.appendChild(r);
-   const i=r.querySelector('input');i.addEventListener('input',()=>NX.set(a.id,+i.value));this.in[a.id]=[i,r.querySelector('output')]});
-  document.getElementById('dhome').onclick=()=>NX.home();
-  const st=document.getElementById('dstop');st.onclick=()=>{NX.halt?NX.resume():NX.stop()};this.st=st;
-  const sc=this.el;sc.addEventListener('enter-vr',()=>box.style.display='none');sc.addEventListener('exit-vr',()=>box.style.display=document.getElementById('intro-screen').classList.contains('fade-out')?'block':'none');
- },
- tick(){if(this.lv===NX.ver)return;this.lv=NX.ver;
-  AXES.forEach(a=>{const [i,o]=this.in[a.id];if(document.activeElement!==i||!NX.halt)i.value=NX.v[a.id];o.textContent=NX.v[a.id].toFixed(1)+'°';i.disabled=NX.halt});
-  this.st.textContent=NX.halt?'▶ Retomar':'■ Parar'}});
+
+ init(){
+
+  const box=document.getElementById('dui'),sl=document.getElementById('dsl');this.in={};this.lv=-1;
+
+  AXES.forEach(a=>{const r=document.createElement('div');r.className='r';r.innerHTML='<span>'+a.nome+'</span><input type="range" min="'+a.min+'" max="'+a.max+'" step="0.5" value="'+a.home+'"><output>0°</output>';sl.appendChild(r);
+
+   const i=r.querySelector('input');i.addEventListener('input',()=>NX.set(a.id,+i.value));this.in[a.id]=[i,r.querySelector('output')]});
+
+  document.getElementById('dhome').onclick=()=>NX.home();
+
+  const st=document.getElementById('dstop');st.onclick=()=>{NX.halt?NX.resume():NX.stop()};this.st=st;
+
+  const sc=this.el;sc.addEventListener('enter-vr',()=>box.style.display='none');sc.addEventListener('exit-vr',()=>box.style.display=document.getElementById('intro-screen').classList.contains('fade-out')?'block':'none');
+
+ },
+
+ tick(){if(this.lv===NX.ver)return;this.lv=NX.ver;
+
+  AXES.forEach(a=>{const [i,o]=this.in[a.id];if(document.activeElement!==i||!NX.halt)i.value=NX.v[a.id];o.textContent=NX.v[a.id].toFixed(1)+'°';i.disabled=NX.halt});
+
+  this.st.textContent=NX.halt?'▶ Retomar':'■ Parar'}});
+
+
 
 /* ============ 6) QUALIDADE GRÁFICA ============ */
+
 AFRAME.registerComponent('nexus-quality',{
- init(){
-  /* ss = framebufferScaleFactor do WebXR (vale na PRÓXIMA sessão); fov = foveação; sh = mapa de sombra; an = anisotropia */
-  const P={low:{ss:.9,fov:1,sh:0,an:2},med:{ss:1,fov:.5,sh:1024,an:8},high:{ss:1.25,fov:.25,sh:2048,an:16}};
-  this.set=n=>{const p=P[n],sc=this.el,r=sc.renderer;if(!p||!r)return;
-   try{r.xr.setFramebufferScaleFactor(p.ss);r.xr.setFoveation(p.fov)}catch(e){console.warn(e)}
-   r.shadowMap.enabled=!!p.sh;const an=Math.min(p.an,r.capabilities.getMaxAnisotropy());
-   sc.object3D.traverse(o=>{
-    if(o.isLight&&o.shadow&&o.castShadow&&p.sh){o.shadow.mapSize.set(p.sh,p.sh);if(o.shadow.map){o.shadow.map.dispose();o.shadow.map=null}}
-    if(o.isMesh&&o.material&&!Array.isArray(o.material)){const m=o.material;m.needsUpdate=true;if(m.map){m.map.anisotropy=an;m.map.needsUpdate=true}}});
-   this.cur=n;showError('Qualidade: '+({low:'baixa',med:'média',high:'alta'})[n]+' (escala XR vale na próxima sessão)',true)};
-  this.el.addEventListener('loaded',()=>setTimeout(()=>this.set(new URLSearchParams(location.search).get('q')||'med'),600));
-  window.addEventListener('keydown',e=>{const n={Digit1:'low',Digit2:'med',Digit3:'high'}[e.code];if(n)this.set(n)});
- }});
+
+ init(){
+
+  /* ss = framebufferScaleFactor do WebXR (vale na PRÓXIMA sessão); fov = foveação; sh = mapa de sombra; an = anisotropia */
+
+  const P={low:{ss:.9,fov:1,sh:0,an:2},med:{ss:1,fov:.5,sh:1024,an:8},high:{ss:1.25,fov:.25,sh:2048,an:16}};
+
+  this.set=n=>{const p=P[n],sc=this.el,r=sc.renderer;if(!p||!r)return;
+
+   try{r.xr.setFramebufferScaleFactor(p.ss);r.xr.setFoveation(p.fov)}catch(e){console.warn(e)}
+
+   r.shadowMap.enabled=!!p.sh;const an=Math.min(p.an,r.capabilities.getMaxAnisotropy());
+
+   sc.object3D.traverse(o=>{
+
+    if(o.isLight&&o.shadow&&o.castShadow&&p.sh){o.shadow.mapSize.set(p.sh,p.sh);if(o.shadow.map){o.shadow.map.dispose();o.shadow.map=null}}
+
+    if(o.isMesh&&o.material&&!Array.isArray(o.material)){const m=o.material;m.needsUpdate=true;if(m.map){m.map.anisotropy=an;m.map.needsUpdate=true}}});
+
+   this.cur=n;showError('Qualidade: '+({low:'baixa',med:'média',high:'alta'})[n]+' (escala XR vale na próxima sessão)',true)};
+
+  this.el.addEventListener('loaded',()=>setTimeout(()=>this.set(new URLSearchParams(location.search).get('q')||'med'),600));
+
+  window.addEventListener('keydown',e=>{const n={Digit1:'low',Digit2:'med',Digit3:'high'}[e.code];if(n)this.set(n)});
+
+ }});
+
+
 
 /* ============ MOVIMENTO VR (preservado) ============ */
+
 AFRAME.registerComponent('nexus-movement-controller',{
- schema:{speed:{default:2.8},turnSpeed:{default:2.2},jumpForce:{default:5.2},gravity:{default:14},boundsX:{type:'array',default:[-5.35,5.35]},boundsZ:{type:'array',default:[-5.35,5.35]}},
- init(){
-  this.rig=this.el;this.camera=this.el.querySelector('[camera]');this.lx=0;this.ly=0;this.rx=0;this.vy=0;this.grounded=true;this.keys={};this.sp=false;
-  window.addEventListener('keydown',e=>this.keys[e.code]=true);window.addEventListener('keyup',e=>this.keys[e.code]=false);
-  const L=document.getElementById('leftController'),R=document.getElementById('rightController');
-  if(L){L.addEventListener('thumbstickmoved',e=>{if(!e.detail)return;this.lx=+e.detail.x||0;this.ly=+e.detail.y||0});
-   L.addEventListener('xbuttondown',()=>this.jump());L.addEventListener('abuttondown',()=>this.jump())}else console.warn('Controle esquerdo não encontrado.');
-  if(R)R.addEventListener('thumbstickmoved',e=>{if(e.detail)this.rx=+e.detail.x||0});else console.warn('Controle direito não encontrado.');
-  const st=document.getElementById('vr-status');
-  this.el.sceneEl.addEventListener('enter-vr',()=>{if(st){st.textContent='● META QUEST 2 CONECTADO';st.style.opacity='1'}});
-  this.el.sceneEl.addEventListener('exit-vr',()=>{if(st)st.style.opacity='0'});
- },
- jump(){if(!this.grounded||NX.busy)return;this.vy=this.data.jumpForce;this.grounded=false},
- tick(t,dm){
-  let dt=dm/1000;if(!isFinite(dt)||dt<=0)return;dt=Math.min(dt,.05);const k=this.keys,dz=.15;
-  let mx=this.lx,mz=this.ly,tn=this.rx;
-  if(Math.abs(mx)<dz)mx=0;if(Math.abs(mz)<dz)mz=0;if(Math.abs(tn)<dz)tn=0;
-  if(NX.busy){mx=mz=tn=0} /* manipular o painel não aciona locomoção */
-  if(k.KeyW||k.ArrowUp)mz=-1;if(k.KeyS||k.ArrowDown)mz=1;if(k.KeyA)mx=-1;if(k.KeyD)mx=1;if(k.ArrowLeft)tn=-1;if(k.ArrowRight)tn=1;
-  if(k.Space&&!this.sp)this.jump();this.sp=!!k.Space;
-  const r=this.rig.object3D;
-  if(tn){r.rotation.y-=tn*this.data.turnSpeed*dt}
-  if(mx||mz){const l=Math.hypot(mx,mz);if(l>1){mx/=l;mz/=l}
-   const ang=r.rotation.y+(this.camera?this.camera.object3D.rotation.y:0),c=Math.cos(ang),s=Math.sin(ang),b=this.data;
-   r.position.x=clamp(r.position.x+(mx*c+mz*s)*b.speed*dt,b.boundsX[0],b.boundsX[1]);
-   r.position.z=clamp(r.position.z+(mz*c-mx*s)*b.speed*dt,b.boundsZ[0],b.boundsZ[1])}
-  if(!this.grounded){this.vy-=this.data.gravity*dt;r.position.y+=this.vy*dt;if(r.position.y<=0){r.position.y=0;this.vy=0;this.grounded=true}}
- }});
+
+ schema:{speed:{default:2.8},turnSpeed:{default:2.2},jumpForce:{default:5.2},gravity:{default:14},boundsX:{type:'array',default:[-5.35,5.35]},boundsZ:{type:'array',default:[-5.35,5.35]}},
+
+ init(){
+
+  this.rig=this.el;this.camera=this.el.querySelector('[camera]');this.lx=0;this.ly=0;this.rx=0;this.vy=0;this.grounded=true;this.keys={};this.sp=false;
+
+  window.addEventListener('keydown',e=>this.keys[e.code]=true);window.addEventListener('keyup',e=>this.keys[e.code]=false);
+
+  const L=document.getElementById('leftController'),R=document.getElementById('rightController');
+
+  if(L){L.addEventListener('thumbstickmoved',e=>{if(!e.detail)return;this.lx=+e.detail.x||0;this.ly=+e.detail.y||0});
+
+   L.addEventListener('xbuttondown',()=>this.jump());L.addEventListener('abuttondown',()=>this.jump())}else console.warn('Controle esquerdo não encontrado.');
+
+  if(R)R.addEventListener('thumbstickmoved',e=>{if(e.detail)this.rx=+e.detail.x||0});else console.warn('Controle direito não encontrado.');
+
+  const st=document.getElementById('vr-status');
+
+  this.el.sceneEl.addEventListener('enter-vr',()=>{if(st){st.textContent='● META QUEST 2 CONECTADO';st.style.opacity='1'}});
+
+  this.el.sceneEl.addEventListener('exit-vr',()=>{if(st)st.style.opacity='0'});
+
+ },
+
+ jump(){if(!this.grounded||NX.busy)return;this.vy=this.data.jumpForce;this.grounded=false},
+
+ tick(t,dm){
+
+  let dt=dm/1000;if(!isFinite(dt)||dt<=0)return;dt=Math.min(dt,.05);const k=this.keys,dz=.15;
+
+  let mx=this.lx,mz=this.ly,tn=this.rx;
+
+  if(Math.abs(mx)<dz)mx=0;if(Math.abs(mz)<dz)mz=0;if(Math.abs(tn)<dz)tn=0;
+
+  if(NX.busy){mx=mz=tn=0} /* manipular o painel não aciona locomoção */
+
+  if(k.KeyW||k.ArrowUp)mz=-1;if(k.KeyS||k.ArrowDown)mz=1;if(k.KeyA)mx=-1;if(k.KeyD)mx=1;if(k.ArrowLeft)tn=-1;if(k.ArrowRight)tn=1;
+
+  if(k.Space&&!this.sp)this.jump();this.sp=!!k.Space;
+
+  const r=this.rig.object3D;
+
+  if(tn){r.rotation.y-=tn*this.data.turnSpeed*dt}
+
+  if(mx||mz){const l=Math.hypot(mx,mz);if(l>1){mx/=l;mz/=l}
+
+   const ang=r.rotation.y+(this.camera?this.camera.object3D.rotation.y:0),c=Math.cos(ang),s=Math.sin(ang),b=this.data;
+
+   r.position.x=clamp(r.position.x+(mx*c+mz*s)*b.speed*dt,b.boundsX[0],b.boundsX[1]);
+
+   r.position.z=clamp(r.position.z+(mz*c-mx*s)*b.speed*dt,b.boundsZ[0],b.boundsZ[1])}
+
+  if(!this.grounded){this.vy-=this.data.gravity*dt;r.position.y+=this.vy*dt;if(r.position.y<=0){r.position.y=0;this.vy=0;this.grounded=true}}
+
+ }});
+
+
 
 /* ============ TEXTURAS PROCEDURAIS (resolução 2x p/ nitidez do texto) ============ */
+
 const maxAn=el=>el.sceneEl.renderer?el.sceneEl.renderer.capabilities.getMaxAnisotropy():4;
+
 AFRAME.registerComponent('senai-texture-generator',{init(){
-  const c=document.createElement('canvas');c.width=2048;c.height=1024;const x=c.getContext('2d');x.scale(2,2);
-  x.fillStyle='#005696';x.fillRect(0,0,1024,512);x.strokeStyle='#fff';x.lineWidth=12;x.strokeRect(30,30,964,452);x.strokeStyle='#06b6d4';x.lineWidth=4;x.strokeRect(45,45,934,422);
-  x.fillStyle='#fff';x.fillRect(80,240,120,10);x.fillRect(824,240,120,10);x.font='bold 120px "Titillium Web",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('SENAI',512,236);
-  x.font='600 28px "Titillium Web",sans-serif';x.fillStyle='#38bdf8';x.fillText('SÃO CARLOS • MECATRÔNICA',512,326);
-  x.font='400 20px "Titillium Web",sans-serif';x.fillStyle='#e0f2fe';x.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR',512,366);
-  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;t.generateMipmaps=true;
-  const apply=()=>{const m=this.el.getObject3D('mesh');if(m&&m.material){m.material.map=t;m.material.needsUpdate=true}};
-  this.el.getObject3D('mesh')?apply():this.el.addEventListener('object3dset',apply,{once:true});
-  document.fonts&&document.fonts.ready.then(()=>{t.needsUpdate=true})}});
+
+  const c=document.createElement('canvas');c.width=2048;c.height=1024;const x=c.getContext('2d');x.scale(2,2);
+
+  x.fillStyle='#005696';x.fillRect(0,0,1024,512);x.strokeStyle='#fff';x.lineWidth=12;x.strokeRect(30,30,964,452);x.strokeStyle='#06b6d4';x.lineWidth=4;x.strokeRect(45,45,934,422);
+
+  x.fillStyle='#fff';x.fillRect(80,240,120,10);x.fillRect(824,240,120,10);x.font='bold 120px "Titillium Web",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('SENAI',512,236);
+
+  x.font='600 28px "Titillium Web",sans-serif';x.fillStyle='#38bdf8';x.fillText('SÃO CARLOS • MECATRÔNICA',512,326);
+
+  x.font='400 20px "Titillium Web",sans-serif';x.fillStyle='#e0f2fe';x.fillText('PROJETO NEXUS ATLAS — AMBIENTE DE TESTE VR',512,366);
+
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;t.generateMipmaps=true;
+
+  const apply=()=>{const m=this.el.getObject3D('mesh');if(m&&m.material){m.material.map=t;m.material.needsUpdate=true}};
+
+  this.el.getObject3D('mesh')?apply():this.el.addEventListener('object3dset',apply,{once:true});
+
+  document.fonts&&document.fonts.ready.then(()=>{t.needsUpdate=true})}});
+
 AFRAME.registerComponent('floor-texture-generator',{init(){
-  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#14202e';x.fillRect(0,0,512,512);
-  for(let i=0;i<4000;i++){const s=Math.random()*18-9;x.fillStyle='rgba('+(180+s)+','+(200+s)+','+(215+s)+','+Math.random()*.05+')';x.fillRect(Math.random()*512,Math.random()*512,2,2)}
-  x.strokeStyle='rgba(6,182,212,.15)';x.lineWidth=2;for(let i=0;i<=512;i+=128){x.beginPath();x.moveTo(i,0);x.lineTo(i,512);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(512,i);x.stroke()}
-  x.save();x.translate(256,256);x.strokeStyle='#eab308';x.lineWidth=6;x.setLineDash([14,10]);x.strokeRect(-150,-150,300,300);x.restore();
-  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);t.anisotropy=8;
-  const apply=()=>{const m=this.el.getObject3D('mesh');if(m&&m.material){m.material.map=t;m.material.roughness=.55;m.material.metalness=.25;m.material.needsUpdate=true}};
-  this.el.getObject3D('mesh')?apply():this.el.addEventListener('object3dset',apply,{once:true})}});
+
+  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#14202e';x.fillRect(0,0,512,512);
+
+  for(let i=0;i<4000;i++){const s=Math.random()*18-9;x.fillStyle='rgba('+(180+s)+','+(200+s)+','+(215+s)+','+Math.random()*.05+')';x.fillRect(Math.random()*512,Math.random()*512,2,2)}
+
+  x.strokeStyle='rgba(6,182,212,.15)';x.lineWidth=2;for(let i=0;i<=512;i+=128){x.beginPath();x.moveTo(i,0);x.lineTo(i,512);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(512,i);x.stroke()}
+
+  x.save();x.translate(256,256);x.strokeStyle='#eab308';x.lineWidth=6;x.setLineDash([14,10]);x.strokeRect(-150,-150,300,300);x.restore();
+
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);t.anisotropy=8;
+
+  const apply=()=>{const m=this.el.getObject3D('mesh');if(m&&m.material){m.material.map=t;m.material.roughness=.55;m.material.metalness=.25;m.material.needsUpdate=true}};
+
+  this.el.getObject3D('mesh')?apply():this.el.addEventListener('object3dset',apply,{once:true})}});
+
+
 
 /* ============ PAINEL DE COMANDOS DA PAREDE (mesmo conteúdo, gerado por dados) ============ */
+
 AFRAME.registerComponent('cmd-panel',{init(){
-  const el=this.el,add=(tag,at,par)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);(par||el).appendChild(e);return e};
-  const tx=(v,x,y,w,c,al)=>add('a-text',{value:v,position:x+' '+y+' .11',align:al||'left',baseline:'center',width:w,color:c});
-  add('a-box',{width:5.6,height:3.1,depth:.1,color:'#060a12',material:'roughness:.4;metalness:.55'});
-  add('a-box',{width:5.48,height:2.98,depth:.035,position:'0 0 .06',color:'#0284c7'});
-  add('a-plane',{width:5.36,height:2.86,position:'0 0 .09',color:'#0b1220',material:'roughness:.6;metalness:.1'});
-  add('a-plane',{width:5.36,height:.42,position:'0 1.22 .095',color:'#0f3f66'});
-  tx('PAINEL DE COMANDOS',0,1.22,4,'#e0f2fe','center');tx('NEXUS ATLAS',0,.98,2.4,'#38bdf8','center');
-  add('a-box',{width:.012,height:2.05,depth:.01,position:'0 -.06 .1',color:'#1e3a5f'});
-  const col=(title,tc,x0,rows)=>{tx(title,x0,.78,2.6,tc);rows.forEach(([a,b,c,g],i)=>{const y=.42-i*.38;
-   add('a-box',{width:.26,height:.26,depth:.02,position:(x0+.05)+' '+y+' .1',color:c,material:'roughness:.4;metalness:.3'});
-   if(g==='o')add('a-circle',{radius:.07,position:(x0+.05)+' '+y+' .112',color:'#67e8f9'});else tx(g,x0+.05,y,1.1,'#fff','center');
-   tx(a,x0+.27,y+.05,2.4,'#ffffff');tx(b,x0+.27,y-.12,2.2,'#94a3b8')})};
-  col('CONTROLES VR','#22d3ee',-2.55,[['ANALOGICO ESQUERDO','Mover o personagem','#0e7490','o'],['ANALOGICO DIREITO','Girar a visao / o corpo','#0e7490','o'],['BOTAO X','Pular','#1d4ed8','X'],['CLIQUE STICK DIREITO','Aponte e solte p/ teleportar','#0e7490','o'],['MAOS / GATILHO','Pinca (ou gatilho) + arraste no painel do braco','#15803d','MAO']]);
-  col('CONTROLES PC','#facc15',.25,[['W A S D','Andar','#a16207','WASD'],['SETAS DIRECIONAIS','Cima/baixo = andar, esq/dir = girar','#a16207','SETAS'],['ESPACO','Pular','#1d4ed8','SPC'],['TECLA P','Depuracao: pivos e eixos do braco','#a16207','P'],['TECLAS 1 2 3','Qualidade grafica (baixa/media/alta)','#a16207','1-3']]);
-  add('a-box',{width:5.36,height:.26,depth:.005,position:'0 -1.32 .095',color:'#0f3f66'});tx('SENAI SAO CARLOS - MECATRONICA',0,-1.32,4.6,'#e0f2fe','center')}});
+
+  const el=this.el,add=(tag,at,par)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);(par||el).appendChild(e);return e};
+
+  const tx=(v,x,y,w,c,al)=>add('a-text',{value:v,position:x+' '+y+' .11',align:al||'left',baseline:'center',width:w,color:c});
+
+  add('a-box',{width:5.6,height:3.1,depth:.1,color:'#060a12',material:'roughness:.4;metalness:.55'});
+
+  add('a-box',{width:5.48,height:2.98,depth:.035,position:'0 0 .06',color:'#0284c7'});
+
+  add('a-plane',{width:5.36,height:2.86,position:'0 0 .09',color:'#0b1220',material:'roughness:.6;metalness:.1'});
+
+  add('a-plane',{width:5.36,height:.42,position:'0 1.22 .095',color:'#0f3f66'});
+
+  tx('PAINEL DE COMANDOS',0,1.22,4,'#e0f2fe','center');tx('NEXUS ATLAS',0,.98,2.4,'#38bdf8','center');
+
+  add('a-box',{width:.012,height:2.05,depth:.01,position:'0 -.06 .1',color:'#1e3a5f'});
+
+  const col=(title,tc,x0,rows)=>{tx(title,x0,.78,2.6,tc);rows.forEach(([a,b,c,g],i)=>{const y=.42-i*.38;
+
+   add('a-box',{width:.26,height:.26,depth:.02,position:(x0+.05)+' '+y+' .1',color:c,material:'roughness:.4;metalness:.3'});
+
+   if(g==='o')add('a-circle',{radius:.07,position:(x0+.05)+' '+y+' .112',color:'#67e8f9'});else tx(g,x0+.05,y,1.1,'#fff','center');
+
+   tx(a,x0+.27,y+.05,2.4,'#ffffff');tx(b,x0+.27,y-.12,2.2,'#94a3b8')})};
+
+  col('CONTROLES VR','#22d3ee',-2.55,[['ANALOGICO ESQUERDO','Mover o personagem','#0e7490','o'],['ANALOGICO DIREITO','Girar a visao / o corpo','#0e7490','o'],['BOTAO X','Pular','#1d4ed8','X'],['CLIQUE STICK DIREITO','Aponte e solte p/ teleportar','#0e7490','o'],['MAOS / GATILHO','Pinca (ou gatilho) + arraste no painel do braco','#15803d','MAO']]);
+
+  col('CONTROLES PC','#facc15',.25,[['W A S D','Andar','#a16207','WASD'],['SETAS DIRECIONAIS','Cima/baixo = andar, esq/dir = girar','#a16207','SETAS'],['ESPACO','Pular','#1d4ed8','SPC'],['TECLA P','Depuracao: pivos e eixos do braco','#a16207','P'],['TECLAS 1 2 3','Qualidade grafica (baixa/media/alta)','#a16207','1-3']]);
+
+  add('a-box',{width:5.36,height:.26,depth:.005,position:'0 -1.32 .095',color:'#0f3f66'});tx('SENAI SAO CARLOS - MECATRONICA',0,-1.32,4.6,'#e0f2fe','center')}});
+
+
 
 /* ============ ENTRADA ============ */
+
 function enterExperience(vr){
-  document.getElementById('intro-screen').classList.add('fade-out');
-  const sc=document.querySelector('a-scene');if(!sc)return showError('A cena VR não foi encontrada.');
-  if(!vr){document.getElementById('dui').style.display='block';return}
-  const go=()=>{try{sc.enterVR()}catch(e){console.error(e);showError('Não foi possível iniciar o modo VR. Verifique o Quest 2, HTTPS e se o navegador permite WebXR.');document.getElementById('dui').style.display='block'}};
-  sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});
+
+  document.getElementById('intro-screen').classList.add('fade-out');
+
+  const sc=document.querySelector('a-scene');if(!sc)return showError('A cena VR não foi encontrada.');
+
+  if(!vr){document.getElementById('dui').style.display='block';return}
+
+  const go=()=>{try{sc.enterVR()}catch(e){console.error(e);showError('Não foi possível iniciar o modo VR. Verifique o Quest 2, HTTPS e se o navegador permite WebXR.');document.getElementById('dui').style.display='block'}};
+
+  sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});
+
 }
+
 setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a carregar. Confira models/braco.glb e a conexão.')},45000);
+
 </script>
+
 </head>
+
 <body>
+
 <div id="intro-screen"><div class="intro-card">
- <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
- <h1>NEXUS ATLAS</h1><h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
- <p>Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>. Este laboratório foi desenvolvido para testar navegação em realidade virtual, rastreamento de mãos e, futuramente, a integração entre o braço robótico virtual e o braço físico utilizando ESP32.</p>
- <button class="btn-enter-vr" onclick="enterExperience(true)"><span>🥽</span> ENTRAR NO MODO VR</button><br>
- <button class="btn-enter-vr btn-pc" onclick="enterExperience(false)">Explorar no computador</button>
- <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>PULAR</strong>Botão X</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>BRAÇO</strong>Pinça + arraste no painel</div></div>
+
+ <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
+
+ <h1>NEXUS ATLAS</h1><h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
+
+ <p>Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>. Este laboratório foi desenvolvido para testar navegação em realidade virtual, rastreamento de mãos e, a integração entre o braço robótico virtual e o braço físico utilizando ESP32.</p>
+
+ <button class="btn-enter-vr" onclick="enterExperience(true)"><span>🥽</span> ENTRAR NO MODO VR</button><br>
+
+ <button class="btn-enter-vr btn-pc" onclick="enterExperience(false)">Explorar no computador</button>
+
+ <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>PULAR</strong>Botão X</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>BRAÇO</strong>Pinça + arraste no painel</div></div>
+
 </div></div>
+
 <div id="vr-status">● META QUEST 2</div>
+
 <div id="error-message"></div>
+
 <div id="nx-load">Carregando braço robótico…</div>
+
 <div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><small>Mesmo estado do painel VR. Tecla P: pivôs/eixos.</small></div>
+
+
 
 <a-scene renderer="antialias:true;colorManagement:true;exposure:1.1;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" fog="type:linear;color:#0a0f1a;near:9;far:15" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui>
 
+
+
 <a-entity id="cameraRig" position="0 0 3" nexus-movement-controller>
- <a-camera id="headCamera" position="0 1.6 0" look-controls="pointerLockEnabled:false" wasd-controls="enabled:false"></a-camera>
- <a-entity id="leftHand" hand-tracking-controls="hand:left;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
- <a-entity id="rightHand" hand-tracking-controls="hand:right;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
- <a-entity id="leftController" oculus-touch-controls="hand:left" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true"></a-entity>
- <a-entity id="rightController" oculus-touch-controls="hand:right" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true" blink-controls="cameraRig:#cameraRig;teleportOrigin:#headCamera;button:thumbstick;collisionEntities:#floor;landingNormal:0 1 0;curveShootingSpeed:6;curveHitColor:#06b6d4;curveMissColor:#ef4444"></a-entity>
+
+ <a-camera id="headCamera" position="0 1.6 0" look-controls="pointerLockEnabled:false" wasd-controls="enabled:false"></a-camera>
+
+ <a-entity id="leftHand" hand-tracking-controls="hand:left;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
+
+ <a-entity id="rightHand" hand-tracking-controls="hand:right;modelStyle:mesh;modelColor:#e0b08a"></a-entity>
+
+ <a-entity id="leftController" oculus-touch-controls="hand:left" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true"></a-entity>
+
+ <a-entity id="rightController" oculus-touch-controls="hand:right" raycaster="objects:.hit;far:4;lineColor:#38bdf8;showLine:true" blink-controls="cameraRig:#cameraRig;teleportOrigin:#headCamera;button:thumbstick;collisionEntities:#floor;landingNormal:0 1 0;curveShootingSpeed:6;curveHitColor:#06b6d4;curveMissColor:#ef4444"></a-entity>
+
 </a-entity>
+
+
 
 <!-- ILUMINAÇÃO -->
+
 <a-light type="hemisphere" color="#e8f4ff" ground-color="#0b1220" intensity="0.55"></a-light>
+
 <a-light type="ambient" color="#0f172a" intensity="0.35"></a-light>
+
 <a-light type="point" position="0 4.2 1.5" color="#e0f2fe" intensity="1.4" distance="12" decay="1.7"></a-light>
+
 <a-light type="point" position="0 4.2 -2.5" color="#38bdf8" intensity="1.1" distance="12" decay="1.7"></a-light>
+
 <a-light type="spot" position="0 4.4 0" target="#worktable" color="#ffffff" intensity="2.6" angle="45" penumbra=".6" castShadow="true" shadow-map-height="1024" shadow-map-width="1024" shadow-bias="-0.0005"></a-light>
+
 <a-light type="directional" position="2 3 4" color="#bcd9ff" intensity="0.4"></a-light>
 
+
+
 <!-- CHÃO / TETO / PAREDES -->
+
 <a-plane id="floor" position="0 0 0" rotation="-90 0 0" width="12" height="12" color="#c7d2e0" floor-texture-generator shadow="receive:true"></a-plane>
+
 <a-plane position="0 4.8 0" rotation="90 0 0" width="12" height="12" color="#0f172a" material="roughness:.85;metalness:.1;side:double"></a-plane>
+
 <a-entity position="-2 4.55 0"><a-box width="1.6" height=".22" depth=".22" color="#334155" material="roughness:.4;metalness:.75"></a-box><a-box width=".2" height=".22" depth=".22" position="-.9 0 0" color="#1e293b"></a-box><a-box width=".2" height=".22" depth=".22" position=".9 0 0" color="#1e293b"></a-box></a-entity>
+
 <a-plane position="0 2.4 -6" width="12" height="5" color="#232f3f" material="roughness:.75;metalness:.15" shadow="receive:true"></a-plane>
+
 <a-plane position="0 2.4 6" rotation="0 180 0" width="12" height="5" color="#232f3f" material="roughness:.75;metalness:.15"></a-plane>
+
 <a-plane position="-6 2.4 0" rotation="0 90 0" width="12" height="5" color="#161f2b" material="roughness:.75;metalness:.15" shadow="receive:true"></a-plane>
+
 <a-plane position="6 2.4 0" rotation="0 -90 0" width="12" height="5" color="#161f2b" material="roughness:.75;metalness:.15"></a-plane>
+
 <a-box position="0 .15 -5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+
 <a-box position="0 .15 5.93" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+
 <a-box position="-5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+
 <a-box position="5.93 .15 0" rotation="0 90 0" width="12" height=".3" depth=".04" color="#0a0f1a"></a-box>
+
 <a-box position="0 .1 -5.9" width="11.8" height=".1" depth=".05" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:.8"></a-box>
+
 <a-box position="0 .1 5.9" width="11.8" height=".1" depth=".05" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:.8"></a-box>
+
 <a-box position="0 4.5 -5.9" width="11.8" height=".08" depth=".05" color="#0284c7" material="emissive:#0284c7;emissiveIntensity:.8"></a-box>
 
+
+
 <!-- PAINEL SENAI (parede lateral direita) -->
+
 <a-entity position="5.75 2.6 2" rotation="0 -90 0">
- <a-box width="4.2" height="2.1" depth=".1" color="#090d16"></a-box>
- <a-plane width="4" height="1.9" position="0 0 .06" senai-texture-generator></a-plane>
- <a-light type="point" color="#005696" intensity=".8" distance="3" position="0 0 .5"></a-light>
+
+ <a-box width="4.2" height="2.1" depth=".1" color="#090d16"></a-box>
+
+ <a-plane width="4" height="1.9" position="0 0 .06" senai-texture-generator></a-plane>
+
+ <a-light type="point" color="#005696" intensity=".8" distance="3" position="0 0 .5"></a-light>
+
 </a-entity>
+
+
 
 <!-- MESA (topo real = a-box #tableTop: y .86 ± .045 => 0,905 m) -->
+
 <a-entity id="worktable" position="0 0 0">
- <a-box position="0 .85 0" width="2.4" height=".1" depth="1.4" color="#1e293b" material="roughness:.3;metalness:.7" shadow="cast:true;receive:true"></a-box>
- <a-box id="tableTop" position="0 .86 0" width="2.2" height=".09" depth="1.2" color="#0f172a" shadow="receive:true"></a-box>
- <a-box position="0 .9065 .0" width="2" height=".003" depth=".02" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:.9"></a-box>
- <a-box position="-1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
- <a-box position="1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
- <a-box position="-1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
- <a-box position="1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
- <a-plane position="0 .85 .702" width="1.2" height=".08" color="#005696"><a-text value="MESA DE MANIPULACAO - NEXUS ATLAS" align="center" baseline="center" width="1.1" color="#ffffff" position="0 0 .01"></a-text></a-plane>
+
+ <a-box position="0 .85 0" width="2.4" height=".1" depth="1.4" color="#1e293b" material="roughness:.3;metalness:.7" shadow="cast:true;receive:true"></a-box>
+
+ <a-box id="tableTop" position="0 .86 0" width="2.2" height=".09" depth="1.2" color="#0f172a" shadow="receive:true"></a-box>
+
+ <a-box position="0 .9065 .0" width="2" height=".003" depth=".02" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:.9"></a-box>
+
+ <a-box position="-1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+
+ <a-box position="1 .4 -.5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+
+ <a-box position="-1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+
+ <a-box position="1 .4 .5" width=".12" height=".8" depth=".12" color="#334155" shadow="cast:true"></a-box>
+
+ <a-plane position="0 .85 .702" width="1.2" height=".08" color="#005696"><a-text value="MESA DE MANIPULACAO - NEXUS ATLAS" align="center" baseline="center" width="1.1" color="#ffffff" position="0 0 .01"></a-text></a-plane>
+
 </a-entity>
+
 <a-plane position="0 .012 0" rotation="-90 0 0" width="3.2" height="2.2" color="#1a2432" material="roughness:.9;metalness:.05;opacity:.9" shadow="receive:true"></a-plane>
 
+
+
 <!-- BRAÇO ROBÓTICO: braco.glb, 5 eixos (cintura, ombro, cotovelo, pulso, garra) -->
+
 <a-entity id="synchroarm" gltf-model="url(models/braco.glb)" braco-rig="height:1.15" position="0 0 0" shadow="cast:true;receive:true"></a-entity>
 
+
+
 <!-- PAINEL DE CONTROLE DOS EIXOS (acessível às mãos, ao lado da mesa; não cobre o braço) -->
+
 <a-entity id="axisPanel" axis-panel position="-1.45 1.3 1.0" rotation="0 36 0"></a-entity>
 
+
+
 <!-- PLACA DE SEGURANÇA -->
+
 <a-entity position="1.4 1.1 .6" rotation="0 -35 0">
- <a-box width=".5" height=".5" depth=".02" color="#eab308"></a-box>
- <a-text value="!" position="0 .08 .012" align="center" width="1.4" color="#111827"></a-text>
- <a-text value="AREA DE TESTE
+
+ <a-box width=".5" height=".5" depth=".02" color="#eab308"></a-box>
+
+ <a-text value="!" position="0 .08 .012" align="center" width="1.4" color="#111827"></a-text>
+
+ <a-text value="AREA DE TESTE
+
 MANTENHA DISTANCIA" position="0 -.15 .012" align="center" width="1" color="#111827"></a-text>
+
 </a-entity>
+
+
 
 <!-- RACK -->
+
 <a-entity position="5.2 0 -2">
- <a-box position="0 1.5 0" width=".8" height="3" depth="1.6" color="#0f172a" material="roughness:.4;metalness:.6" shadow="cast:true;receive:true"></a-box>
- <a-box position="-.41 2.2 0" width=".02" height=".15" depth="1.2" color="#22c55e" material="emissive:#22c55e;emissiveIntensity:1"></a-box>
- <a-box position="-.41 1.8 0" width=".02" height=".15" depth="1.2" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:1"></a-box>
- <a-box position="-.41 1.4 0" width=".02" height=".15" depth="1.2" color="#eab308" material="emissive:#eab308;emissiveIntensity:1"></a-box>
- <a-cylinder position="-.3 .3 .6" rotation="0 0 12" radius=".025" height=".8" color="#111827"></a-cylinder>
- <a-cylinder position="-.2 .3 .5" rotation="0 0 -8" radius=".025" height=".8" color="#1e293b"></a-cylinder>
+
+ <a-box position="0 1.5 0" width=".8" height="3" depth="1.6" color="#0f172a" material="roughness:.4;metalness:.6" shadow="cast:true;receive:true"></a-box>
+
+ <a-box position="-.41 2.2 0" width=".02" height=".15" depth="1.2" color="#22c55e" material="emissive:#22c55e;emissiveIntensity:1"></a-box>
+
+ <a-box position="-.41 1.8 0" width=".02" height=".15" depth="1.2" color="#06b6d4" material="emissive:#06b6d4;emissiveIntensity:1"></a-box>
+
+ <a-box position="-.41 1.4 0" width=".02" height=".15" depth="1.2" color="#eab308" material="emissive:#eab308;emissiveIntensity:1"></a-box>
+
+ <a-cylinder position="-.3 .3 .6" rotation="0 0 12" radius=".025" height=".8" color="#111827"></a-cylinder>
+
+ <a-cylinder position="-.2 .3 .5" rotation="0 0 -8" radius=".025" height=".8" color="#1e293b"></a-cylinder>
+
 </a-entity>
+
+
 
 <!-- CARRINHO DE FERRAMENTAS -->
+
 <a-entity position="3.6 0 1.8" rotation="0 20 0">
- <a-box position="0 .55 0" width=".7" height=".08" depth=".45" color="#b91c1c" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
- <a-box position="0 .3 0" width=".68" height=".42" depth=".43" color="#991b1b" material="roughness:.4;metalness:.55"></a-box>
- <a-box position="0 .38 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
- <a-box position="0 .2 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
- <a-cylinder position="-.3 .035 -.18" radius=".07" height=".07" color="#111827"></a-cylinder>
- <a-cylinder position=".3 .035 -.18" radius=".07" height=".07" color="#111827"></a-cylinder>
- <a-cylinder position="-.3 .035 .18" radius=".07" height=".07" color="#111827"></a-cylinder>
- <a-cylinder position=".3 .035 .18" radius=".07" height=".07" color="#111827"></a-cylinder>
- <a-cylinder position="-.15 .602 0" rotation="0 0 90" radius=".012" height=".22" color="#facc15"></a-cylinder>
- <a-box position=".12 .6 -.05" width=".16" height=".02" depth=".05" color="#38bdf8"></a-box>
+
+ <a-box position="0 .55 0" width=".7" height=".08" depth=".45" color="#b91c1c" material="roughness:.35;metalness:.6" shadow="cast:true;receive:true"></a-box>
+
+ <a-box position="0 .3 0" width=".68" height=".42" depth=".43" color="#991b1b" material="roughness:.4;metalness:.55"></a-box>
+
+ <a-box position="0 .38 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
+
+ <a-box position="0 .2 .22" width=".5" height=".08" depth=".02" color="#1f2937"></a-box>
+
+ <a-cylinder position="-.3 .035 -.18" radius=".07" height=".07" color="#111827"></a-cylinder>
+
+ <a-cylinder position=".3 .035 -.18" radius=".07" height=".07" color="#111827"></a-cylinder>
+
+ <a-cylinder position="-.3 .035 .18" radius=".07" height=".07" color="#111827"></a-cylinder>
+
+ <a-cylinder position=".3 .035 .18" radius=".07" height=".07" color="#111827"></a-cylinder>
+
+ <a-cylinder position="-.15 .602 0" rotation="0 0 90" radius=".012" height=".22" color="#facc15"></a-cylinder>
+
+ <a-box position=".12 .6 -.05" width=".16" height=".02" depth=".05" color="#38bdf8"></a-box>
+
 </a-entity>
 
+
+
 <!-- PAINEL DE COMANDOS (parede de fundo) -->
+
 <a-entity id="controlPanel" position="0 1.8 -5.7" cmd-panel></a-entity>
+
 <a-text value="NEXUS ATLAS" position="0 4.3 -5.8" align="center" width="6" color="#38bdf8" side="double"></a-text>
+
 </a-scene>
+
 </body>
+
 </html>
