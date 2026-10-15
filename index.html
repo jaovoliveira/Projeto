@@ -124,7 +124,7 @@ AFRAME.registerComponent('braco-rig',{
   init(){
     this.ready=false;
     this.el.addEventListener('model-loaded',()=>{try{this.build()}catch(e){console.error(e);fail('Braço: '+e.message)}});
-    this.el.addEventListener('model-error',()=>fail('Falha ao carregar models/braco.glb. Use servidor HTTP/HTTPS e confira a pasta models.'));
+    this.el.addEventListener('model-error',()=>fail('Falha ao carregar models/braco_novo.glb. Use servidor HTTP/HTTPS e confira a pasta models.'));
     window.addEventListener('keydown',e=>{if(e.code==='KeyP')this.setDebug(!this.dbgOn)});
   },
 
@@ -722,7 +722,7 @@ function enterExperience(vr){
 
 }
 
-setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a carregar. Confira models/braco.glb e a conexão.')},45000);
+setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a carregar. Confira models/braco_novo.glb e a conexão.')},45000);
 
 </script>
 
@@ -866,7 +866,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 <!-- BRAÇO ROBÓTICO: braco.glb, 5 eixos (cintura, ombro, cotovelo, pulso, garra) -->
 
-<a-entity id="synchroarm" gltf-model="url(models/braco.glb)" braco-rig="height:1.15" position="0 0 0" shadow="cast:true;receive:true"></a-entity>
+<a-entity id="synchroarm" gltf-model="url(models/braco_novo.glb?v=novo_20261015)" braco-rig="height:1.15" position="0 0 0" shadow="cast:true;receive:true"></a-entity>
 
 
 
