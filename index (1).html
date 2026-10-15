@@ -181,54 +181,51 @@ AFRAME.registerComponent('braco-rig',{
     const J4=mk('j_roll_fixo',K.O3,J3);
     const J5=mk('j_pulso',K.P,J4);
 
-    // Garra: pivôs construídos no mesmo referencial CAD do modelo.
+    // Garra — versão estável.
+    // O GLB já chega montado. Portanto, NÃO recalculamos nem reposicionamos dedos/links no HOME.
+    // Cada lado da garra vira um pequeno subconjunto rígido, preservando os encaixes originais.
     const ng=V(K.ng).normalize();
     const aux=Math.abs(ng.x)<.9?new T.Vector3(1,0,0):new T.Vector3(0,1,0);
     const uV=new T.Vector3().crossVectors(ng,aux).normalize();
     const vV=new T.Vector3().crossVectors(ng,uV).normalize();
     const KP=V(K.P);
     const w3=p=>KP.clone().addScaledVector(uV,p[0]).addScaledVector(vV,p[1]);
-    const side=(tag,sign)=>{const g=K.G4[tag];return{g,sign,gear:mk('j_gear'+tag,w3(g.P1).toArray(),J5),link:mk('j_link'+tag,w3(g.P3).toArray(),J5),fing:mk('j_fing'+tag,w3(g.P2r).toArray(),J5)}};
-    const sA=side('A',1),sB=side('B',-1);
+    const sA={gear:mk('j_garra_A',w3(K.G4.A.P1).toArray(),J5)};
+    const sB={gear:mk('j_garra_B',w3(K.G4.B.P1).toArray(),J5)};
 
-    // Mantém a pose inicial exatamente como foi exportada no GLB.
+    // Mantém a pose inicial EXATAMENTE como foi exportada no GLB.
+    // O reparenting usa Object3D.attach(), que conserva a transformação mundial de cada peça.
     cad.updateMatrixWorld(true);
     J1.attach(P.waist);
     J2.attach(P.arm1);
     J3.attach(P.arm2);
     J4.attach(P.arm3);
     J5.attach(P.wrist);
-    sA.gear.attach(P.gear2);sA.link.attach(P.link2);sA.fing.attach(P.finger2);
-    sB.gear.attach(P.gear1);sB.link.attach(P.link1);sB.fing.attach(P.finger1);
+
+    // Cada metade da garra é mantida unida como um conjunto rígido.
+    sA.gear.attach(P.gear2); sA.gear.attach(P.link2); sA.gear.attach(P.finger2);
+    sB.gear.attach(P.gear1); sB.gear.attach(P.link1); sB.gear.attach(P.finger1);
 
     const Y=new T.Vector3(0,1,0),AN=V(K.N).normalize(),AA=V(K.A).normalize(),AE=V(K.E).normalize();
     const rot=(o,ax,deg)=>{
-      o.position.copy(o.userData.homeP);o.scale.copy(o.userData.homeS);o.quaternion.copy(o.userData.homeQ);
-      o.quaternion.multiply(new T.Quaternion().setFromAxisAngle(ax,deg*D2R));
-    };
-
-    const solve2=(g,dth)=>{const th=g.th0+dth,P2=[g.P1[0]+g.Ld*Math.cos(th),g.P1[1]+g.Ld*Math.sin(th)],dx=P2[0]-g.P3[0],dy=P2[1]-g.P3[1];
-      const d=Math.max(Math.abs(g.Ll-g.Lf)+1e-6,Math.min(g.Ll+g.Lf-1e-6,Math.hypot(dx,dy)));
-      const a=(g.Ll*g.Ll-g.Lf*g.Lf+d*d)/(2*d),h=Math.sqrt(Math.max(g.Ll*g.Ll-a*a,0)),ux=dx/d,uy=dy/d,M=[g.P3[0]+a*ux,g.P3[1]+a*uy];
-      const c1=[M[0]-h*uy,M[1]+h*ux],c2=[M[0]+h*uy,M[1]-h*ux];
-      const e1=(c1[0]-g.P4r[0])**2+(c1[1]-g.P4r[1])**2,e2=(c2[0]-g.P4r[0])**2+(c2[1]-g.P4r[1])**2;return{P2,P4:e1<e2?c1:c2}};
-
-    const cadPointToParent=(raw,parent)=>{cad.updateMatrixWorld(true);parent.updateMatrixWorld(true);const w=cad.localToWorld(raw.clone());return parent.worldToLocal(w)};
-    const applySide=(s,d0)=>{const g=s.g,dth=d0+(g.phase||0)*D2R,{P2,P4}=solve2(g,dth);
-      rot(s.gear,ng,dth*R2D);
-      rot(s.link,ng,(Math.atan2(P4[1]-g.P3[1],P4[0]-g.P3[0])-Math.atan2(g.P4r[1]-g.P3[1],g.P4r[0]-g.P3[0]))*R2D);
-      s.fing.position.copy(cadPointToParent(w3(P2),J5));
-      s.fing.quaternion.copy(s.fing.userData.homeQ);
-      s.fing.quaternion.multiply(new T.Quaternion().setFromAxisAngle(ng,(Math.atan2(P4[1]-P2[1],P4[0]-P2[0])-Math.atan2(g.P4r[1]-g.P2r[1],g.P4r[0]-g.P2r[0]))));
+      o.position.copy(o.userData.homeP);
+      o.scale.copy(o.userData.homeS);
+      o.quaternion.copy(o.userData.homeQ);
+      if(Math.abs(deg)>1e-6)o.quaternion.multiply(new T.Quaternion().setFromAxisAngle(ax,deg*D2R));
     };
 
     this.pose=()=>{const s=NX.v;
+      // HOME = 0 em todos os eixos. Nenhuma correção fixa é aplicada no carregamento.
       rot(J1,Y,clamp(s.waist,-80,80));
       rot(J2,AN,clamp(s.shoulder,-45,45));
       rot(J3,AN,clamp(s.elbow,-60,60));
-      rot(J4,AA,K.roll0);
+      rot(J4,AA,0); // IMPORTANTE: remove o antigo roll fixo que desmontava o punho no HOME.
       rot(J5,AE,clamp(s.pitch,-30,30));
-      const d=clamp(s.grip,0,14)*D2R;applySide(sA,d);applySide(sB,-K.gearRatio*d);
+
+      // Abertura segura da garra sem recalcular posições absolutas dos dedos.
+      const g=clamp(s.grip,0,14);
+      rot(sA.gear,ng, g*0.55);
+      rot(sB.gear,ng,-g*0.55);
     };
 
     this.pose();stage.updateMatrixWorld(true);
@@ -252,8 +249,8 @@ AFRAME.registerComponent('braco-rig',{
     [[J1,Y,'Base',0xff5555],[J2,AN,'Ombro',0xffaa00],[J3,AN,'Cotovelo',0x55ff55],[J5,AE,'Pulso',0x55aaff],[sA.gear,ng,'Garra',0xff55ff]].forEach(([j,a,n,c])=>{const g=new T.Group();g.add(new T.ArrowHelper(a.clone().normalize(),new T.Vector3(),.06,c));g.add(new T.Mesh(new T.SphereGeometry(.004),new T.MeshBasicMaterial({color:0xffffff,depthTest:false})));g.add(lab(n));g.visible=false;j.add(g);this.dbg.push(g)});
 
     this.stage=stage;this.ready=true;this.dbgOn=/debug=1/.test(location.search);this.setDebug(this.dbgOn);
-    console.info('[SynchroArm reinício limpo]',{arquivo:'models/braco.glb',cad:cad.name,altura:h,escala:sc});
-    loaded();showError('Braço carregado: models/braco.glb — versão reiniciada.',true);
+    console.info('[SynchroArm V5 - montagem preservada]',{arquivo:'models/braco.glb',cad:cad.name,altura:h,escala:sc});
+    loaded();showError('Braço carregado e montagem preservada: models/braco.glb.',true);
   },
 
   setDebug(on){this.dbgOn=!!on;if(this.dbg)this.dbg.forEach(g=>g.visible=this.dbgOn)},
@@ -698,6 +695,19 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 </head>
 
 <body>
+<script>
+if (location.protocol === 'file:') {
+  window.addEventListener('load', function () {
+    const msg = document.getElementById('error-message');
+    if (msg) {
+      msg.textContent = 'ERRO DE ABERTURA: este projeto foi aberto por file://. Feche esta aba e execute INICIAR_PROJETO.bat. Depois acesse http://localhost:8000. O modelo correto é models/braco.glb.';
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(127,29,29,.98)';
+      msg.style.borderColor = '#ef4444';
+    }
+  });
+}
+</script>
 
 <div id="intro-screen"><div class="intro-card">
 
