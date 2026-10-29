@@ -72,6 +72,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',san
 
 #dui small{display:block;margin-top:6px;color:#94a3b8;font-size:11px}
 
+.btn-enter-vr:disabled{opacity:.6;cursor:wait;transform:none}
+
+#xr-note{margin-top:12px;font-size:.85rem;color:#94a3b8;min-height:1.2em}
+
 .a-enter-vr{display:none!important}
 
 </style>
@@ -107,18 +111,115 @@ const AXES = [
 ];
 AXES.forEach((a,i)=>a.i=i);
 
-const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:false},
-  set(id,val){
+const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:false},mode:'gestos',
+  // origem 'demo' = sequência automática; qualquer outra origem (painel, mouse, gesto, controle)
+  // assume o braço e pausa a demonstração. Todo alvo novo também passa pela ponte NX_LINK.
+  set(id,val,origem){
     if(this.halt)return;
     const a=AXES.find(x=>x.id===id); if(!a)return;
+    if(origem!=='demo'&&DEMO.running)DEMO.pause();
     this.t[id]=clamp(val,a.min,a.max);
+    NX_LINK.send('eixo',{eixo:id,graus:this.t[id],origem:origem||'painel'});
   },
   freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
-  home(){if(!this.halt)AXES.forEach(a=>this.t[a.id]=a.home)},
-  stop(){this.freeze();this.halt=true;this.ver++},
-  resume(){this.halt=false;this.ver++}
+  home(){if(this.halt)return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
+  stop(){DEMO.pause(true);this.freeze();this.halt=true;this.ver++;NX_LINK.send('parar')},
+  resume(){this.halt=false;this.ver++;NX_LINK.send('retomar')}
 };
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
+
+/* ============ 1b) PONTE PARA O BRAÇO FÍSICO (ESP32) — AINDA NÃO IMPLEMENTADA ============
+   Todos os comandos (painéis, mouse, gestos, controles e demonstração) passam por NX_LINK.send().
+   Hoje ela NÃO envia nada: connected = false e os monitores mostram "ESP32: NÃO CONECTADO".
+   ONDE INTEGRAR: dentro de send(), abrir um WebSocket (ex.: new WebSocket('ws://IP-DO-ESP32:81'))
+   ou usar Web Serial, limitar a taxa (ex.: 20 mensagens/s), converter os graus do gêmeo para o
+   ângulo de cada servo e só então marcar connected = true. A animação virtual não depende daqui. */
+const NX_LINK={
+  connected:false,
+  send(comando,dados){ /* integração com o ESP32 entra aqui */ }
+};
+
+/* ============ 1c) API DE COMANDOS DO BRAÇO ============
+   As mesmas funções servem ao gêmeo virtual e, no futuro, ao braço físico (via NX_LINK). */
+const GARRA={ABERTA:0,FECHADA:60};   // graus do eixo 'grip': 0 = aberta, 60 = dedos encostando
+const NexusArm={
+  abrirGarra(origem){this.definirGarra(GARRA.ABERTA,origem)},
+  fecharGarra(origem){this.definirGarra(GARRA.FECHADA,origem)},
+  definirGarra(graus,origem){NX.set('grip',graus,origem)},
+  definirAberturaGarra(f,origem){this.definirGarra(GARRA.FECHADA*(1-clamp(f,0,1)),origem)},   // f: 0 = fechada … 1 = aberta
+  iniciarMovimento(){if(NX.halt)NX.resume();DEMO.start()},
+  pausarMovimento(){DEMO.pause()},
+  pararMovimento(){NX.stop()},
+  retomarMovimento(){NX.resume()},
+  reiniciar(){DEMO.reset()},
+  alternarModo(){this.definirModo(NX.mode==='gestos'?'controles':'gestos')},
+  definirModo(m){NX.mode=m;NX.ver++;NX_LINK.send('modo',{modo:m});UI_TOAST(m==='gestos'?'Modo: gestos com as mãos':'Modo: controles do Quest')}
+};
+
+/* ============ 1d) DEMONSTRAÇÃO AUTOMÁTICA (pegar e soltar) ============
+   Cada passo define alvos dos eixos; o próximo só começa quando o braço chega e espera h segundos. */
+const DEMO={running:false,paused:false,step:0,hold:0,
+  seq:[
+    {p:{waist:0,shoulder:0,elbow:0,pitch:0,grip:GARRA.ABERTA},h:.6},
+    {p:{waist:-40,shoulder:20,elbow:30,pitch:60},h:.3},             // desce até ~13 cm do tampo
+    {p:{grip:52},h:.5},
+    {p:{shoulder:5,elbow:10,pitch:30},h:.3},                        // levanta
+    {p:{waist:40},h:.3},
+    {p:{shoulder:20,elbow:30,pitch:60},h:.3},                       // desce do outro lado
+    {p:{grip:GARRA.ABERTA},h:.5},
+    {p:{shoulder:0,elbow:0,pitch:0},h:.3},
+    {p:{waist:0},h:.8}],
+  start(){if(this.running)return;this.running=true;this.paused=false;this.go(this.step);NX.ver++;UI_TOAST('Demonstração iniciada')},
+  pause(quiet){if(!this.running)return;this.running=false;this.paused=true;NX.freeze();NX.ver++;if(!quiet)UI_TOAST('Demonstração pausada')},
+  reset(){this.running=false;this.paused=false;this.step=0;if(NX.halt)NX.resume();NX.home();NX.ver++;UI_TOAST('Braço reiniciado na posição inicial')},
+  go(i){this.step=i;this.hold=0;const p=this.seq[i].p;for(const id in p)NX.set(id,p[id],'demo')},
+  update(dt){if(!this.running||NX.halt)return;
+    if(AXES.some(a=>Math.abs(NX.t[a.id]-NX.v[a.id])>.6))return;
+    if((this.hold+=dt)>=this.seq[this.step].h)this.go((this.step+1)%this.seq.length)}
+};
+
+// aviso curto: flutuante no VR (nexus-control) ou a faixa do rodapé no computador
+function UI_TOAST(msg){const s=document.querySelector('a-scene'),c=s&&s.components&&s.components['nexus-control'];c?c.toast(msg):showError(msg,true)}
+
+// clique sonoro curto dos botões (o áudio é liberado no clique de entrada)
+let NX_AC=null;
+function NX_AUDIO(resume){try{if(!NX_AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;NX_AC=new C()}if(resume&&NX_AC.state==='suspended')NX_AC.resume();return NX_AC}catch(e){return null}}
+function NX_CLICK(f){const a=NX_AUDIO();if(!a||a.state!=='running')return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime;o.type='triangle';o.frequency.value=f||880;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.08,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+.08);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.09)}
+
+/* ============ 1e) COLISÃO DO USUÁRIO (vista de cima) ============
+   O corpo é um círculo de 25 cm em volta da CABEÇA; os obstáculos são caixas no piso (podem ser
+   giradas). push() empurra o ponto para fora das caixas e para dentro dos limites da sala.
+   Isso é só o laboratório virtual: o espaço físico real continua protegido pelo Guardian do Quest. */
+const NX_COL={R:.25,boxes:[],lim:{x0:-5.35,x1:5.35,z0:-5.35,z1:5.35},
+  // centro (x,z), largura (x local), profundidade (z local) e giro em y em graus (mesmo sentido do A-Frame)
+  add(x,z,w,d,ry=0){const a=ry*D2R;this.boxes.push({x,z,hw:w/2,hd:d/2,c:Math.cos(a),s:Math.sin(a)})},
+  push(p){let moved=false;const R=this.R;
+    for(let it=0;it<3;it++){let any=false;
+      for(const b of this.boxes){const dx=p.x-b.x,dz=p.z-b.z,lx=dx*b.c-dz*b.s,lz=dx*b.s+dz*b.c;
+        if(Math.abs(lx)>=b.hw+R||Math.abs(lz)>=b.hd+R)continue;
+        const ex=lx-clamp(lx,-b.hw,b.hw),ez=lz-clamp(lz,-b.hd,b.hd),dd=Math.hypot(ex,ez);let px,pz;
+        if(dd>1e-6){if(dd>=R)continue;px=ex/dd*(R-dd);pz=ez/dd*(R-dd)}
+        else{const ox=b.hw-Math.abs(lx)+R,oz=b.hd-Math.abs(lz)+R;if(ox<oz){px=(lx<0?-1:1)*ox;pz=0}else{px=0;pz=(lz<0?-1:1)*oz}}
+        p.x+=px*b.c+pz*b.s;p.z+=-px*b.s+pz*b.c;any=moved=true}
+      if(!any)break}
+    const L=this.lim,x=clamp(p.x,L.x0,L.x1),z=clamp(p.z,L.z0,L.z1);if(x!==p.x||z!==p.z){p.x=x;p.z=z;moved=true}
+    return moved},
+  livre(x,z){return !this.push({x,z})}
+};
+
+/* ============ 1f) ALVOS INTERATIVOS (botões 3D) ============
+   Um botão = tampa animável + cilindro invisível para o raio. "frame" é o referencial em que o
+   +y local aponta para fora do botão. Funcionam por toque do indicador, pinça perto, apontar +
+   pinça, raio do controle + gatilho e clique do mouse (ver nexus-control). */
+const NX_UI={targets:[],grabs:[]};
+function NX_BUTTON(frame,o){
+  const T=THREE,g=new T.Group(),y0=o.y||0;g.position.set(o.x,y0,o.z);frame.add(g);
+  const mat=new T.MeshStandardMaterial({color:o.color,roughness:.35,metalness:.1,emissive:new T.Color(o.color),emissiveIntensity:.25});
+  const cap=new T.Mesh(new T.CylinderGeometry(o.r,o.r*1.04,o.h,28),mat);cap.position.y=o.h/2;cap.castShadow=true;g.add(cap);
+  const hit=new T.Mesh(new T.CylinderGeometry(o.r+.012,o.r+.012,o.h+.03,12),new T.MeshBasicMaterial({visible:false}));hit.position.y=o.h/2;g.add(hit);
+  const t={label:o.label,frame,g,cap,hit,mat,cx:o.x,cz:o.z,y0,h:o.h,top:y0+o.h,r:o.r,action:o.action,hv:false,hvPrev:false,anim:0,arm:{},latch:null,wp:null};
+  hit.userData.nxTarget=t;NX_UI.targets.push(t);return t}
 
 /* ============ 2) MODELO + CINEMÁTICA COM PIVÔS REAIS ============ */
 AFRAME.registerComponent('braco-rig',{
@@ -245,6 +346,11 @@ AFRAME.registerComponent('braco-rig',{
     G1.attach(P.gear1); L1.attach(P.link1); F1.attach(P.finger1);
     G2.attach(P.gear2); L2.attach(P.link2); F2.attach(P.finger2);
 
+    // Anéis de LED nos cubos dos servos (ombro, cotovelo, pulso): acendem quando o eixo se move.
+    const ring=(j,ax,r,off)=>{const m=new T.Mesh(new T.RingGeometry(r,r*1.2,40),new T.MeshBasicMaterial({color:'#0e3a4a',side:T.DoubleSide,toneMapped:false}));
+      m.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),ax);m.position.copy(ax).multiplyScalar(off);j.add(m);return m.material};
+    this.rings={shoulder:ring(J2,aArm,.0135,.0012),elbow:ring(J3,aArm,.0135,.0012),pitch:ring(J4,aPitch,.013,.0235)};
+
     // Geometria plana da garra no referencial do pulso (J4): base u,v ⟂ eixo das engrenagens.
     const w2j=p=>J4.worldToLocal(stage.localToWorld(p.clone()));
     const gN=aGrip1.clone(), gO=w2j(pG1);
@@ -350,6 +456,7 @@ AFRAME.registerComponent('braco-rig',{
         NX.v[a.id]=clamp(NX.v[a.id]+clamp(d*(1-Math.exp(-dt/a.tau)),-m,m),a.min,a.max);changed=true;
       }else if(d!==0){NX.v[a.id]=NX.t[a.id];changed=true;}
     }
+    for(const id in this.rings){const m=this.rings[id],c=NX.halt?'#4a1212':Math.abs(NX.t[id]-NX.v[id])>.05?'#22d3ee':'#0e3a4a';if(m.userData.c!==c){m.userData.c=c;m.color.set(c)}}
     if(changed){this.pose();NX.ver++;}
   }
 });
@@ -358,55 +465,78 @@ AFRAME.registerComponent('braco-rig',{
 
 AFRAME.registerComponent('nexus-hands',{
 
- init(){
+ init(){
 
-  const mkH=()=>({tr:false,pin:false,f:new THREE.Vector3(),seen:-1});
+  const V=()=>new THREE.Vector3();
 
-  this.h={left:mkH(),right:mkH()};this.a=new THREE.Vector3();this.b=new THREE.Vector3();this.n=0;
+  // por mão: pinça (pin/f, como antes) + juntas WebXR para gestos (abertura dos dedos, ponta e direção do indicador)
+  const mkH=()=>({tr:false,pin:false,f:V(),tip:V(),base:V(),wrist:V(),dir:V(),ext:[.5,.5,.5,.5],open:.5,gest:'—',cand:'',candT:0,since:0,last:0,ok:false,hand:null,sp:null,pointT:null,pointTime:0});
 
-  this.rig=document.getElementById('cameraRig');
+  this.h={left:mkH(),right:mkH()};this.a=V();this.b=V();this.buf=new Float32Array(16*25);
 
-  const off=()=>Object.keys(this.h).forEach(k=>this.lose(k));
+  this.rig=document.getElementById('cameraRig');
 
-  this.el.addEventListener('exit-vr',off);
+  this.el.addEventListener('exit-vr',()=>Object.keys(this.h).forEach(k=>this.lose(k)));
 
- },
+ },
 
- lose(k){const H=this.h[k];if(H.pin)this.el.emit('nx-pinch',{hand:k,type:'lost'});H.tr=false;H.pin=false;NX.hands[k]=false},
+ lose(k){const H=this.h[k],was=H.tr;if(H.pin)this.el.emit('nx-pinch',{hand:k,type:'lost'});H.tr=false;H.pin=false;H.ok=false;H.gest='—';H.cand='';H.pointT=null;NX.hands[k]=false;if(was)this.el.emit('nx-hand',{hand:k,type:'lost'})},
 
- tick(t,dtm){
+ tick(t,dtm){
 
-  const sc=this.el,fr=sc.frame,xr=sc.renderer&&sc.renderer.xr,ses=xr&&xr.isPresenting&&xr.getSession();
+  const sc=this.el,fr=sc.frame,xr=sc.renderer&&sc.renderer.xr,ses=xr&&xr.isPresenting&&xr.getSession();
 
-  if(!ses||!fr){if(this.h.left.tr||this.h.right.tr||this.h.left.pin||this.h.right.pin)Object.keys(this.h).forEach(k=>this.lose(k));return}
+  if(!ses||!fr){if(this.h.left.tr||this.h.right.tr)Object.keys(this.h).forEach(k=>this.lose(k));return}
 
-  const ref=xr.getReferenceSpace(),n=++this.n,k1=1-Math.exp(-(dtm/1000)/.03);
+  const ref=xr.getReferenceSpace(),dt=Math.min(dtm/1000,.1),k1=1-Math.exp(-dt/.03),k2=1-Math.exp(-dt/.07),B=this.buf,rw=this.rig.object3D.matrixWorld,a=this.a,b=this.b;
 
-  for(const src of ses.inputSources){
+  const P=(j,v)=>v.set(B[j*16+12],B[j*16+13],B[j*16+14]);   // posição da junta j (espaço do rig)
 
-   if(!src.hand||!this.h[src.handedness])continue;const k=src.handedness,H=this.h[k];H.seen=n;
+  for(const src of ses.inputSources){
 
-   const pt=fr.getJointPose(src.hand.get('thumb-tip'),ref),pi=fr.getJointPose(src.hand.get('index-finger-tip'),ref);
+   if(!src.hand||!this.h[src.handedness])continue;const k=src.handedness,H=this.h[k];
 
-   if(!pt||!pi){if(H.tr)this.lose(k);continue}
+   if(H.hand!==src.hand){H.hand=src.hand;H.sp=Array.from(src.hand.values())}
 
-   this.a.set(pt.transform.position.x,pt.transform.position.y,pt.transform.position.z);
+   let ok=false;try{ok=fr.fillPoses(H.sp,ref,B)}catch(e){}       // 25 juntas numa chamada só
 
-   this.b.set(pi.transform.position.x,pi.transform.position.y,pi.transform.position.z);
+   if(!ok)continue;                                                // sem pose válida: conta como ausência (tolerância no fim)
 
-   const d=this.a.distanceTo(this.b);this.a.add(this.b).multiplyScalar(.5);this.rig.object3D.localToWorld(this.a);
+   H.last=t;
 
-   if(!H.tr){H.f.copy(this.a);H.tr=true;NX.hands[k]=true;H.pin=false} else H.f.lerp(this.a,k1); /* filtro exponencial anti-tremor */
+   // pinça polegar x indicador (mesma regra e histerese da versão anterior)
+   P(4,a);P(9,b);const d=a.distanceTo(b);a.add(b).multiplyScalar(.5).applyMatrix4(rw);
 
-   if(!H.pin&&d<.022){H.pin=true;sc.emit('nx-pinch',{hand:k,type:'start'})}
+   if(!H.tr){H.f.copy(a);H.tr=true;H.ok=false;H.since=t;H.pin=false;NX.hands[k]=true;sc.emit('nx-hand',{hand:k,type:'found'})}else H.f.lerp(a,k1); /* filtro anti-tremor */
 
-   else if(H.pin&&d>.04){H.pin=false;sc.emit('nx-pinch',{hand:k,type:'end'})}
+   if(!H.ok&&t-H.since>300)H.ok=true;                             // estabilização: só comanda após 0,3 s rastreando
 
-  }
+   if(!H.pin&&d<.022){H.pin=true;sc.emit('nx-pinch',{hand:k,type:'start'})}
 
-  for(const k in this.h)if(this.h[k].tr&&this.h[k].seen!==n)this.lose(k);
+   else if(H.pin&&d>.04){H.pin=false;sc.emit('nx-pinch',{hand:k,type:'end'})}
 
- }});
+   // abertura de cada dedo = (punho→ponta)/(punho→nó da base): esticado ≈ 1,8, dobrado ≈ 0,9 (independe do tamanho da mão)
+   P(0,H.wrist);
+
+   for(let i=0;i<4;i++){const j=6+5*i;P(j,a);P(j+3,b);const r=b.distanceTo(H.wrist)/Math.max(1e-4,a.distanceTo(H.wrist));H.ext[i]+=(clamp((r-1.1)/.6,0,1)-H.ext[i])*k2}
+
+   H.open=(H.ext[0]+H.ext[1]+H.ext[2]+H.ext[3])/4;
+
+   P(9,H.tip).applyMatrix4(rw);P(6,H.base).applyMatrix4(rw);H.dir.copy(H.tip).sub(H.base).normalize();H.wrist.applyMatrix4(rw);
+
+   // gesto: punho fechado vence a pinça (o polegar pode encostar no indicador ao fechar a mão); precisa durar 120 ms
+   const[eI,eM,eR,eP]=H.ext,o3=Math.max(eM,eR,eP);
+
+   const g=Math.max(eI,o3)<.3?'fechada':H.pin?'pinça':eI>.7&&o3<.35?'apontando':Math.min(eI,eM,eR,eP)>.7?'aberta':'parcial';
+
+   if(g!==H.cand){H.cand=g;H.candT=t}else if(g!==H.gest&&t-H.candT>120){H.gest=g;sc.emit('nx-gesture',{hand:k,gesture:g})}
+
+  }
+
+  // tolerância de 150 ms para falhas curtas do rastreamento antes de considerar a mão perdida
+  for(const k in this.h)if(this.h[k].tr&&t-this.h[k].last>150)this.lose(k);
+
+ }});
 
 
 
@@ -486,7 +616,7 @@ AFRAME.registerComponent('axis-panel',{
 
   return null},
 
- press(id){if(id==='home')NX.home();else if(id==='stop')NX.halt?NX.resume():NX.stop();
+ press(id){if(id==='home')NexusArm.reiniciar();else if(id==='stop')NX.halt?NX.resume():NX.stop();
 
   else{NX.sens=clamp(NX.sens+(id==='sp'?.25:-.25),.25,2);NX.ver++}},
 
@@ -510,7 +640,7 @@ AFRAME.registerComponent('axis-panel',{
 
  rayDown(c){
 
-  const rc=c.components.raycaster;if(!rc)return;const el=rc.intersectedEls.find(e=>e.classList.contains('hit'));if(!el)return;
+  const rc=c.components.raycaster;if(!rc)return;const el=rc.intersectedEls.find(e=>e.classList.contains('hit')&&this.el.contains(e));if(!el)return;
 
   const ix=rc.getIntersection(el);if(!ix)return;const p=this.loc(ix.point);
 
@@ -576,7 +706,11 @@ AFRAME.registerComponent('nexus-desktop-ui',{
 
    const i=r.querySelector('input');i.addEventListener('input',()=>NX.set(a.id,+i.value));this.in[a.id]=[i,r.querySelector('output')]});
 
-  document.getElementById('dhome').onclick=()=>NX.home();
+  document.getElementById('dhome').onclick=()=>NexusArm.reiniciar();
+
+  const on=(id,f)=>{const b=document.getElementById(id);if(b)b.onclick=f};this.dd=document.getElementById('ddemo');this.dm=document.getElementById('dmode');
+
+  on('ddemo',()=>DEMO.running?NexusArm.pausarMovimento():NexusArm.iniciarMovimento());on('dopen',()=>NexusArm.abrirGarra('mouse'));on('dclose',()=>NexusArm.fecharGarra('mouse'));on('dmode',()=>NexusArm.alternarModo());
 
   const st=document.getElementById('dstop');st.onclick=()=>{NX.halt?NX.resume():NX.stop()};this.st=st;
 
@@ -588,7 +722,9 @@ AFRAME.registerComponent('nexus-desktop-ui',{
 
   AXES.forEach(a=>{const [i,o]=this.in[a.id];if(document.activeElement!==i||!NX.halt)i.value=NX.v[a.id];o.textContent=NX.v[a.id].toFixed(1)+'°';i.disabled=NX.halt});
 
-  this.st.textContent=NX.halt?'▶ Retomar':'■ Parar'}});
+  this.st.textContent=NX.halt?'▶ Retomar':'■ Parar';
+
+  if(this.dd)this.dd.textContent=DEMO.running?'⏸ Pausar demo':'▶ Demo';if(this.dm)this.dm.textContent='Modo: '+(NX.mode==='gestos'?'gestos (mãos)':'controles')}});
 
 
 
@@ -650,9 +786,45 @@ AFRAME.registerComponent('nexus-movement-controller',{
 
   this.el.sceneEl.addEventListener('exit-vr',()=>{if(st)st.style.opacity='0'});
 
+  // colisão (limites da sala = boundsX/boundsZ, agora aplicados à cabeça) e teletransporte validado
+  this.hw=new THREE.Vector3();this.cp={x:0,z:0};this.tpBad=new THREE.Vector3();this.tpBadT=-1e9;
+
+  const bd=this.data;NX_COL.lim={x0:+bd.boundsX[0],x1:+bd.boundsX[1],z0:+bd.boundsZ[0],z1:+bd.boundsZ[1]};
+
+  // entidades com data-colisor="largura profundidade" viram obstáculos (painel dos eixos, console)
+  const reg=()=>document.querySelectorAll('[data-colisor]').forEach(e=>{const[w,d]=e.dataset.colisor.split(' ').map(Number),o=e.object3D;NX_COL.add(o.position.x,o.position.z,w,d,o.rotation.y*R2D)});
+
+  this.el.sceneEl.hasLoaded?reg():this.el.sceneEl.addEventListener('loaded',reg,{once:true});
+
  },
 
  jump(){if(!this.grounded||NX.busy)return;this.vy=this.data.jumpForce;this.grounded=false},
+
+ // corpo = círculo em volta da CABEÇA (headset), não só do rig: andando de verdade ou pelo stick,
+ // a câmera não atravessa paredes nem móveis. A correção é aplicada ao rig.
+ collide(){
+  const r=this.rig.object3D,cam=this.el.sceneEl.camera;if(!cam)return;
+  cam.getWorldPosition(this.hw);                                   // cabeça agora = rig atual + pose do headset
+  const ox=this.hw.x-r.position.x,oz=this.hw.z-r.position.z,p=this.cp;p.x=this.hw.x;p.z=this.hw.z;
+  if(NX_COL.push(p)){r.position.x=p.x-ox;r.position.z=p.z-oz}},
+
+ // teletransporte: destino dentro de móvel ou fora da sala é recusado (arco vermelho + marcador X)
+ tpInit(){
+  const R=document.getElementById('rightController'),bc=R&&R.components['blink-controls'];if(!bc)return;this.bc=bc;const self=this,orig=bc.checkMeshCollisions;
+  bc.checkMeshCollisions=function(i,p,e){const hit=orig.call(this,i,p,e);
+   if(hit&&this.hit&&!NX_COL.livre(this.hitPoint.x,this.hitPoint.z)){this.hit=false;this.line.material.color.set('#ef4444');this.hitEntity.object3D.visible=false;self.tpBad.copy(this.hitPoint);self.tpBadT=performance.now()}
+   return hit};
+  const T=THREE,m=new T.Group(),mat=new T.MeshBasicMaterial({color:'#ef4444',toneMapped:false});m.visible=false;
+  const ring=new T.Mesh(new T.RingGeometry(.2,.24,40),mat);ring.rotation.x=-Math.PI/2;m.add(ring);
+  for(const a of[45,-45]){const b=new T.Mesh(new T.PlaneGeometry(.34,.04),mat);b.rotation.set(-Math.PI/2,0,a*D2R);m.add(b)}
+  this.el.sceneEl.object3D.add(m);this.mark=m},
+
+ tpCheck(){
+  if(!this.bc){if(!this.tpTried){this.tpTried=true;this.tpInit()}return}
+  const now=performance.now(),bad=this.bc.active&&now-this.tpBadT<150;
+  this.mark.visible=bad;if(bad)this.mark.position.set(this.tpBad.x,.012,this.tpBad.z);
+  if(this.tpWas&&!this.bc.active&&now-this.tpBadT<250)UI_TOAST('Teletransporte bloqueado: destino ocupado ou fora do laboratório');
+  this.tpWas=this.bc.active},
 
  tick(t,dm){
 
@@ -676,11 +848,13 @@ AFRAME.registerComponent('nexus-movement-controller',{
 
    const ang=r.rotation.y+(this.camera?this.camera.object3D.rotation.y:0),c=Math.cos(ang),s=Math.sin(ang),b=this.data;
 
-   r.position.x=clamp(r.position.x+(mx*c+mz*s)*b.speed*dt,b.boundsX[0],b.boundsX[1]);
+   r.position.x+=(mx*c+mz*s)*b.speed*dt;
 
-   r.position.z=clamp(r.position.z+(mz*c-mx*s)*b.speed*dt,b.boundsZ[0],b.boundsZ[1])}
+   r.position.z+=(mz*c-mx*s)*b.speed*dt}
 
   if(!this.grounded){this.vy-=this.data.gravity*dt;r.position.y+=this.vy*dt;if(r.position.y<=0){r.position.y=0;this.vy=0;this.grounded=true}}
+
+  this.collide();this.tpCheck();
 
  }});
 
@@ -924,7 +1098,7 @@ AFRAME.registerComponent('nexus-lab',{
   box('metal:s',1,.004,1,0,.907,0,'#b8c1ca');for(const a of[-1,1])for(const b of[-1,1])cyl('metal:s',.014,.006,a*.46,.912,b*.46,'#3b4048',0,0,0,10);
   zebra(-.56,-.56,.56,-.56,.9052,.03,.06);zebra(.56,-.56,.56,.56,.9052,.03,.06);zebra(.56,.56,-.56,.56,.9052,.03,.06);zebra(-.56,.56,-.56,-.56,.9052,.03,.06);
   box('plastic:s',1.7,.05,.03,0,.93,-.583,'#8b949e');
-  box('paint:s',.09,.07,.09,.95,.94,.45,YEL);cyl('paint:s',.016,.02,.95,.985,.45,'#9b1111',0,0,0,12);cyl('paint:s',.034,.022,.95,1.006,.45,'#d61f1f',0,0,0,20);   // emergência
+  box('paint:s',.09,.07,.09,.95,.94,.45,YEL);   // emergência: o cogumelo vermelho é um botão interativo (nexus-control)
   cyl('paint:s',.035,.03,1,.92,-.48,GRAF,0,0,0,16);cyl('metal:s',.012,.3,1,1.085,-.48,STEEL,0,0,0,10);                                              // torre de sinalização
   for(const y of[1.2355,1.2875,1.3425,1.3975])cyl('plastic:s',.03,.005,1,y,-.48,'#e5e7eb',0,0,0,16);cyl('plastic:s',.03,.02,1,1.41,-.48,GRAF,0,0,0,16);
   cyl('paint:s',.03,.012,-1,.911,-.52,GRAF,0,0,0,14);cyl('metal:s',.011,.6,-1,1.205,-.52,ALU,0,0,0,8);box('metal:s',.18,.02,.02,-.92,1.5,-.52,ALU);  // câmera de visão
@@ -1046,6 +1220,10 @@ AFRAME.registerComponent('nexus-lab',{
     root.add(mesh);
   }
 
+  /* colisores dos móveis (vista de cima): centro x,z • largura x • profundidade z • giro. Usados pelo movimento e pelo teletransporte. */
+  [[0,0,2.2,1.2],[-1.24,-.45,.14,.14],[-5.6,-2.2,.75,2.4],[-4.85,-2.2,.4,.4],[5.68,-2,.6,1.2],[5.72,-4.45,.5,1.8],[3.6,1.8,.76,.52,20],[5.55,4.3,.6,.7],[0,-5.79,5.6,.42],[-4.6,-5.86,.9,.3]]
+   .forEach(b=>NX_COL.add(...b));
+
   /* ---------- peças vivas: monitor do gêmeo digital, torre de sinalização e anel de LED do braço ---------- */
 
   const[tc,tx]=cnv(1024,576),twinT=tex(tc);twinT.generateMipmaps=false;twinT.minFilter=T.LinearFilter;
@@ -1060,9 +1238,9 @@ AFRAME.registerComponent('nexus-lab',{
       x.font='400 16px '+FONT;x.fillStyle='#64748b';x.fillText(a.min+'°',L,y+30);x.textAlign='right';x.fillText(a.max+'°',L+BW,y+30);
       x.font='700 32px '+FONT;x.fillStyle='#fff';x.fillText((v>0&&a.id!=='grip'?'+':'')+v.toFixed(1)+'°',L+BW+150,y)});
     x.fillStyle='#0f2236';rr(x,822,100,176,330,14);x.fill();x.strokeStyle='#1e3a5f';x.lineWidth=2;x.stroke();x.textAlign='left';
-    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['LINK ESP32','AGUARDANDO','#fbbf24'],['CONTROLE','VR + PC','#e2e8f0'],['EIXOS','5 ATIVOS','#e2e8f0']].forEach(([l,v,c],i)=>{
-      x.font='600 18px '+FONT;x.fillStyle='#94a3b8';x.fillText(l,840,130+i*84);x.font='700 26px '+FONT;x.fillStyle=c;x.fillText(v,840,164+i*84)});
-    x.font='400 18px '+FONT;x.fillStyle='#64748b';x.fillText('Espelha em tempo real os painéis de controle do braço (VR e computador)',30,Hd-22);
+    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES','#e2e8f0'],['DEMO',DEMO.running?'RODANDO':DEMO.paused?'PAUSADA':'DESLIGADA',DEMO.running?'#4ade80':'#e2e8f0'],['ESP32',NX_LINK.connected?'CONECTADO':'NÃO CONECTADO',NX_LINK.connected?'#4ade80':'#94a3b8']].forEach(([l,v,c],i)=>{
+      x.font='600 18px '+FONT;x.fillStyle='#94a3b8';x.fillText(l,840,130+i*84);x.font='700 26px '+FONT;x.fillStyle=c;x.fillText(v,840,164+i*84,150)});
+    x.font='400 18px '+FONT;x.fillStyle='#64748b';x.fillText('Espelha em tempo real todos os comandos: painéis, gestos, controles e demonstração',30,Hd-22);
     twinT.needsUpdate=true;
   };
   this.state=0;this.drawTwin();
@@ -1084,7 +1262,7 @@ AFRAME.registerComponent('nexus-lab',{
   const dk=new T.Mesh(new T.PlaneGeometry(5.6,3.1),new T.MeshBasicMaterial({color:'#0b1220'}));dk.position.set(0,.6,-5.97);env.add(dk);
   const pm=new T.PMREMGenerator(R);sc.object3D.environment=pm.fromScene(env,.03).texture;pm.dispose();env.traverse(o=>{if(o.geometry)o.geometry.dispose()});
 
-  const hemi=new T.HemisphereLight(0xeaf2ff,0x7c848e,.3);
+  const hemi=new T.HemisphereLight(0xeaf2ff,0x7c848e,1);   // sem as luzes padrão do A-Frame (desligadas no a-scene)
   const key=new T.DirectionalLight(0xfff4e6,2.6);key.name='luz-principal';key.position.set(1.4,5.6,2.4);key.target.position.set(0,.9,0);key.castShadow=true;
   const ks=key.shadow;ks.mapSize.set(1024,1024);Object.assign(ks.camera,{left:-1.9,right:1.9,top:1.9,bottom:-1.9,near:2,far:9});ks.camera.updateProjectionMatrix();ks.bias=-.0005;ks.normalBias=.025;
   const spot=new T.SpotLight(0xffffff,34,0,.38,.75,2);spot.name='spot-braco';spot.position.set(0,4.19,1.44);spot.target.position.set(0,1.3,0);
@@ -1115,7 +1293,7 @@ AFRAME.registerComponent('nexus-lab',{
   if(st!==this.state){this.state=st;
     const on=['#39ff7a','#ffc21a','#ff3030'],off=['#0f3d1f','#4a3a0c','#4a1212'],lit=[st<2,st===1,st===2];
     this.lamp.forEach((m,i)=>m.color.set(lit[i]?on[i]:off[i]));this.ringM.color.set(['#22d3ee','#ffb020','#ff3b3b'][st])}
-  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st;
+  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st+NX.mode+(DEMO.running?1:DEMO.paused?2:0)+NX_LINK.connected;
   if(k!==this.twinKey){this.twinKey=k;this.drawTwin()}
  }
 
@@ -1127,52 +1305,379 @@ AFRAME.registerComponent('nexus-lab',{
 
 AFRAME.registerComponent('cmd-panel',{init(){
 
-  const el=this.el,add=(tag,at,par)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);(par||el).appendChild(e);return e};
+  const el=this.el,add=(tag,at)=>{const e=document.createElement(tag);for(const k in at)e.setAttribute(k,at[k]);el.appendChild(e);return e};
 
-  const tx=(v,x,y,w,c,al)=>add('a-text',{value:v,position:x+' '+y+' .11',align:al||'left',baseline:'center',width:w,color:c});
+  add('a-box',{width:5.6,height:3.1,depth:.1,color:'#060a12',material:'roughness:.4;metalness:.55'});
 
-  add('a-box',{width:5.6,height:3.1,depth:.1,color:'#060a12',material:'roughness:.4;metalness:.55'});
+  add('a-box',{width:5.48,height:2.98,depth:.035,position:'0 0 .06',color:'#0284c7'});
 
-  add('a-box',{width:5.48,height:2.98,depth:.035,position:'0 0 .06',color:'#0284c7'});
+  // Conteúdo desenhado num canvas: 1 draw call em vez de ~55 entidades (e com acentos, que a fonte do a-text não tem)
+  const W=2048,H=1093,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),F='"Titillium Web",Arial,sans-serif';
 
-  add('a-plane',{width:5.36,height:2.86,position:'0 0 .09',color:'#0b1220',material:'roughness:.6;metalness:.1'});
+  const X=v=>(v+2.68)/5.36*W,Y=v=>(1.43-v)/2.86*H;   // metros do painel → pixels
 
-  add('a-plane',{width:5.36,height:.42,position:'0 1.22 .095',color:'#0f3f66'});
+  const TX=(s,px,py,sz,cor,w,al)=>{x.font=`${w||700} ${sz}px ${F}`;x.fillStyle=cor;x.textAlign=al||'left';x.textBaseline='middle';x.fillText(s,px,py)};
 
-  tx('PAINEL DE COMANDOS',0,1.22,4,'#e0f2fe','center');tx('NEXUS ATLAS',0,.98,2.4,'#38bdf8','center');
+  const VR=[['STICK ESQUERDO','Andar • botão X: pular','#0e7490','o'],['STICK DIREITO','Girar • clique e aponte: teletransporte','#0e7490','o'],
+    ['MÃO ABERTA / FECHADA','Abre e fecha a garra (modo gestos)','#15803d','MÃO'],['APONTAR + PINÇA','Aciona botões à distância','#15803d','DEDO'],
+    ['TOQUE, PINÇA OU GATILHO','Painéis, console e peça de teste','#1d4ed8','OK'],['GRIP DO CONTROLE','Garra proporcional ao aperto','#a16207','GRIP']];
 
-  add('a-box',{width:.012,height:2.05,depth:.01,position:'0 -.06 .1',color:'#1e3a5f'});
+  const PC=[['W A S D / SETAS','Andar e girar','#a16207','WASD'],['SPACE','Pular','#1d4ed8','SPC'],['Q / E','Abrir / fechar a garra','#a16207','Q  E'],
+    ['G','Alternar gestos / controles','#a16207','G'],['I / R','Demonstração / reiniciar o braço','#a16207','I  R'],['CLIQUE NO CONSOLE 3D','Os botões também funcionam com o mouse','#15803d','MOUSE']];
 
-  const col=(title,tc,x0,rows)=>{tx(title,x0,.78,2.6,tc);rows.forEach(([a,b,c,g],i)=>{const y=.42-i*.38;
+  const draw=()=>{
 
-   add('a-box',{width:.26,height:.26,depth:.02,position:(x0+.05)+' '+y+' .1',color:c,material:'roughness:.4;metalness:.3'});
+   x.fillStyle='#0b1220';x.fillRect(0,0,W,H);x.fillStyle='#0f3f66';x.fillRect(0,0,W,Y(1.01));
 
-   if(g==='o')add('a-circle',{radius:.07,position:(x0+.05)+' '+y+' .112',color:'#67e8f9'});else tx(g,x0+.05,y,1.1,'#fff','center');
+   TX('PAINEL DE COMANDOS',W/2,Y(1.22),84,'#e0f2fe',700,'center');TX('NEXUS ATLAS',W/2,Y(.93),40,'#38bdf8',600,'center');
 
-   tx(a,x0+.27,y+.05,2.4,'#ffffff');tx(b,x0+.27,y-.12,2.2,'#94a3b8')})};
+   x.fillStyle='#1e3a5f';x.fillRect(X(0)-3,Y(.84),6,Y(-1.085)-Y(.84));
 
-  col('CONTROLES VR','#22d3ee',-2.55,[['STICK ESQUERDO','Mover o personagem','#0e7490','o'],['STICK DIREITO','Girar o corpo','#0e7490','o'],['TECLA X','Pular','#1d4ed8','X'],['CLIQUE NO STICK DIREITO','Aponte e solte para teleportar','#0e7490','o'],['DEDOS / GATILHO','Junte os dedos (ou use o gatilho) e arraste no painel','#15803d','MAO']]);
+   const col=(title,tc,x0,rows)=>{TX(title,X(x0),Y(.76),44,tc);rows.forEach(([a,b,cor,g],i)=>{const y=.47-i*.3,cx=X(x0+.05),cy=Y(y),s=84;
 
-  col('CONTROLES PC','#facc15',.25,[['W A S D','Andar','#a16207','WASD'],['SETAS DIRECIONAIS','Cima/baixo = andar, esq/dir = girar','#a16207','SETAS'],['SPACE','Pular','#1d4ed8','SPC'],['TECLA P','Exibir centros e eixos','#a16207','P'],['TECLAS 1 2 3','Modo visual: 1 / 2 / 3','#a16207','1-3']]);
+     x.fillStyle=cor;x.beginPath();x.roundRect?x.roundRect(cx-s/2,cy-s/2,s,s,10):x.rect(cx-s/2,cy-s/2,s,s);x.fill();
 
-  add('a-box',{width:5.36,height:.26,depth:.005,position:'0 -1.32 .095',color:'#0f3f66'});tx('SENAI - NEXUS ATLAS',0,-1.32,4.6,'#e0f2fe','center')}});
+     if(g==='o'){x.fillStyle='#67e8f9';x.beginPath();x.arc(cx,cy,23,0,7);x.fill()}else TX(g,cx,cy,g.length>3?22:28,'#fff',700,'center');
+
+     TX(a,X(x0+.27),Y(y+.045),40,'#ffffff',700);TX(b,X(x0+.27),Y(y-.085),31,'#94a3b8',400)})};
+
+   col('CONTROLES VR','#22d3ee',-2.55,VR);col('CONTROLES PC','#facc15',.25,PC);
+
+   x.fillStyle='#0f3f66';x.fillRect(0,Y(-1.19),W,H-Y(-1.19));TX('SENAI • NEXUS ATLAS',W/2,Y(-1.32),56,'#e0f2fe',700,'center');
+
+   tex.needsUpdate=true};
+
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;
+
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(5.36,2.86),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));m.position.z=.09;el.object3D.add(m);
+
+  draw();if(document.fonts)document.fonts.ready.then(draw)}});
+
+
+
+/* ============ 7) CONSOLE DE DEMONSTRAÇÃO (botões físicos 3D ao lado da bancada) ============
+   INICIAR / PAUSAR / REINICIAR a demonstração, ABRIR / FECHAR a garra e ALTERNAR MODO.
+   A tela mostra o estado da garra, o modo de controle e o rastreamento das mãos. */
+
+AFRAME.registerComponent('demo-console',{
+
+ init(){
+
+  const T=THREE,o=this.el.object3D,FONT='"Titillium Web",Arial,sans-serif';this.FONT=FONT;
+
+  const std=(c,r,m)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+
+  const add=(geo,mat,x,y,z,par)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;(par||o).add(m);return m};
+
+  const paint=std('#2b333d',.5,.15),blue=std('#0b4f8a',.45,.15),metal=std('#c4ccd4',.35,.85);
+
+  add(new T.BoxGeometry(.5,.03,.4),paint,0,.015,0);add(new T.BoxGeometry(.14,.92,.14),blue,0,.49,-.04);
+
+  const tilt=new T.Group();tilt.position.set(0,1,.02);tilt.rotation.x=35*D2R;o.add(tilt);   // tampo inclinado 35° para o usuário
+
+  add(new T.BoxGeometry(.6,.06,.39),paint,0,-.01,0,tilt);add(new T.BoxGeometry(.62,.014,.41),metal,0,-.045,0,tilt);
+
+  const L=[[-.17,-.06,'INICIAR'],[0,-.06,'PAUSAR'],[.17,-.06,'REINICIAR'],[-.17,.085,'ABRIR GARRA'],[0,.085,'FECHAR GARRA'],[.17,.085,'ALTERNAR MODO']];
+
+  const fc=document.createElement('canvas');fc.width=512;fc.height=320;const fx=fc.getContext('2d'),fT=new T.CanvasTexture(fc);fT.colorSpace=T.SRGBColorSpace;
+
+  const CX=x=>(x/.56+.5)*512,CY=z=>(.5+z/.35)*320;
+
+  const drawFace=()=>{const g=fx.createLinearGradient(0,0,0,320);g.addColorStop(0,'#323b46');g.addColorStop(1,'#232a33');fx.fillStyle=g;fx.fillRect(0,0,512,320);
+   fx.fillStyle='#005696';fx.fillRect(0,0,512,34);fx.fillStyle='#22d3ee';fx.fillRect(0,34,512,3);fx.textAlign='center';fx.textBaseline='middle';
+   fx.font=`700 19px ${FONT}`;fx.fillStyle='#fff';fx.fillText('CONSOLE DE DEMONSTRAÇÃO • NX-01',256,18);
+   for(const[x,z,l]of L){fx.fillStyle='#161b22';fx.beginPath();fx.arc(CX(x),CY(z),34,0,7);fx.fill();fx.strokeStyle='#5b6672';fx.lineWidth=2;fx.stroke();
+    fx.font=`700 15px ${FONT}`;fx.fillStyle='#e2e8f0';fx.fillText(l,CX(x),CY(z)+50)}
+   fx.strokeStyle='rgba(255,255,255,.14)';fx.lineWidth=2;fx.beginPath();fx.moveTo(20,CY(.012));fx.lineTo(492,CY(.012));fx.stroke();fT.needsUpdate=true};
+
+  drawFace();if(document.fonts)document.fonts.ready.then(drawFace);
+
+  const face=add(new T.PlaneGeometry(.56,.35),new T.MeshStandardMaterial({map:fT,roughness:.55}),0,.0205,0,tilt);face.rotation.x=-Math.PI/2;face.castShadow=false;
+
+  const B=(i,c,a)=>{const[x,z,l]=L[i];add(new T.CylinderGeometry(.039,.039,.006,28),metal,x,.023,z,tilt);return NX_BUTTON(tilt,{x,z,y:.026,r:.031,h:.016,color:c,label:l,action:a})};
+
+  B(0,'#16a34a',()=>NexusArm.iniciarMovimento());B(1,'#f59e0b',()=>NexusArm.pausarMovimento());B(2,'#2563eb',()=>NexusArm.reiniciar());
+
+  B(3,'#06b6d4',()=>NexusArm.abrirGarra('console'));B(4,'#0e7490',()=>NexusArm.fecharGarra('console'));B(5,'#7c3aed',()=>NexusArm.alternarModo());
+
+  // tela de status
+  const scr=new T.Group();scr.position.set(0,1.34,-.17);scr.rotation.x=-12*D2R;o.add(scr);
+
+  add(new T.BoxGeometry(.46,.29,.03),std('#11161d',.5,.3),0,0,0,scr);add(new T.BoxGeometry(.04,.2,.03),paint,0,1.17,-.17);
+
+  const sc2=document.createElement('canvas');sc2.width=512;sc2.height=288;this.sx=sc2.getContext('2d');
+
+  this.sT=new T.CanvasTexture(sc2);this.sT.colorSpace=T.SRGBColorSpace;this.sT.generateMipmaps=false;this.sT.minFilter=T.LinearFilter;
+
+  const sm=new T.Mesh(new T.PlaneGeometry(.42,.236),new T.MeshBasicMaterial({map:this.sT,toneMapped:false}));sm.position.z=.0155;scr.add(sm);
+
+  this.key='';this.drawScreen();
+
+ },
+
+ drawScreen(){
+
+  const x=this.sx,F=this.FONT,u=NX.ui||{},W=512;
+
+  x.fillStyle='#07121e';x.fillRect(0,0,W,288);x.fillStyle='#005696';x.fillRect(0,0,W,40);x.fillStyle='#22d3ee';x.fillRect(0,40,W,2);x.textBaseline='middle';
+
+  x.font=`700 22px ${F}`;x.fillStyle='#fff';x.textAlign='left';x.fillText('STATUS DO GÊMEO DIGITAL',16,21);
+
+  const st=NX.halt?['PARADO (EMERGÊNCIA)','#f87171']:DEMO.running?['DEMONSTRAÇÃO','#4ade80']:DEMO.paused?['DEMO PAUSADA','#fbbf24']:['MANUAL','#e2e8f0'];
+
+  const ab=Math.round(100*(1-NX.v.grip/GARRA.FECHADA));
+
+  [['ESTADO',st[0],st[1]],['GARRA',ab>=97?'ABERTA':ab<=3?'FECHADA':ab+'% ABERTA','#22d3ee'],['MODO',NX.mode==='gestos'?'GESTOS (MÃOS)':'CONTROLES DO QUEST','#e2e8f0'],
+   ['RASTREAMENTO',u.track||'—',u.trackC||'#94a3b8'],['GESTO',u.gesto||'—','#e2e8f0'],['ESP32',NX_LINK.connected?'CONECTADO':'NÃO CONECTADO',NX_LINK.connected?'#4ade80':'#94a3b8']]
+   .forEach(([l,v,c],i)=>{const y=66+i*36;x.font=`600 17px ${F}`;x.fillStyle='#94a3b8';x.textAlign='left';x.fillText(l,16,y);x.font=`700 21px ${F}`;x.fillStyle=c;x.textAlign='right';x.fillText(v,W-16,y,340)});
+
+  this.sT.needsUpdate=true;
+
+ },
+
+ tick(t){if(t-(this.tk||0)<250)return;this.tk=t;const u=NX.ui||{},k=[NX.halt,DEMO.running,DEMO.paused,Math.round(NX.v.grip),NX.mode,u.track,u.gesto,NX_LINK.connected].join();if(k!==this.key){this.key=k;this.drawScreen()}}
+
+});
+
+
+
+/* ============ 8) INTERAÇÃO: gestos → garra, botões 3D, apontar, pegar objetos, HUD de pulso e avisos ============
+   - Mão FECHADA fecha a garra, mão ABERTA abre; no meio, a abertura é proporcional (com zona morta de 2°).
+   - A garra só obedece à mão depois de 0,3 s de rastreamento estável e fica parada se a mão some.
+   - APONTAR desenha um raio; PINÇA logo depois (até 0,45 s) aciona o botão apontado.
+   - Encostar o indicador num botão ou fazer pinça perto dele também aciona; aproximar a mão destaca.
+   - Controles do Quest: raio + gatilho nos botões, gatilho perto da peça para pegar, GRIP = garra proporcional. */
+
+AFRAME.registerComponent('nexus-control',{
+
+ init(){
+
+  const T=THREE,sc=this.el;this.FONT='"Titillium Web",Arial,sans-serif';
+
+  this.v1=new T.Vector3();this.v2=new T.Vector3();this.v3=new T.Vector3();this.hp=new T.Vector3();this.hq=new T.Quaternion();this.cq=new T.Quaternion();this.fw=new T.Vector3();
+
+  this.rc=new T.Raycaster();this.rc.far=3;this.gLast='';this.lastGrip=-1;this.toastT=0;this.lost={};this.ctlHand=null;
+
+  NX.ui={track:'SEM VR (COMPUTADOR)',trackC:'#94a3b8',gesto:'—'};
+
+  Object.defineProperty(this,'hands',{get:()=>sc.components['nexus-hands']});
+
+  this.ctl=['leftController','rightController'].map(id=>document.getElementById(id)).filter(Boolean);
+
+  const cv=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.generateMipmaps=false;t.minFilter=T.LinearFilter;return[c.getContext('2d'),t]};
+
+  const overlay=(w,h,tex)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));m.renderOrder=999;m.visible=false;m.frustumCulled=false;sc.object3D.add(m);return m};
+
+  [this.tx,this.tT]=cv(512,96);this.toastM=overlay(.42,.079,this.tT);      // aviso flutuante (VR)
+
+  [this.hx,this.hT]=cv(256,160);this.hud=overlay(.15,.094,this.hT);        // painel de pulso (mão ou controle esquerdo)
+
+  // raio de apontar: haste fina (linhas WebGL têm 1 pixel e somem no headset); vai da ponta do indicador até o alvo
+  const rg=new T.BoxGeometry(.004,.004,1).translate(0,0,.5),rm=new T.MeshBasicMaterial({color:'#22d3ee',transparent:true,opacity:.8,toneMapped:false});
+  this.lines={};for(const k of['left','right']){const l=new T.Mesh(rg,rm);l.visible=false;l.frustumCulled=false;sc.object3D.add(l);this.lines[k]=l}
+
+  // botão de emergência da bancada: para o braço e fica travado abaixado até ser acionado de novo
+  const es=new T.Group();es.position.set(.95,.975,.45);sc.object3D.add(es);
+
+  const stem=new T.Mesh(new T.CylinderGeometry(.016,.016,.02,14),new T.MeshStandardMaterial({color:'#9b1111',roughness:.5}));stem.position.y=.01;es.add(stem);
+
+  NX_BUTTON(es,{x:0,z:0,y:.012,r:.034,h:.022,color:'#d61f1f',label:'EMERGÊNCIA',action:()=>NX.halt?NexusArm.retomarMovimento():NexusArm.pararMovimento()}).latch=()=>NX.halt;
+
+  // peça de teste: pega com pinça (mão) ou gatilho (controle); ao soltar, cai na superfície de baixo
+  const pc=new T.Mesh(new T.BoxGeometry(.05,.05,.05),new T.MeshStandardMaterial({color:'#e3261c',roughness:.38,emissive:new T.Color('#e3261c'),emissiveIntensity:0}));
+
+  pc.position.set(.72,.93,.42);pc.castShadow=true;sc.object3D.add(pc);NX_UI.grabs.push({obj:pc,half:.025,r:.07,held:null,vy:0,hv:false});
+
+  sc.addEventListener('nx-pinch',e=>this.onPinch(e.detail));
+
+  sc.addEventListener('nx-hand',e=>this.onHand(e.detail));
+
+  this.ctl.forEach(c=>{c.addEventListener('triggerdown',()=>this.onTrigger(c,true));c.addEventListener('triggerup',()=>this.onTrigger(c,false));
+   c.addEventListener('gripchanged',e=>this.onGrip(e.detail&&e.detail.value))});
+
+  window.addEventListener('keydown',e=>{if(e.repeat||(e.target&&e.target.tagName==='INPUT'))return;
+   const f={KeyQ:()=>NexusArm.abrirGarra('teclado'),KeyE:()=>NexusArm.fecharGarra('teclado'),KeyG:()=>NexusArm.alternarModo(),
+    KeyI:()=>DEMO.running?NexusArm.pausarMovimento():NexusArm.iniciarMovimento(),KeyR:()=>NexusArm.reiniciar()}[e.code];if(f)f()});
+
+  // modo computador: clique sem arrastar a câmera aciona os botões 3D; passar o mouse destaca
+  window.addEventListener('pointerdown',e=>{this.pd=e.target===sc.canvas?[e.clientX,e.clientY]:null});
+
+  window.addEventListener('pointerup',e=>{const d=this.pd;this.pd=null;if(!d||sc.is('vr-mode')||Math.hypot(e.clientX-d[0],e.clientY-d[1])>6)return;const t=this.mousePick(e);if(t)this.press(t)});
+
+  window.addEventListener('pointermove',e=>{if(e.target===sc.canvas&&!sc.is('vr-mode')&&!e.buttons)this.mouseT=this.mousePick(e)});
+
+  sc.addEventListener('enter-vr',()=>setTimeout(()=>{const s=sc.xrSession,f=s&&s.enabledFeatures;
+   this.toast(f&&f.length&&!f.includes('hand-tracking')?'Mãos não liberadas pelo navegador: use os controles':'Bem-vindo! Solte os controles para usar as mãos')},900));
+
+  sc.addEventListener('exit-vr',()=>{this.toastM.visible=this.hud.visible=false;for(const k in this.lines)this.lines[k].visible=false;NX_UI.grabs.forEach(g=>g.held=null)});
+
+ },
+
+ rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()},
+
+ hitList(){if(!this._h||this._h.length!==NX_UI.targets.length)this._h=NX_UI.targets.map(t=>t.hit);return this._h},
+
+ mousePick(e){const sc=this.el;if(!sc.canvas||!sc.camera)return null;const r=sc.canvas.getBoundingClientRect();
+  this.rc.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},sc.camera);
+  const h=this.rc.intersectObjects(this.hitList(),false);return h.length?h[0].object.userData.nxTarget:null},
+
+ press(t){t.anim=1;NX_CLICK(t.label==='EMERGÊNCIA'?440:880);t.action()},
+
+ nearTarget(p,tol){let best=null,bd=1e9;for(const t of NX_UI.targets){if(!t.wp)continue;const d=t.wp.distanceTo(p);if(d<t.r+tol&&d<bd){bd=d;best=t}}return best},
+
+ grab(p,id,tol){for(const g of NX_UI.grabs)if(!g.held&&g.obj.position.distanceTo(p)<g.r+(tol||0)){g.held={id,off:g.obj.position.clone().sub(p)};g.vy=0;NX_CLICK(520);return true}return false},
+
+ release(id){for(const g of NX_UI.grabs)if(g.held&&g.held.id===id)g.held=null},
+
+ ctlOn(c){const o=c&&c.components['oculus-touch-controls'];return!!(o&&o.controllerPresent)},
+
+ ctlTip(c,out){c.object3D.getWorldPosition(out);c.object3D.getWorldQuaternion(this.cq);return out.add(this.v3.set(0,0,-.06).applyQuaternion(this.cq))},
+
+ holder(id,out){if(id.startsWith('mao-')){const H=this.hands&&this.hands.h[id.slice(4)];return H&&H.tr?out.copy(H.f):null}
+  const c=document.getElementById(id.slice(4));return this.ctlOn(c)?this.ctlTip(c,out):null},
+
+ // superfície onde a peça solta repousa (vista de cima)
+ surfaceY(x,z){if(Math.abs(x)<.5&&Math.abs(z)<.5)return .909;if(Math.abs(x)<1.1&&Math.abs(z)<.6)return .905;if(x>-5.975&&x<-5.225&&z>-3.4&&z<-1)return .891;return 0},
+
+ onPinch(d){const H=this.hands&&this.hands.h[d.hand];if(!H)return;const id='mao-'+d.hand;
+  if(d.type!=='start'){this.release(id);return}
+  if(H.pointT&&performance.now()-H.pointTime<450){const t=H.pointT;H.pointT=null;this.press(t);return}   // apontar + pinça
+  const t=this.nearTarget(H.f,.045);if(t){this.press(t);return}                                      // pinça perto do botão
+  this.grab(H.f,id)},
+
+ onTrigger(c,down){const id='ctl-'+c.id;if(!down){this.release(id);return}
+  if(c.hoverT){this.press(c.hoverT);return}
+  if(this.ctlOn(c))this.grab(this.ctlTip(c,this.v1),id,.04)},
+
+ // GRIP do controle: garra proporcional ao quanto o botão é apertado
+ onGrip(v){if(typeof v!=='number'||!this.el.is('vr-mode'))return;const g=Math.round(GARRA.FECHADA*clamp(v,0,1));
+  if(Math.abs(g-this.lastGrip)<2&&g!==GARRA.ABERTA&&g!==GARRA.FECHADA)return;if(g===this.lastGrip)return;this.lastGrip=g;NexusArm.definirGarra(g,'controle');
+  if(v>.95&&this.gLast!=='fechada'){this.gLast='fechada';this.toast('Garra fechada')}else if(v<.05&&this.gLast!=='aberta'){this.gLast='aberta';this.toast('Garra aberta')}},
+
+ onHand(d){const nm=d.hand==='left'?'esquerda':'direita',now=performance.now();
+  if(d.type==='found'){if(now-(this.lost[d.hand]||-1e9)>1500)this.toast('Mão '+nm+' rastreada');return}
+  this.lost[d.hand]=now;this.release('mao-'+d.hand);
+  // segurança: se a mão que comandava a garra some, a garra fica onde está
+  if(d.hand===this.ctlHand&&NX.mode==='gestos'&&!DEMO.running&&!NX.halt){NX.t.grip=NX.v.grip;this.toast('Mão '+nm+' perdida: garra mantida')}},
+
+ // mão ocupada com outra interação (perto de painel/botão ou segurando a peça) não mexe na garra
+ busyHand(k,H){const ap=document.getElementById('axisPanel');if(ap){ap.object3D.getWorldPosition(this.v2);if(this.v2.distanceTo(H.tip)<.6)return true}
+  for(const t of NX_UI.targets)if(t.wp&&t.wp.distanceTo(H.tip)<.2)return true;
+  for(const g of NX_UI.grabs)if(g.held&&g.held.id==='mao-'+k)return true;
+  return false},
+
+ toast(msg){if(!this.el.is('vr-mode')){showError(msg,true);return}
+  if(msg===this.toastMsg&&this.toastT>1)return;this.toastMsg=msg;const x=this.tx;
+  x.clearRect(0,0,512,96);x.fillStyle='rgba(7,18,30,.9)';this.rr(x,4,4,504,88,22);x.fill();x.strokeStyle='#22d3ee';x.lineWidth=3;x.stroke();
+  x.font=`700 32px ${this.FONT}`;x.fillStyle='#e0f2fe';x.textAlign='center';x.textBaseline='middle';x.fillText(msg,256,50,480);this.tT.needsUpdate=true;
+  if(this.toastT<=0)this.toastNew=true;this.toastT=2.2},
+
+ drawHud(){const x=this.hx,F=this.FONT,ab=Math.round(100*(1-NX.v.grip/GARRA.FECHADA)),k=[NX.mode,ab,DEMO.running,DEMO.paused,NX.halt].join();if(k===this.hk)return;this.hk=k;
+  x.clearRect(0,0,256,160);x.fillStyle='rgba(7,18,30,.92)';this.rr(x,2,2,252,156,16);x.fill();x.strokeStyle='#22d3ee';x.lineWidth=3;x.stroke();
+  x.textBaseline='middle';x.textAlign='left';x.font=`700 20px ${F}`;x.fillStyle='#7dd3fc';x.fillText('NEXUS ATLAS',14,22);
+  [['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES'],['GARRA',ab+'% aberta'],['ESTADO',NX.halt?'PARADO':DEMO.running?'demo rodando':DEMO.paused?'demo pausada':'manual']]
+   .forEach(([l,v],i)=>{const y=58+i*32;x.textAlign='left';x.font=`600 16px ${F}`;x.fillStyle='#94a3b8';x.fillText(l,14,y);x.textAlign='right';x.font=`700 19px ${F}`;x.fillStyle='#e2e8f0';x.fillText(v,242,y)});
+  this.hT.needsUpdate=true},
+
+ tick(t,dtm){
+
+  const dt=Math.min(dtm/1000,.05),sc=this.el,vr=sc.is('vr-mode'),HS=this.hands?this.hands.h:null,targets=NX_UI.targets;
+
+  DEMO.update(dt);
+
+  for(const tg of targets){tg.hv=false;tg.g.localToWorld((tg.wp||(tg.wp=new THREE.Vector3())).set(0,tg.h,0))}
+
+  // --- mãos: proximidade, toque do indicador e raio de apontar ---
+  if(HS)for(const k of['left','right']){const H=HS[k],line=this.lines[k];
+   if(!H.tr){line.visible=false;continue}
+   for(const tg of targets){const p=tg.frame.worldToLocal(this.v1.copy(H.tip)),dx=p.x-tg.cx,dz=p.z-tg.cz,dy=p.y-tg.top,rad=Math.hypot(dx,dz);
+    if(rad<tg.r+.06&&dy>-.03&&dy<.1)tg.hv=true;
+    if(rad<tg.r+.03&&dy>.02)tg.arm[k]=1;else if(rad>tg.r+.05)tg.arm[k]=0;          // só aciona vindo de cima (evita toques de raspão)
+    if(tg.arm[k]===1&&rad<tg.r+.008&&dy<.004){tg.arm[k]=0;this.press(tg)}}
+   if(H.gest==='apontando'&&H.ok){this.rc.set(H.tip,H.dir);const h=this.rc.intersectObjects(this.hitList(),false);
+    const e=h.length?h[0].point:this.v2.copy(H.dir).multiplyScalar(1.5).add(H.tip);line.position.copy(H.tip);line.lookAt(e);line.scale.z=Math.max(.01,H.tip.distanceTo(e));line.visible=true;
+    if(h.length){const tg=h[0].object.userData.nxTarget;tg.hv=true;H.pointT=tg;H.pointTime=performance.now()}}
+   else line.visible=false}
+
+  // --- controles: raio + destaque ---
+  for(const c of this.ctl){c.hoverT=null;if(!vr||!this.ctlOn(c))continue;const r=c.components.raycaster;if(!r||!r.raycaster)continue;
+   const h=r.raycaster.intersectObjects(this.hitList(),false);if(h.length){const tg=h[0].object.userData.nxTarget;tg.hv=true;c.hoverT=tg}}
+
+  // --- destaque e animação dos botões ---
+  for(const tg of targets){const hv=tg.hv||(!vr&&tg===this.mouseT);
+   if(hv!==tg.hvPrev){tg.hvPrev=hv;tg.mat.emissiveIntensity=hv?1:.25;tg.g.scale.setScalar(hv?1.08:1)}
+   if(tg.anim>0)tg.anim=Math.max(0,tg.anim-dt*5);
+   tg.g.position.y=tg.y0-.007*Math.sin(tg.anim*Math.PI)-(tg.latch&&tg.latch()?.009:0)}
+
+  // --- objetos que podem ser pegos ---
+  for(const g of NX_UI.grabs){const ob=g.obj;
+   if(g.held){const p=this.holder(g.held.id,this.v1);if(p)ob.position.copy(p).add(g.held.off);else g.held=null}
+   else{const sy=this.surfaceY(ob.position.x,ob.position.z)+g.half;if(ob.position.y>sy+1e-4){g.vy-=9.8*dt;ob.position.y=Math.max(sy,ob.position.y+g.vy*dt)}else{ob.position.y=sy;g.vy=0}}
+   let near=!!g.held;if(HS)for(const k of['left','right'])if(HS[k].tr&&HS[k].f.distanceTo(ob.position)<g.r+.05)near=true;
+   if(vr)for(const c of this.ctl)if(this.ctlOn(c)&&this.ctlTip(c,this.v2).distanceTo(ob.position)<g.r+.06)near=true;
+   if(near!==g.hv){g.hv=near;ob.material.emissiveIntensity=near?.45:0}}
+
+  // --- gesto da mão → garra (mão direita; a esquerda se só ela estiver rastreada) ---
+  const ck=HS?(HS.right.tr?'right':HS.left.tr?'left':null):null,H=ck?HS[ck]:null;this.ctlHand=ck;let st;
+  if(NX.mode!=='gestos')st='modo controles';
+  else if(!H)st=vr?'sem mão rastreada':'—';
+  else if(!H.ok)st='estabilizando';
+  else if(NX.halt)st='braço parado';
+  else if(DEMO.running)st='demo no comando';
+  else if(H.gest==='pinça'||H.gest==='apontando'||this.busyHand(ck,H))st='interagindo';
+  else{const o=H.open,g=Math.round(GARRA.FECHADA*clamp((.78-o)/.56,0,1));   // ≥ .78 aberta • ≤ .22 fechada • meio: proporcional
+   if(Math.abs(g-NX.t.grip)>=2||((g===GARRA.ABERTA||g===GARRA.FECHADA)&&g!==NX.t.grip))NexusArm.definirGarra(g,'gesto');
+   if(o<.22&&this.gLast!=='fechada'){this.gLast='fechada';this.toast('Garra fechada')}else if(o>.78&&this.gLast!=='aberta'){this.gLast='aberta';this.toast('Garra aberta')}
+   st='controlando a garra'}
+
+  const hl=HS&&HS.left.tr,hr=HS&&HS.right.tr,cc=vr&&this.ctl.some(c=>this.ctlOn(c));
+  NX.ui.track=!vr?'SEM VR (COMPUTADOR)':hl&&hr?'MÃOS: ESQ + DIR':hr?'MÃO DIREITA':hl?'MÃO ESQUERDA':cc?'CONTROLES':'PROCURANDO MÃOS…';
+  NX.ui.trackC=hl||hr?'#4ade80':cc?'#38bdf8':'#fbbf24';NX.ui.gesto=H&&H.ok&&H.gest!=='—'?H.gest+' • '+st:st;
+
+  // --- aviso flutuante e painel de pulso (só no VR) ---
+  if(!vr)return;
+  const cam=sc.camera;cam.getWorldPosition(this.hp);cam.getWorldQuaternion(this.hq);const f=this.fw.set(0,0,-1).applyQuaternion(this.hq);
+  const m=this.toastM;
+  if(this.toastT>0){this.toastT-=dt;this.v1.copy(f).multiplyScalar(1.05).add(this.hp);this.v1.y-=.24;
+   if(this.toastNew||!m.visible){m.position.copy(this.v1);this.toastNew=false}else m.position.lerp(this.v1,1-Math.exp(-dt*4));
+   m.lookAt(this.hp);m.material.opacity=Math.min(1,this.toastT/.35);m.visible=this.toastT>0}else m.visible=false;
+  let src=null;if(HS&&HS.left.tr)src=this.v2.copy(HS.left.wrist);else if(this.ctlOn(this.ctl[0]))src=this.ctl[0].object3D.getWorldPosition(this.v2);
+  let show=false;if(src){this.v1.copy(src).sub(this.hp);show=this.v1.length()<.75&&this.v1.normalize().dot(f)>.85}   // aparece ao olhar para o pulso, como um relógio
+  this.hud.visible=show;if(show){this.hud.position.copy(src);this.hud.position.y+=.08;this.hud.lookAt(this.hp);if(t-(this.ht||0)>250){this.ht=t;this.drawHud()}}
+
+ }
+
+});
 
 
 
 /* ============ ENTRADA ============ */
 
+// Estado do WebXR, verificado ao abrir a página (sem simular sessão quando ela não existe)
+const XR={ok:null,msg:''};
+
+function prepVR(){
+  const b=document.getElementById('btnVR'),t=document.getElementById('btnVRtxt'),n=document.getElementById('xr-note'),sc=document.querySelector('a-scene');if(!b||!sc)return;let pronto=false;
+  const upd=()=>{if(!pronto){b.disabled=true;t.textContent='CARREGANDO LABORATÓRIO…';return}b.disabled=false;
+   if(XR.ok===false){t.textContent='VR INDISPONÍVEL AQUI';n.textContent=XR.msg}else{t.textContent='ENTRAR NO LABORATÓRIO (VR)';n.textContent=XR.ok?'Headset detectado: o navegador vai pedir permissão para a sessão imersiva.':''}};
+  if(!window.isSecureContext){XR.ok=false;XR.msg='O modo VR exige HTTPS: abra pelo endereço https:// do GitHub Pages.'}
+  else if(!navigator.xr){XR.ok=false;XR.msg='Este navegador não tem WebXR. No Quest 2, use o Meta Quest Browser.'}
+  else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use “Explorar no computador”.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
+  const go=()=>{pronto=true;upd()};sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});upd()}
+
+document.addEventListener('DOMContentLoaded',prepVR);
+
 function enterExperience(vr){
-
-  document.getElementById('intro-screen').classList.add('fade-out');
-
-  const sc=document.querySelector('a-scene');if(!sc)return showError('A cena VR não foi encontrada.');
-
-  if(!vr){document.getElementById('dui').style.display='block';return}
-
-  const go=()=>{try{sc.enterVR()}catch(e){console.error(e);showError('Não foi possível iniciar o modo VR. Verifique o Quest 2, HTTPS e se o navegador permite WebXR.');document.getElementById('dui').style.display='block'}};
-
-  sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});
-
+  const sc=document.querySelector('a-scene');if(!sc)return showError('A cena VR não foi encontrada.');
+  NX_AUDIO(true);   // libera o som dos botões (o navegador exige um gesto do usuário)
+  const desk=()=>{document.getElementById('intro-screen').classList.add('fade-out');document.getElementById('dui').style.display='block'};
+  if(!vr)return desk();
+  if(XR.ok===false){showError(XR.msg+' Abrindo o modo computador.');return desk()}
+  if(!sc.hasLoaded){showError('Aguarde o laboratório terminar de carregar.',true);return}
+  // enterVR() roda dentro do clique: o WebXR só abre a sessão imersiva com um gesto do usuário
+  let p;try{p=sc.enterVR()}catch(e){p=Promise.reject(e)}
+  document.getElementById('intro-screen').classList.add('fade-out');
+  Promise.resolve(p).catch(e=>{console.error(e);showError('O navegador não abriu a sessão VR ('+((e&&e.message)||e)+'). Abrindo o modo computador.');document.getElementById('dui').style.display='block'})
 }
 
 setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a carregar. Confira models/braco.glb e a conexão.')},45000);
@@ -1191,11 +1696,13 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
  <p>Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>. Este laboratório foi desenvolvido para testar navegação em realidade virtual, rastreamento de mãos e, a integração entre o braço robótico virtual e o braço físico utilizando ESP32.</p>
 
- <button class="btn-enter-vr" onclick="enterExperience(true)"><span>🥽</span> ENTRAR NO MODO VR</button><br>
+ <button class="btn-enter-vr" id="btnVR" onclick="enterExperience(true)" disabled><span>🥽</span> <span id="btnVRtxt">CARREGANDO LABORATÓRIO…</span></button><br>
 
  <button class="btn-enter-vr btn-pc" onclick="enterExperience(false)">Explorar no computador</button>
 
- <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>PULAR</strong>Botão X</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>BRAÇO</strong>Pinça + arraste no painel</div></div>
+ <p id="xr-note"></p>
+
+ <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>GARRA</strong>Abra / feche a mão ou GRIP</div><div><strong>BOTÕES</strong>Toque, pinça ou gatilho</div></div>
 
 </div></div>
 
@@ -1205,11 +1712,11 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 <div id="nx-load">Carregando braço robótico…</div>
 
-<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><small>v4 TEXTO CORRIGIDO • Tecla P: mostrar pivôs/eixos.</small></div>
+<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><div class="b"><button id="ddemo">▶ Demo</button><button id="dopen">Abrir garra</button><button id="dclose">Fechar garra</button></div><div class="b"><button id="dmode">Modo: gestos (mãos)</button></div><small>Q/E garra • G modo • I demo • R reiniciar • P pivôs • 1-3 qualidade. Clique nos botões do console 3D.</small></div>
 
 
 
-<a-scene renderer="antialias:true;colorManagement:true;exposure:1.0;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui>
+<a-scene light="defaultLightsEnabled:false" renderer="antialias:true;colorManagement:true;exposure:1.0;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui nexus-control>
 
 
 
@@ -1272,7 +1779,13 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 <!-- PAINEL DE CONTROLE DOS EIXOS (acessível às mãos, ao lado da mesa; não cobre o braço) -->
 
-<a-entity id="axisPanel" axis-panel position="-1.45 1.3 1.0" rotation="0 36 0"></a-entity>
+<a-entity id="axisPanel" axis-panel position="-1.45 1.3 1.0" rotation="0 36 0" data-colisor="1.1 .06"></a-entity>
+
+
+
+<!-- CONSOLE DE DEMONSTRAÇÃO (iniciar/pausar/reiniciar, garra e modo de controle) -->
+
+<a-entity id="demoConsole" demo-console position="1.6 0 1.15" rotation="0 -41 0" data-colisor=".56 .45"></a-entity>
 
 
 
