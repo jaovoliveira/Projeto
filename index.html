@@ -52,6 +52,17 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',san
 
 #vr-status{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(3,7,18,.85);border:1px solid rgba(56,189,248,.4);padding:8px 18px;border-radius:30px;font-size:14px;letter-spacing:1px;color:#38bdf8;pointer-events:none;opacity:0;transition:.4s}
 
+#esp32-status{position:fixed;top:18px;right:18px;z-index:10001;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:22px;background:rgba(3,7,18,.92);border:1px solid #64748b;color:#cbd5e1;font:700 13px/1.1 'Titillium Web',sans-serif;letter-spacing:.8px;box-shadow:0 4px 18px rgba(0,0,0,.35);transition:.25s}
+#esp32-status i{width:10px;height:10px;border-radius:50%;background:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.2)}
+#esp32-status.online{border-color:#22c55e;color:#bbf7d0;box-shadow:0 0 18px rgba(34,197,94,.25)}
+#esp32-status.online i{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2),0 0 12px #22c55e}
+#esp32-status.connecting{border-color:#f59e0b;color:#fde68a}
+#esp32-status.connecting i{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.2);animation:nxespblink 1s infinite}
+#esp32-status.offline{border-color:#ef4444;color:#fecaca}
+#esp32-status.offline i{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.2)}
+@keyframes nxespblink{50%{opacity:.35}}
+@media(max-width:560px){#esp32-status{top:10px;right:10px;font-size:11px;padding:7px 10px}}
+
 #error-message{position:absolute;left:50%;bottom:25px;transform:translateX(-50%);z-index:10000;display:none;background:rgba(127,29,29,.95);border:1px solid #ef4444;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;max-width:90%;text-align:center}
 
 #nx-load{position:absolute;top:12px;left:12px;z-index:900;font-size:13px;color:#38bdf8;background:rgba(3,7,18,.8);padding:6px 12px;border-radius:8px}
@@ -128,16 +139,80 @@ const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:f
 };
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
 
-/* ============ 1b) PONTE PARA O BRAÇO FÍSICO (ESP32) — AINDA NÃO IMPLEMENTADA ============
-   Todos os comandos (painéis, mouse, gestos, controles e demonstração) passam por NX_LINK.send().
-   Hoje ela NÃO envia nada: connected = false e os monitores mostram "ESP32: NÃO CONECTADO".
-   ONDE INTEGRAR: dentro de send(), abrir um WebSocket (ex.: new WebSocket('ws://IP-DO-ESP32:81'))
-   ou usar Web Serial, limitar a taxa (ex.: 20 mensagens/s), converter os graus do gêmeo para o
-   ângulo de cada servo e só então marcar connected = true. A animação virtual não depende daqui. */
+/* ============ 1b) PONTE DE TEMPO REAL PARA O BRAÇO FÍSICO (ESP32) ============
+   O gêmeo 3D continua responsivo mesmo sem rede. Quando o kit está na mesma rede,
+   esta ponte envia a pose completa por WebSocket a cada 25 ms (40 Hz), recebe a
+   posição física axes_atual e atualiza NX.v para o braço virtual acompanhar o robô.
+   Use ?kit=192.168.1.50 para informar o IP, ou abra pelo próprio kit. */
+function setEsp32Status(state,detail){
+  const el=document.getElementById('esp32-status');
+  if(!el)return;
+  const labels={online:'ESP32 CONECTADO',connecting:'ESP32 CONECTANDO…',offline:'ESP32 DESCONECTADO'};
+  el.className=state;el.querySelector('span').textContent=detail||labels[state]||labels.offline;
+}
+
 const NX_LINK={
-  connected:false,
-  send(comando,dados){ /* integração com o ESP32 entra aqui */ }
+  connected:false, ws:null, timer:null, retry:null, attempts:0, pending:false,
+  lastSend:0, lastSeen:0, rtt:null, host:'', estop:false,
+  PERIOD:25,
+  init(){
+    let q=''; try{q=new URLSearchParams(location.search).get('kit')||''}catch(e){}
+    try{q=q||localStorage.getItem('nexus-kit-host')||''}catch(e){}
+    this.host=(q||((location.protocol==='http:'&&location.hostname)?location.hostname:'kit-iot.local')).replace(/^wss?:\/\//,'').replace(/\/+$/,'');
+    if(!/:\d+$/.test(this.host))this.host+=':81';
+    setEsp32Status('connecting');
+    this.connect();
+  },
+  url(){return 'ws://'+this.host},
+  connect(){
+    if(this.ws&&(this.ws.readyState===0||this.ws.readyState===1))return;
+    if(this.retry){clearTimeout(this.retry);this.retry=null}
+    let w;try{w=new WebSocket(this.url())}catch(e){this.schedule();return}
+    this.ws=w;const self=this;let opened=false;
+    setEsp32Status('connecting');
+    w.onopen=function(){opened=true;self.connected=true;self.attempts=0;self.lastSeen=performance.now();setEsp32Status('online');NX.ver++;self.flush(true);UI_TOAST('ESP32 conectado · controle em tempo real')};
+    w.onmessage=function(ev){
+      let t;try{t=JSON.parse(ev.data)}catch(e){return}
+      self.lastSeen=performance.now();
+      if(t.type==='pong'){self.rtt=performance.now()-self.pingAt;return}
+      if(t.type==='hello'){if(t.ip){self.host=t.ip+':81';try{localStorage.setItem('nexus-kit-host',t.ip)}catch(e){}}return}
+      if(t.type!=='telemetry')return;
+      const atual=t.axes_atual||null, rel=t.axes_rel||{};
+      AXES.forEach(a=>{
+        const bruto=atual&&Number.isFinite(Number(atual[a.id])) ? Number(atual[a.id])-90 : Number(rel[a.id]);
+        if(Number.isFinite(bruto))NX.v[a.id]=clamp(bruto,a.min,a.max);
+      });
+      if(typeof t.estop==='boolean'){
+        self.estop=t.estop;
+        if(t.estop&&!NX.halt){NX.halt=true;NX.freeze()}
+        else if(!t.estop&&NX.halt){NX.halt=false}
+      }
+      NX.ver++;
+    };
+    w.onclose=function(){if(self.ws!==w)return;self.ws=null;self.connected=false;setEsp32Status('offline');NX.ver++;if(opened)UI_TOAST('ESP32 desconectado · tentando reconectar');self.schedule()};
+    w.onerror=function(){};
+  },
+  schedule(){if(this.retry)return;this.attempts++;setEsp32Status('connecting');this.retry=setTimeout(()=>{this.retry=null;this.connect()},Math.min(1000*this.attempts,5000))},
+  pose(){const o={};AXES.forEach(a=>{o[a.id]=Math.round(clamp(Number(NX.t[a.id])||0,a.min,a.max)*10)/10});return JSON.stringify(o)},
+  flush(force){
+    if(!this.connected||!this.ws||this.ws.readyState!==1){this.pending=true;return false}
+    const now=performance.now();if(!force&&now-this.lastSend<this.PERIOD){this.pending=true;return true}
+    this.pending=false;this.lastSend=now;this.ws.send(this.pose());return true
+  },
+  send(comando,dados){
+    if(comando==='eixo'){this.pending=true;this.flush(false);return}
+    if(comando==='inicio'){AXES.forEach(a=>NX.t[a.id]=a.home);this.pending=true;this.flush(true);return}
+    if(comando==='parar'){this.estop=true;if(this.ws&&this.connected)this.ws.send('{"estop":1}');return}
+    if(comando==='retomar'){this.estop=false;if(this.ws&&this.connected)this.ws.send('{"estop":0}');this.pending=true;this.flush(true);return}
+  },
+  tick(){
+    if(this.pending)this.flush(false);
+    if(this.connected&&this.ws&&this.ws.readyState===1&&performance.now()-this.lastSeen>3000)this.ws.close();
+  }
 };
+setInterval(()=>{NX_LINK.tick()},5);
+setInterval(()=>{if(NX_LINK.connected&&NX_LINK.ws&&NX_LINK.ws.readyState===1){NX_LINK.pingAt=performance.now();NX_LINK.ws.send('{"ping":1}')}},2000);
+NX_LINK.init();
 
 /* ============ 1c) API DE COMANDOS DO BRAÇO ============
    As mesmas funções servem ao gêmeo virtual e, no futuro, ao braço físico (via NX_LINK). */
@@ -2062,6 +2137,7 @@ function prepVR(){
   else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use “Explorar no computador”.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
   const go=()=>{pronto=true;upd()};sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});upd()}
 
+document.addEventListener('DOMContentLoaded',()=>{setEsp32Status(NX_LINK.connected?'online':'connecting');});
 document.addEventListener('DOMContentLoaded',prepVR);
 
 function enterExperience(vr){
@@ -2104,6 +2180,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 </div></div>
 
 <div id="vr-status">● META QUEST 2</div>
+<div id="esp32-status" class="connecting"><i></i><span>ESP32 CONECTANDO…</span></div>
 
 <div id="error-message"></div>
 
