@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NEXUS ATLAS - Laboratório VR</title>
+<link rel="icon" href="data:,">
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
@@ -129,125 +130,196 @@ const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:f
   set(id,val,origem){
     if(this.halt)return;
     // Durante a sincronização, a telemetria física é a única fonte de verdade.
-    if(NX_LINK.connected&&!NX_LINK.synced)return;
+    if(NX_LINK.bloqueado())return;
     const a=AXES.find(x=>x.id===id); if(!a)return;
     if(origem!=='demo'&&DEMO.running)DEMO.pause();
     this.t[id]=clamp(val,a.min,a.max);
     NX_LINK.send('eixo',{eixo:id,graus:this.t[id],origem:origem||'painel'});
   },
   freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
-  home(){if(this.halt|| (NX_LINK.connected&&!NX_LINK.synced))return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
+  home(){if(this.halt||NX_LINK.bloqueado())return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
   stop(){DEMO.pause(true);this.freeze();this.halt=true;this.ver++;NX_LINK.send('parar')},
   resume(){this.halt=false;this.ver++;NX_LINK.send('retomar')}
 };
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
 
 /* ============ 1b) PONTE DE TEMPO REAL PARA O BRAÇO FÍSICO (ESP32) ============
-   O gêmeo 3D continua responsivo mesmo sem rede. Quando o kit está na mesma rede,
-   esta ponte envia a pose completa por WebSocket a cada 25 ms (40 Hz), recebe a
-   posição física axes_atual e atualiza NX.v para o braço virtual acompanhar o robô.
-   Use ?kit=192.168.1.50 para informar o IP, ou abra pelo próprio kit. */
+   v2 · correções da integração:
+   - Página em https (GitHub Pages): usa MQTT (wss://public.cloud.shiftr.io). Em http/arquivo: WebSocket direto.
+     Forçar via: ?via=mqtt ou ?via=ws · IP do kit: ?kit=192.168.1.50
+     Outro broker/tópico: ?broker=wss://host:porta&topico=meu/topico
+   - UM único cliente MQTT (a versão anterior criava um cliente novo a cada 2 s enquanto o
+     primeiro ainda conectava; os antigos continuavam vivos e os comandos saíam pelo errado).
+   - Taxa de comando por via: WebSocket 40×/s · MQTT 10×/s (o broker público derruba quem passa disso).
+   - "Broker conectado" ≠ "kit conectado": o controle só trava enquanto o KIT está online e a posição
+     física ainda não chegou. Kit desligado não congela mais a cena.
+   - Depois de sincronizar, a telemetria NÃO puxa mais o braço virtual para trás (ficava tremendo).
+   - Ao sincronizar com o braço físico, a demonstração automática é pausada (segurança).
+   - Tudo é registrado no console com o prefixo [ESP32]. */
 function setEsp32Status(state,detail){
   const el=document.getElementById('esp32-status');
   if(!el)return;
   const labels={online:'ESP32 CONECTADO',connecting:'ESP32 CONECTANDO…',offline:'ESP32 DESCONECTADO'};
   el.className=state;el.querySelector('span').textContent=detail||labels[state]||labels.offline;
 }
+function LOGK(...a){console.info('%c[ESP32]','color:#22c55e;font-weight:700',...a)}
 
 const NX_LINK={
-  connected:false, synced:false, ws:null, mqtt:null, mqttTimer:null, timer:null, retry:null, attempts:0, pending:false,
-  lastSend:0, lastSeen:0, rtt:null, host:'', estop:false, mode:'ws',
+  connected:false,   // via aberta (WebSocket com o kit OU cliente MQTT com o broker)
+  kitOnline:false,   // o KIT está respondendo (telemetria recente)
+  synced:false,      // posição física já recebida: controle liberado e comandos saindo
+  ws:null, mqtt:null, retry:null, attempts:0, pending:false,
+  lastSend:0, kitSeen:0, pingAt:0, rtt:null, host:'', estop:false, mode:'ws', fis:{},
   topic:'senai-sao-carlos/nexusatlas-x7k2', mqttUrl:'wss://public.cloud.shiftr.io:443',
-  PERIOD:25,
+  PERIOD_WS:25, PERIOD_MQTT:100, KIT_TIMEOUT_MS:4000,
   init(){
-    let q=''; try{q=new URLSearchParams(location.search).get('kit')||''}catch(e){}
+    let q='',via='';
+    try{const u=new URLSearchParams(location.search);q=u.get('kit')||'';via=(u.get('via')||'').toLowerCase();if(u.get('broker'))this.mqttUrl=u.get('broker');if(u.get('topico'))this.topic=u.get('topico')}catch(e){}
     try{q=q||localStorage.getItem('nexus-kit-host')||''}catch(e){}
     this.host=(q||((location.protocol==='http:'&&location.hostname)?location.hostname:'kit-iot.local')).replace(/^wss?:\/\//,'').replace(/\/+$/,'');
     if(!/:\d+$/.test(this.host))this.host+=':81';
+    const https=location.protocol==='https:';
+    if(via==='ws'&&https)LOGK('?via=ws ignorado: página em https não pode abrir ws:// (o navegador bloqueia). Usando MQTT.');
+    this.mode=(via==='mqtt'||https)?'mqtt':'ws';
+    LOGK('página em',location.protocol,'→ via',this.mode==='mqtt'?'MQTT '+this.mqttUrl+' · tópico '+this.topic:'WebSocket ws://'+this.host);
     setEsp32Status('connecting');
-    if(location.protocol==='https:')this.connectMqtt();
-    else this.connect();
+    if(this.mode==='mqtt')this.connectMqtt();else this.connect();
   },
+  bloqueado(){return this.kitOnline&&!this.synced},
+  period(){return this.mode==='mqtt'?this.PERIOD_MQTT:this.PERIOD_WS},
+
+  // ---------- WebSocket direto com o kit ----------
   url(){return 'ws://'+this.host},
   connect(){
     if(this.ws&&(this.ws.readyState===0||this.ws.readyState===1))return;
     if(this.retry){clearTimeout(this.retry);this.retry=null}
-    let w;try{w=new WebSocket(this.url())}catch(e){this.schedule();return}
+    let w;try{w=new WebSocket(this.url())}catch(e){LOGK('WebSocket inválido:',e.message);this.schedule();return}
     this.ws=w;const self=this;let opened=false;
-    setEsp32Status('connecting');
-    w.onopen=function(){opened=true;self.connected=true;self.synced=false;self.attempts=0;self.lastSeen=performance.now();setEsp32Status('connecting','ESP32 LENDO POSIÇÃO…');NX.ver++;UI_TOAST('ESP32 conectado · lendo posição física')};
+    if(this.attempts===0)LOGK('tentando',this.url());
+    w.onopen=function(){opened=true;self.connected=true;self.synced=false;self.attempts=0;self.kitSeen=performance.now();
+      LOGK('WebSocket aberto',self.url());setEsp32Status('connecting','ESP32 LENDO POSIÇÃO…');NX.ver++;UI_TOAST('ESP32 conectado · lendo posição física')};
     w.onmessage=function(ev){let t;try{t=JSON.parse(ev.data)}catch(e){return}self.receive(t)};
-    w.onclose=function(){if(self.ws!==w)return;self.ws=null;self.connected=false;self.synced=false;setEsp32Status('offline');NX.ver++;if(opened)UI_TOAST('ESP32 desconectado · tentando reconectar');self.schedule()};
+    w.onclose=function(ev){if(self.ws!==w)return;self.ws=null;self.connected=false;self.kitOffline();
+      if(opened){LOGK('WebSocket fechou (código',ev.code+')');UI_TOAST('ESP32 desconectado · tentando reconectar')}
+      else if(self.attempts===0)LOGK('kit não respondeu em',self.url(),'(código',ev.code+'). Confira o IP no LCD, a rede Wi-Fi e use ?kit=IP');
+      setEsp32Status('offline');self.schedule()};
     w.onerror=function(){};
   },
-  receive(t){
-    this.lastSeen=performance.now();
-    if(t.type==='pong'){this.rtt=performance.now()-this.pingAt;return}
-    if(t.type==='hello'){if(t.ip){this.host=t.ip+':81';try{localStorage.setItem('nexus-kit-host',t.ip)}catch(e){}}return}
-    if(t.type!=='telemetry')return;
-    // O firmware envia axes_atual e axes_rel já em graus relativos (-90…90).
-    // Só axes_deg é absoluto (0…180) e precisa da conversão -90.
-    const atual=t.axes_atual||null, rel=t.axes_rel||null, abs=t.axes_deg||null;
-    let recebeuPosicao=false;
-    AXES.forEach(a=>{
-      let bruto=atual&&Number.isFinite(Number(atual[a.id]))?Number(atual[a.id]):rel&&Number.isFinite(Number(rel[a.id]))?Number(rel[a.id]):abs&&Number.isFinite(Number(abs[a.id]))?Number(abs[a.id])-90:NaN;
-      if(Number.isFinite(bruto)){NX.v[a.id]=clamp(bruto,a.min,a.max);recebeuPosicao=true}
-    });
-    // Segurança: na primeira telemetria após conectar, a posição física vence a pose inicial do software.
-    if(recebeuPosicao&&!this.synced){
-      AXES.forEach(a=>{NX.t[a.id]=NX.v[a.id]});
-      this.synced=true;this.pending=false;NX.ver++;
-      setEsp32Status('online',this.mode==='mqtt'?'ESP32 CONECTADO · MQTT':'ESP32 CONECTADO');
-      UI_TOAST('Posição física sincronizada · controle liberado');
-    }
-    if(typeof t.estop==='boolean'){
-      this.estop=t.estop;
-      if(t.estop&&!NX.halt){NX.halt=true;NX.freeze()}
-      else if(!t.estop&&NX.halt){NX.halt=false}
-    }
-    NX.ver++;
-  },
+  schedule(){if(this.retry)return;this.attempts++;this.retry=setTimeout(()=>{this.retry=null;setEsp32Status('connecting');this.connect()},Math.min(1000*this.attempts,5000))},
+
+  // ---------- MQTT (página em https) ----------
   connectMqtt(){
-    if(this.mqtt&&this.mqtt.connected)return;
-    if(typeof mqtt==='undefined'){setEsp32Status('offline','BIBLIOTECA MQTT INDISPONÍVEL');return}
+    if(this.mqtt)return;   // um cliente só: o mqtt.js reconecta sozinho
+    if(typeof mqtt==='undefined'){LOGK('biblioteca MQTT não carregou (sem internet ou CDN bloqueado)');setEsp32Status('offline','BIBLIOTECA MQTT INDISPONÍVEL');return}
     const self=this;
-    try{this.mqtt=mqtt.connect(this.mqttUrl,{username:'public',password:'public',clientId:'nexus-vr-'+Math.random().toString(16).slice(2,10),clean:true,keepalive:30,reconnectPeriod:2000,connectTimeout:15000,queueQoSZero:false,resubscribe:true})}catch(e){setEsp32Status('offline');return}
-    const c=this.mqtt;
-    c.on('connect',()=>{self.mode='mqtt';self.connected=true;self.synced=false;self.lastSeen=performance.now();c.subscribe([self.topic+'/up',self.topic+'/online',self.topic+'/estop']);setEsp32Status('connecting','ESP32 LENDO POSIÇÃO…');NX.ver++;UI_TOAST('ESP32 conectado via MQTT · lendo posição física')});
-    c.on('message',(topic,payload)=>{const msg=payload.toString();if(topic===self.topic+'/online'){if(msg==='1'){self.lastSeen=performance.now();setEsp32Status('online','ESP32 CONECTADO · MQTT')}return}try{self.receive(JSON.parse(msg))}catch(e){}});
-    c.on('offline',()=>{self.connected=false;self.synced=false;setEsp32Status('connecting','ESP32 RECONECTANDO…');NX.ver++});
-    c.on('close',()=>{if(!c.disconnecting){self.connected=false;self.synced=false;setEsp32Status('connecting','ESP32 RECONECTANDO…');NX.ver++}});
-    c.on('error',()=>{});
+    let c;
+    try{c=mqtt.connect(this.mqttUrl,{username:'public',password:'public',clientId:'nexus-vr-'+Math.random().toString(16).slice(2,10),clean:true,keepalive:30,reconnectPeriod:2000,connectTimeout:15000,queueQoSZero:false,resubscribe:true})}
+    catch(e){LOGK('erro ao criar cliente MQTT:',e.message);setEsp32Status('offline');return}
+    this.mqtt=c;
+    c.on('connect',()=>{self.connected=true;self.synced=false;self.kitOnline=false;
+      c.subscribe([self.topic+'/up',self.topic+'/online',self.topic+'/estop'],{qos:0},(err)=>{if(err)LOGK('falha ao assinar:',err.message)});
+      LOGK('broker MQTT conectado · aguardando o kit em',self.topic+'/up');
+      setEsp32Status('connecting','BROKER OK · AGUARDANDO KIT…');NX.ver++});
+    c.on('message',(topic,payload)=>{
+      const msg=payload.toString();
+      if(topic===self.topic+'/online'){
+        LOGK('kit online =',msg,'(mensagem retida do broker)');
+        if(msg==='0')self.kitOffline('KIT OFFLINE (last will)');
+        return;
+      }
+      if(topic===self.topic+'/estop'){self.aplicaEstop(msg==='1');return}
+      let t;try{t=JSON.parse(msg)}catch(e){return}
+      self.receive(t);
+    });
+    c.on('reconnect',()=>{setEsp32Status('connecting','BROKER RECONECTANDO…')});
+    c.on('offline',()=>{self.connected=false;self.kitOffline('BROKER OFFLINE');LOGK('broker MQTT offline')});
+    c.on('close',()=>{if(self.connected)LOGK('conexão MQTT fechada');self.connected=false;self.kitOffline('BROKER RECONECTANDO…')});
+    c.on('error',(e)=>{LOGK('erro MQTT:',e&&e.message)});
   },
   mqttPublish(sub,msg,opts){if(!this.mqtt||!this.mqtt.connected)return false;this.mqtt.publish(this.topic+'/'+sub,msg,opts||{qos:0,retain:false});return true},
-  schedule(){if(this.retry)return;this.attempts++;setEsp32Status('connecting');this.retry=setTimeout(()=>{this.retry=null;this.connect()},Math.min(1000*this.attempts,5000))},
+
+  // ---------- estado do kit ----------
+  kitOffline(txt){
+    const era=this.kitOnline||this.synced;
+    this.kitOnline=false;this.synced=false;this.fis={};NX.ver++;
+    if(this.mode==='mqtt'&&this.connected)setEsp32Status('connecting',txt||'BROKER OK · KIT OFFLINE');
+    else if(txt)setEsp32Status('offline',txt);
+    if(era)LOGK('kit sem resposta:',txt||'');
+  },
+  aplicaEstop(on){
+    this.estop=on;
+    if(on&&!NX.halt){NX.halt=true;NX.freeze();NX.ver++;UI_TOAST('E-STOP ativo no kit')}
+    else if(!on&&NX.halt){NX.halt=false;NX.ver++}
+  },
+  receive(t){
+    if(t.type==='pong'){this.rtt=performance.now()-this.pingAt;return}
+    if(t.type==='hello'){
+      LOGK('hello do kit:',t.fw||'?','· IP',t.ip||'?',t.pins?'· pinos '+JSON.stringify(t.pins):'');
+      if(t.ip&&this.mode==='ws'){try{localStorage.setItem('nexus-kit-host',t.ip)}catch(e){}}
+      return;
+    }
+    if(t.type!=='telemetry')return;
+    this.kitSeen=performance.now();
+    if(!this.kitOnline){this.kitOnline=true;LOGK('telemetria chegando'+(t.rssi?' · Wi-Fi '+t.rssi+' dBm':''))}
+    // axes_atual/axes_rel já vêm em graus relativos (−90…90); axes_deg é absoluto (0…180).
+    const atual=t.axes_atual||null, rel=t.axes_rel||null, abs=t.axes_deg||null;
+    const num=(o,k)=>o&&o[k]!==null&&Number.isFinite(Number(o[k]))?Number(o[k]):NaN;
+    let recebeu=false;
+    AXES.forEach(a=>{
+      let f=num(atual,a.id);if(!Number.isFinite(f))f=num(rel,a.id);if(!Number.isFinite(f)&&Number.isFinite(num(abs,a.id)))f=num(abs,a.id)-90;
+      if(Number.isFinite(f)){this.fis[a.id]=clamp(f,a.min,a.max);recebeu=true}
+    });
+    if(typeof t.estop==='boolean'&&t.estop!==this.estop)this.aplicaEstop(t.estop);
+    if(recebeu&&!this.synced){
+      // Segurança: a posição física vence a pose do software, e a demo automática para.
+      if(typeof DEMO!=='undefined'&&DEMO.running)DEMO.pause(true);
+      AXES.forEach(a=>{if(a.id in this.fis){NX.v[a.id]=NX.t[a.id]=this.fis[a.id]}});
+      this.synced=true;this.pending=false;NX.ver++;
+      LOGK('posição física sincronizada',JSON.stringify(this.fis),'· controle liberado');
+      setEsp32Status('online',this.mode==='mqtt'?'ESP32 CONECTADO · MQTT':'ESP32 CONECTADO');
+      UI_TOAST('Braço físico sincronizado · demo pausada · controle liberado');
+      return;
+    }
+    // Já sincronizado: só segue o kit se ele foi movido por FORA (outra página, reinício),
+    // nunca durante o nosso próprio envio (senão o braço virtual "volta" e treme).
+    if(rel&&!this.pending&&performance.now()-this.lastSend>1500&&!NX.halt){
+      let mudou=false;
+      AXES.forEach(a=>{const r=num(rel,a.id);if(Number.isFinite(r)&&Math.abs(r-NX.t[a.id])>2){NX.t[a.id]=clamp(r,a.min,a.max);mudou=true}});
+      if(mudou){NX.ver++;LOGK('kit movido por fora: acompanhando',JSON.stringify(rel))}
+    }
+  },
+
+  // ---------- envio ----------
   pose(){const o={};AXES.forEach(a=>{o[a.id]=Math.round(clamp(Number(NX.t[a.id])||0,a.min,a.max)*10)/10});return JSON.stringify(o)},
   flush(force){
     const now=performance.now();
-    if(!this.synced){this.pending=true;return false}
-    if(!force&&now-this.lastSend<this.PERIOD){this.pending=true;return true}
+    if(!this.synced){this.pending=false;return false}   // sem kit sincronizado, nada sai (o gêmeo funciona sozinho)
+    if(!force&&now-this.lastSend<this.period()){this.pending=true;return true}
     const payload=this.pose();
-    if(this.mode==='mqtt'){
-      if(!this.mqttPublish('cmd',payload)){this.pending=true;return false}
-      this.pending=false;this.lastSend=now;return true
-    }
-    if(!this.connected||!this.ws||this.ws.readyState!==1){this.pending=true;return false}
-    this.pending=false;this.lastSend=now;this.ws.send(payload);return true
+    if(payload===this.lastPayload&&!force){this.pending=false;return true}
+    let ok=false;
+    if(this.mode==='mqtt')ok=this.mqttPublish('cmd',payload);
+    else if(this.ws&&this.ws.readyState===1){this.ws.send(payload);ok=true}
+    if(!ok){this.pending=true;return false}
+    this.pending=false;this.lastSend=now;this.lastPayload=payload;return true
   },
   send(comando,dados){
     if(comando==='eixo'){this.pending=true;this.flush(false);return}
     if(comando==='inicio'){AXES.forEach(a=>NX.t[a.id]=a.home);this.pending=true;this.flush(true);return}
-    if(comando==='parar'){this.estop=true;if(this.mode==='mqtt')this.mqttPublish('estop','1',{qos:1,retain:true});else if(this.ws&&this.connected)this.ws.send('{"estop":1}');return}
-    if(comando==='retomar'){this.estop=false;if(this.mode==='mqtt')this.mqttPublish('estop','0',{qos:1,retain:true});else if(this.ws&&this.connected)this.ws.send('{"estop":0}');this.pending=true;this.flush(true);return}
+    if(comando==='parar'){this.estop=true;if(this.mode==='mqtt')this.mqttPublish('estop','1',{qos:1,retain:true});else if(this.ws&&this.ws.readyState===1)this.ws.send('{"estop":1}');return}
+    if(comando==='retomar'){this.estop=false;if(this.mode==='mqtt')this.mqttPublish('estop','0',{qos:1,retain:true});else if(this.ws&&this.ws.readyState===1)this.ws.send('{"estop":0}');this.pending=true;this.flush(true);return}
   },
   tick(){
     if(this.pending)this.flush(false);
-    if(location.protocol==='https:'&&(!this.mqtt||!this.mqtt.connected)&&!this.mqttTimer){this.mqttTimer=setTimeout(()=>{this.mqttTimer=null;this.connectMqtt()},2000)}
-    if(this.mode==='ws'&&this.connected&&this.ws&&this.ws.readyState===1&&performance.now()-this.lastSeen>3000)this.ws.close();
+    // kit parou de mandar telemetria (MQTT: pulso 1×/s · WS: 20×/s)
+    if(this.kitOnline&&performance.now()-this.kitSeen>this.KIT_TIMEOUT_MS){
+      this.kitOffline(this.mode==='mqtt'?'BROKER OK · KIT OFFLINE':'ESP32 SEM RESPOSTA');
+      if(this.mode==='ws'&&this.ws)this.ws.close();
+    }
   }
 };
 setInterval(()=>{NX_LINK.tick()},5);
-setInterval(()=>{if(NX_LINK.mode==='ws'&&NX_LINK.connected&&NX_LINK.ws&&NX_LINK.ws.readyState===1){NX_LINK.pingAt=performance.now();NX_LINK.ws.send('{"ping":1}')}},2000);
+setInterval(()=>{if(NX_LINK.mode==='ws'&&NX_LINK.ws&&NX_LINK.ws.readyState===1){NX_LINK.pingAt=performance.now();NX_LINK.ws.send('{"ping":1}')}},2000);
 NX_LINK.init();
 
 /* ============ 1c) API DE COMANDOS DO BRAÇO ============
@@ -1669,7 +1741,7 @@ AFRAME.registerComponent('nexus-lab',{
       x.font='400 16px '+FONT;x.fillStyle='#64748b';x.fillText(a.min+'°',L,y+30);x.textAlign='right';x.fillText(a.max+'°',L+BW,y+30);
       x.font='700 32px '+FONT;x.fillStyle='#fff';x.fillText((v>0&&a.id!=='grip'?'+':'')+v.toFixed(1)+'°',L+BW+150,y)});
     x.fillStyle='#0f2236';rr(x,822,100,176,330,14);x.fill();x.strokeStyle='#1e3a5f';x.lineWidth=2;x.stroke();x.textAlign='left';
-    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES','#e2e8f0'],['DEMO',DEMO.running?DEMO.stage.toUpperCase():DEMO.paused?'PAUSADA':'PARADA',DEMO.running?'#4ade80':'#e2e8f0'],['ESP32',NX_LINK.connected?'CONECTADO':'NÃO CONECTADO',NX_LINK.connected?'#4ade80':'#94a3b8']].forEach(([l,v,c],i)=>{
+    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES','#e2e8f0'],['DEMO',DEMO.running?DEMO.stage.toUpperCase():DEMO.paused?'PAUSADA':'PARADA',DEMO.running?'#4ade80':'#e2e8f0'],['ESP32',NX_LINK.synced?'CONECTADO':NX_LINK.connected?'AGUARDANDO KIT':'NÃO CONECTADO',NX_LINK.synced?'#4ade80':NX_LINK.connected?'#fbbf24':'#94a3b8']].forEach(([l,v,c],i)=>{
       x.font='600 18px '+FONT;x.fillStyle='#94a3b8';x.fillText(l,840,130+i*84);x.font='700 26px '+FONT;x.fillStyle=c;x.fillText(v,840,164+i*84,150)});
     x.font='400 18px '+FONT;x.fillStyle='#64748b';x.fillText('Espelha em tempo real todos os comandos: painéis, gestos, controles e demonstração',30,Hd-22);
     twinT.needsUpdate=true;
@@ -1724,7 +1796,7 @@ AFRAME.registerComponent('nexus-lab',{
   if(st!==this.state){this.state=st;
     const on=['#39ff7a','#ffc21a','#ff3030'],off=['#0f3d1f','#4a3a0c','#4a1212'],lit=[st<2,st===1,st===2];
     this.lamp.forEach((m,i)=>m.color.set(lit[i]?on[i]:off[i]));this.ringM.color.set(['#22d3ee','#ffb020','#ff3b3b'][st])}
-  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st+NX.mode+(DEMO.running?1:DEMO.paused?2:0)+DEMO.stage+NX_LINK.connected;
+  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st+NX.mode+(DEMO.running?1:DEMO.paused?2:0)+DEMO.stage+NX_LINK.connected+NX_LINK.synced;
   if(k!==this.twinKey){this.twinKey=k;this.drawTwin()}
  }
 
@@ -1856,14 +1928,14 @@ AFRAME.registerComponent('demo-console',{
   const ab=Math.round(100*(1-NX.v.grip/GARRA.FECHADA));
 
   [['ESTADO',st[0],st[1]],['GARRA',ab>=97?'ABERTA':ab<=3?'FECHADA':ab+'% ABERTA','#22d3ee'],['MODO',NX.mode==='gestos'?'GESTOS (MÃOS)':'CONTROLES DO QUEST','#e2e8f0'],
-   ['RASTREAMENTO',u.track||'—',u.trackC||'#94a3b8'],['GESTO',u.gesto||'—','#e2e8f0'],['ESP32',NX_LINK.connected?'CONECTADO':'NÃO CONECTADO',NX_LINK.connected?'#4ade80':'#94a3b8']]
+   ['RASTREAMENTO',u.track||'—',u.trackC||'#94a3b8'],['GESTO',u.gesto||'—','#e2e8f0'],['ESP32',NX_LINK.synced?'CONECTADO':NX_LINK.connected?'AGUARDANDO KIT':'NÃO CONECTADO',NX_LINK.synced?'#4ade80':NX_LINK.connected?'#fbbf24':'#94a3b8']]
    .forEach(([l,v,c],i)=>{const y=66+i*36;x.font=`600 17px ${F}`;x.fillStyle='#94a3b8';x.textAlign='left';x.fillText(l,16,y);x.font=`700 21px ${F}`;x.fillStyle=c;x.textAlign='right';x.fillText(v,W-16,y,340)});
 
   this.sT.needsUpdate=true;
 
  },
 
- tick(t){if(t-(this.tk||0)<250)return;this.tk=t;const u=NX.ui||{},k=[NX.halt,DEMO.stage,DEMO.running,DEMO.paused,Math.round(NX.v.grip),NX.mode,u.track,u.gesto,NX_LINK.connected].join();if(k!==this.key){this.key=k;this.drawScreen()}}
+ tick(t){if(t-(this.tk||0)<250)return;this.tk=t;const u=NX.ui||{},k=[NX.halt,DEMO.stage,DEMO.running,DEMO.paused,Math.round(NX.v.grip),NX.mode,u.track,u.gesto,NX_LINK.connected,NX_LINK.synced].join();if(k!==this.key){this.key=k;this.drawScreen()}}
 
 });
 
@@ -2173,7 +2245,7 @@ function prepVR(){
   else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use “Explorar no computador”.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
   const go=()=>{pronto=true;upd()};sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});upd()}
 
-document.addEventListener('DOMContentLoaded',()=>{setEsp32Status(NX_LINK.connected?'online':'connecting');});
+document.addEventListener('DOMContentLoaded',()=>{if(NX_LINK.synced)setEsp32Status('online');});
 document.addEventListener('DOMContentLoaded',prepVR);
 
 function enterExperience(vr){
