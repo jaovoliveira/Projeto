@@ -9,12 +9,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NEXUS ATLAS - Laboratório VR</title>
-<link rel="icon" href="data:,">
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
 
 <script src="https://unpkg.com/aframe-blink-controls@0.4.3/dist/aframe-blink-controls.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -54,17 +54,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',san
 
 #vr-status{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(3,7,18,.85);border:1px solid rgba(56,189,248,.4);padding:8px 18px;border-radius:30px;font-size:14px;letter-spacing:1px;color:#38bdf8;pointer-events:none;opacity:0;transition:.4s}
 
-#esp32-status{position:fixed;top:18px;right:18px;z-index:10001;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:22px;background:rgba(3,7,18,.92);border:1px solid #64748b;color:#cbd5e1;font:700 13px/1.1 'Titillium Web',sans-serif;letter-spacing:.8px;box-shadow:0 4px 18px rgba(0,0,0,.35);transition:.25s}
-#esp32-status i{width:10px;height:10px;border-radius:50%;background:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.2)}
-#esp32-status.online{border-color:#22c55e;color:#bbf7d0;box-shadow:0 0 18px rgba(34,197,94,.25)}
-#esp32-status.online i{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2),0 0 12px #22c55e}
-#esp32-status.connecting{border-color:#f59e0b;color:#fde68a}
-#esp32-status.connecting i{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.2);animation:nxespblink 1s infinite}
-#esp32-status.offline{border-color:#ef4444;color:#fecaca}
-#esp32-status.offline i{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.2)}
-@keyframes nxespblink{50%{opacity:.35}}
-@media(max-width:560px){#esp32-status{top:10px;right:10px;font-size:11px;padding:7px 10px}}
-
 #error-message{position:absolute;left:50%;bottom:25px;transform:translateX(-50%);z-index:10000;display:none;background:rgba(127,29,29,.95);border:1px solid #ef4444;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;max-width:90%;text-align:center}
 
 #nx-load{position:absolute;top:12px;left:12px;z-index:900;font-size:13px;color:#38bdf8;background:rgba(3,7,18,.8);padding:6px 12px;border-radius:8px}
@@ -90,6 +79,57 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',san
 #xr-note{margin-top:12px;font-size:.85rem;color:#94a3b8;min-height:1.2em}
 
 .a-enter-vr{display:none!important}
+
+/* painel "Braço físico" (tela inicial e painel do computador) */
+#intro-screen{overflow-y:auto;justify-content:safe center}   /* tela baixa: o cartão rola em vez de cortar */
+.nxl{margin-top:18px;text-align:left;border:1px solid rgba(56,189,248,.25);border-radius:10px;padding:0 14px;background:rgba(3,7,18,.45)}
+.nxl summary{cursor:pointer;padding:10px 0;font-size:.95rem;color:#cbd5e1;list-style-position:inside}
+.nxl[open]{padding-bottom:12px}
+.nxl label{display:block;margin:8px 0 4px;font-size:.8rem;color:#94a3b8}
+.nxl label.chk{display:flex;align-items:center;gap:8px;color:#e2e8f0;font-size:.9rem}
+.nxl input[type=text]{width:100%;padding:8px 10px;border:1px solid #334155;border-radius:8px;background:#0b1220;color:#e2e8f0;font:inherit;user-select:text}
+.nxl input[type=text]:disabled{opacity:.5}
+.nxl button{margin-top:10px;padding:8px 16px;border:1px solid #38bdf8;border-radius:20px;background:#0284c7;color:#fff;font:600 .9rem inherit;cursor:pointer}
+.nxl small{display:block;margin-top:8px;font-size:.78rem;color:#94a3b8;line-height:1.4}
+#dui .nxl-st{display:block;margin-top:6px;font-size:12px;color:#94a3b8}
+
+/* painel ATLAS do computador: o controle do site ATLAS dentro do laboratório */
+#atl{position:absolute;left:10px;top:10px;z-index:900;width:350px;max-width:calc(100% - 20px);max-height:calc(100% - 20px);overflow-y:auto;padding:10px 12px;border-radius:12px;background:rgba(3,7,18,.9);border:1px solid rgba(56,189,248,.35);font-size:13px;display:none;scrollbar-width:thin}
+#atl .h{display:flex;align-items:center;gap:8px}
+#atl .h b{flex:1;font-size:14px;color:#38bdf8}
+#atl .h button{width:30px;height:24px;border:1px solid #334155;border-radius:6px;background:transparent;color:#cbd5e1;font-size:15px;cursor:pointer}
+#atl.min .c{display:none}
+#atl .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+#atl .chips span{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid #334155;border-radius:999px;font-size:11.5px;color:#cbd5e1}
+#atl .chips em{font-style:normal}
+#atl .chips i{width:8px;height:8px;border-radius:50%;background:#64748b}
+#atl .chips i.on{background:#4ade80;box-shadow:0 0 8px #4ade80}
+#atl .chips i.w{background:#fbbf24}
+#atl .chips i.x{background:#ef4444}
+#atl .ax{display:grid;grid-template-columns:104px 1fr 44px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed #1e293b}
+#atl .ax b{font-size:13px}
+#atl .ax .pin{margin-left:5px;padding:0 4px;border:1px solid #334155;border-radius:4px;font:700 10px Consolas,monospace;color:#22d3ee;font-style:normal;white-space:nowrap}
+#atl .ax small{display:block;font-size:10.5px;color:#94a3b8;white-space:nowrap}
+#atl .ax output{text-align:right;font-weight:700;color:#e2e8f0;font-variant-numeric:tabular-nums}
+#atl input[type=range]{width:100%;accent-color:#06b6d4;cursor:pointer}
+#atl input[type=range]:disabled{opacity:.4;cursor:not-allowed}
+#atl .row{display:flex;gap:6px;margin-top:8px}
+#atl button.k{flex:1;padding:7px 6px;border:0;border-radius:8px;background:#0284c7;color:#fff;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer}
+#atl button.k.alt{background:transparent;border:1px solid #334155;color:#e2e8f0}
+#atl button.k:hover{filter:brightness(1.15)}
+#atl-stop{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid #ef4444;border-radius:8px;color:#fff;font-family:inherit;font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;background:repeating-linear-gradient(-45deg,#d92626 0 10px,#b31c1c 10px 20px)}
+#atl-stop.on{background:#92400e;border-color:#fbbf24;animation:atlpisca 1s steps(2) infinite}
+@keyframes atlpisca{50%{box-shadow:0 0 18px rgba(251,191,36,.7)}}
+#atl-sync{display:block;margin-top:6px;font-size:11.5px;color:#94a3b8;line-height:1.35}
+#atl details{margin-top:8px;border:1px solid #1e293b;border-radius:8px;padding:0 10px}
+#atl details[open]{padding-bottom:10px}
+#atl summary{cursor:pointer;padding:7px 0;color:#cbd5e1;font-size:12.5px}
+#atl label{display:block;margin:6px 0 3px;font-size:11px;color:#94a3b8}
+#atl label.chk{display:flex;align-items:center;gap:6px;color:#e2e8f0;font-size:12.5px}
+#atl input[type=text],#atl select{width:100%;padding:6px 8px;border:1px solid #334155;border-radius:6px;background:#0b1220;color:#e2e8f0;font-family:inherit;font-size:12px;user-select:text}
+#atl input[type=text]:disabled{opacity:.5}
+#atl details small{display:block;margin-top:6px;font-size:11px;color:#94a3b8;line-height:1.35}
+#atl-log{margin-top:8px;height:112px;overflow:auto;padding:6px 8px;border:1px solid #1e293b;border-radius:8px;background:#020617;color:#86efac;font:11px/1.45 Consolas,monospace;white-space:pre-wrap;word-break:break-word;user-select:text}
 
 </style>
 
@@ -129,198 +169,222 @@ const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:f
   // assume o braço e pausa a demonstração. Todo alvo novo também passa pela ponte NX_LINK.
   set(id,val,origem){
     if(this.halt)return;
-    // Durante a sincronização, a telemetria física é a única fonte de verdade.
-    if(NX_LINK.bloqueado())return;
     const a=AXES.find(x=>x.id===id); if(!a)return;
     if(origem!=='demo'&&DEMO.running)DEMO.pause();
     this.t[id]=clamp(val,a.min,a.max);
     NX_LINK.send('eixo',{eixo:id,graus:this.t[id],origem:origem||'painel'});
   },
   freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
-  home(){if(this.halt||NX_LINK.bloqueado())return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
+  home(){if(this.halt)return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
   stop(){DEMO.pause(true);this.freeze();this.halt=true;this.ver++;NX_LINK.send('parar')},
   resume(){this.halt=false;this.ver++;NX_LINK.send('retomar')}
 };
 AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
 
-/* ============ 1b) PONTE DE TEMPO REAL PARA O BRAÇO FÍSICO (ESP32) ============
-   v2 · correções da integração:
-   - Página em https (GitHub Pages): usa MQTT (wss://public.cloud.shiftr.io). Em http/arquivo: WebSocket direto.
-     Forçar via: ?via=mqtt ou ?via=ws · IP do kit: ?kit=192.168.1.50
-     Outro broker/tópico: ?broker=wss://host:porta&topico=meu/topico
-   - UM único cliente MQTT (a versão anterior criava um cliente novo a cada 2 s enquanto o
-     primeiro ainda conectava; os antigos continuavam vivos e os comandos saíam pelo errado).
-   - Taxa de comando por via: WebSocket 40×/s · MQTT 10×/s (o broker público derruba quem passa disso).
-   - "Broker conectado" ≠ "kit conectado": o controle só trava enquanto o KIT está online e a posição
-     física ainda não chegou. Kit desligado não congela mais a cena.
-   - Depois de sincronizar, a telemetria NÃO puxa mais o braço virtual para trás (ficava tremendo).
-   - Ao sincronizar com o braço físico, a demonstração automática é pausada (segurança).
-   - Tudo é registrado no console com o prefixo [ESP32]. */
-function setEsp32Status(state,detail){
-  const el=document.getElementById('esp32-status');
-  if(!el)return;
-  const labels={online:'ESP32 CONECTADO',connecting:'ESP32 CONECTANDO…',offline:'ESP32 DESCONECTADO'};
-  el.className=state;el.querySelector('span').textContent=detail||labels[state]||labels.offline;
-}
-function LOGK(...a){console.info('%c[ESP32]','color:#22c55e;font-weight:700',...a)}
-
+/* ============ 1b) PONTE PARA O BRAÇO FÍSICO (ESP32 · firmware kit-iot 1.8) ============
+   Gêmeo → braço: a cada ciclo vai a POSIÇÃO ANIMADA do gêmeo (NX.v), só dos eixos que mudaram, no
+   mesmo JSON do site ATLAS: {"shoulder":12,"elbow":-30} (graus relativos à pose zero do kit: servo =
+   90° + valor). Painel 3D, painel ATLAS do computador, mouse, gestos, controles e demonstração saem por aqui.
+   Braço → gêmeo: a telemetria do kit traz a posição pedida de cada eixo ("axes_rel"). Ao conectar, o
+   gêmeo assume a pose do braço físico (o braço não dá salto). Depois, eixo que este site não comandou há
+   pouco e que o kit informa diferente (site ATLAS no computador, outro óculos, kit que reiniciou) passa a
+   seguir o kit, sem reenviar: óculos, computador e kit ficam com a mesma pose.
+   Vias: WebSocket direto no kit (ws://IP:81, poucos ms) quando a página abre por http ou como arquivo;
+   MQTT pela internet (wss://public.cloud.shiftr.io). No Quest a página é https (GitHub Pages) e o
+   navegador bloqueia ws://: no óculos o comando vai pelo MQTT.
+   E-STOP: parar/retomar o gêmeo liga/desliga o E-STOP do kit; um E-STOP vindo do kit (site ATLAS)
+   também para o gêmeo. Configuração: painel ATLAS (computador), aba BRAÇO FÍSICO (óculos), tela inicial
+   ou URL (?kit=10.110.22.50&topico=senai-sao-carlos/nexusatlas-x7k2&via=mqtt · &link=0 desliga). */
 const NX_LINK={
-  connected:false,   // via aberta (WebSocket com o kit OU cliente MQTT com o broker)
-  kitOnline:false,   // o KIT está respondendo (telemetria recente)
-  synced:false,      // posição física já recebida: controle liberado e comandos saindo
-  ws:null, mqtt:null, retry:null, attempts:0, pending:false,
-  lastSend:0, kitSeen:0, pingAt:0, rtt:null, host:'', estop:false, mode:'ws', fis:{},
-  topic:'senai-sao-carlos/nexusatlas-x7k2', mqttUrl:'wss://public.cloud.shiftr.io:443',
-  PERIOD_WS:25, PERIOD_MQTT:100, KIT_TIMEOUT_MS:4000,
+  connected:false,rotulo:'NÃO CONECTADO',cor:'#94a3b8',txt:'',   // connected = o kit está respondendo
+  cfg:{ativo:true,via:'auto',kit:'kit-iot.local',broker:'wss://public.cloud.shiftr.io',topico:'senai-sao-carlos/nexusatlas-x7k2'},
+  // gêmeo → braço físico, por eixo: valor = s × graus do gêmeo + o. Se um eixo do braço real girar
+  // ao contrário, troque s para -1; se o zero estiver deslocado, ajuste o (em graus).
+  MAPA:{waist:{s:1,o:0},shoulder:{s:1,o:0},elbow:{s:1,o:0},pitch:{s:1,o:0},grip:{s:1,o:0}},
+  WS_OK:location.protocol!=='https:',ENVIO_WS:25,ENVIO_MQTT:100,
+  SERVIDO_PELO_KIT:location.protocol==='http:'&&location.pathname.indexOf('/oculos')===0,
+  // kit → gêmeo: tempo desde o último comando DESTE site antes de aceitar outro valor do kit
+  // (pelo MQTT a telemetria chega 1×/s e com o atraso da internet)
+  SYNC_WS:300,SYNC_MQTT:2500,REPETE_MQTT:1000,
+  // poses do site ATLAS (graus do kit); cada eixo fica dentro do curso do gêmeo
+  POSES:{zero:{nome:'Pose zero',p:{waist:0,shoulder:0,elbow:0,pitch:0,grip:0}},
+         rest:{nome:'Repouso',p:{waist:0,shoulder:-60,elbow:60,pitch:0,grip:0}},
+         pick:{nome:'Pegar',p:{waist:0,shoulder:30,elbow:-40,pitch:-20,grip:-30}}},
+  ws:null,wsOk:false,wsTent:0,wsTimer:null,mq:null,pre:'',ip:'',visto:0,rtt:null,ping:0,ult:0,estopKit:null,avisou:false,
+  env:{},tEnv:{},tMud:{},seg:{},sinc:false,   // env = valor que o kit tem de cada eixo, até onde este site sabe
+  kit:null,info:null,upt:null,fora:false,segura:null,logs:[],lv:0,pend:'',tLog:0,tAd:0,tErr:0,
+
+  log(t){this.logs.push(new Date().toLocaleTimeString('pt-BR')+'  '+t);if(this.logs.length>60)this.logs.shift();this.lv++;console.info('[NX_LINK] '+t)},
+  dur(s){s=Math.round(s);return s<90?s+' s':s<5400?Math.round(s/60)+' min':Math.round(s/3600)+' h'},
+  // graus do gêmeo ↔ graus do kit (escala do site ATLAS)
+  kv(a,g){const m=this.MAPA[a.id];return Math.round(clamp(m.s*g+m.o,-90,90))},
+  gemeo(a,k){const m=this.MAPA[a.id];return clamp((k-m.o)/m.s,a.min,a.max)},
+  faixa(a){const x=this.kv(a,a.min),y=this.kv(a,a.max);return[Math.min(x,y),Math.max(x,y)]},
+  // a pose sai pelo ciclo (tick); aqui só o E-STOP
+  send(comando){if(comando==='parar')this.estop(1);else if(comando==='retomar')this.estop(0)},
   init(){
-    let q='',via='';
-    try{const u=new URLSearchParams(location.search);q=u.get('kit')||'';via=(u.get('via')||'').toLowerCase();if(u.get('broker'))this.mqttUrl=u.get('broker');if(u.get('topico'))this.topic=u.get('topico')}catch(e){}
-    try{q=q||localStorage.getItem('nexus-kit-host')||''}catch(e){}
-    this.host=(q||((location.protocol==='http:'&&location.hostname)?location.hostname:'kit-iot.local')).replace(/^wss?:\/\//,'').replace(/\/+$/,'');
-    if(!/:\d+$/.test(this.host))this.host+=':81';
-    const https=location.protocol==='https:';
-    if(via==='ws'&&https)LOGK('?via=ws ignorado: página em https não pode abrir ws:// (o navegador bloqueia). Usando MQTT.');
-    this.mode=(via==='mqtt'||https)?'mqtt':'ws';
-    LOGK('página em',location.protocol,'→ via',this.mode==='mqtt'?'MQTT '+this.mqttUrl+' · tópico '+this.topic:'WebSocket ws://'+this.host);
-    setEsp32Status('connecting');
-    if(this.mode==='mqtt')this.connectMqtt();else this.connect();
-  },
-  bloqueado(){return this.kitOnline&&!this.synced},
-  period(){return this.mode==='mqtt'?this.PERIOD_MQTT:this.PERIOD_WS},
+    try{Object.assign(this.cfg,JSON.parse(localStorage.getItem('nxlink')||'{}'))}catch(e){}
+    if(this.SERVIDO_PELO_KIT)this.cfg.kit=location.hostname;   // http://<kit>/oculos: o próprio kit é o servidor
+    const q=new URLSearchParams(location.search);
+    if(q.get('kit'))this.cfg.kit=q.get('kit');if(q.get('topico'))this.cfg.topico=q.get('topico');if(q.get('via'))this.cfg.via=q.get('via');
+    if(q.get('broker'))this.cfg.broker=q.get('broker');if(q.get('link'))this.cfg.ativo=q.get('link')!=='0';
+    this.campos();this.conecta()},
+  // campos de configuração: tela inicial (nxl-*) e painel ATLAS do computador (atl-*)
+  campos(){const c=this.cfg,f=(id,p,v)=>{const e=document.getElementById(id);if(e)e[p]=v};
+    if(['auto','ws','mqtt'].indexOf(c.via)<0||(!this.WS_OK&&c.via==='ws'))c.via='auto';
+    f('nxl-on','checked',c.ativo);f('nxl-kit','value',c.kit);f('nxl-top','value',c.topico);
+    f('atl-on','checked',c.ativo);f('atl-via-sel','value',c.via);f('atl-kit-h','value',c.kit);f('atl-brk','value',c.broker);f('atl-top','value',c.topico);
+    if(!this.WS_OK){f('nxl-kit','disabled',true);f('atl-kit-h','disabled',true);const s=document.querySelector('#atl-via-sel [value="ws"]');if(s)s.disabled=true}},
+  salva(){try{localStorage.setItem('nxlink',JSON.stringify(this.cfg))}catch(e){}},
+  // botão "Salvar e conectar" da tela inicial (sem src) ou "Conectar" do painel ATLAS (src = 'atl')
+  aplica(src){const g=id=>document.getElementById(id),c=this.cfg,v=(id,d)=>{const e=g(id);return e&&e.value.trim()||d};
+    if(src==='atl'){c.ativo=g('atl-on').checked;c.via=v('atl-via-sel','auto');c.kit=v('atl-kit-h','kit-iot.local');c.broker=v('atl-brk',c.broker);c.topico=v('atl-top',c.topico)}
+    else{c.ativo=g('nxl-on').checked;c.kit=v('nxl-kit','kit-iot.local');c.topico=v('nxl-top',c.topico)}
+    this.campos();this.salva();this.ip='';this.conecta();UI_TOAST(c.ativo?'Braço físico: conectando…':'Braço físico desligado')},
+  liga(on){this.cfg.ativo=on;this.campos();this.salva();this.conecta();UI_TOAST(on?'Braço físico: conectando…':'Braço físico desligado')},
+  conecta(){this.para();this.ressinc();this.kit=null;
+    if(!this.cfg.ativo){this.log('Braço físico desligado: os controles mexem só o gêmeo.');return}
+    this.pre=this.cfg.topico.trim().replace(/\/+$/,'');this.wsTent=0;this.estopKit=null;this.fora=false;
+    const ws=this.WS_OK&&this.cfg.via!=='mqtt',mq=!this.WS_OK||this.cfg.via!=='ws';
+    this.log('Conectando'+(ws?' · WebSocket '+this.cfg.kit:'')+(mq?' · MQTT '+this.pre:'')+(this.WS_OK?'':' (página https: só MQTT)'));
+    if(ws)this.abreWs();if(mq)this.abreMqtt()},
+  // via nova depois de ficar sem nenhuma: o gêmeo volta a assumir a pose do kit antes de mandar qualquer coisa
+  ressinc(){this.sinc=false;this.env={};this.seg={}},
+  para(){clearTimeout(this.wsTimer);this.wsTimer=null;
+    if(this.ws){const w=this.ws;this.ws=null;w.onclose=null;try{w.close()}catch(e){}}this.wsOk=false;this.rtt=null;
+    if(this.mq){const c=this.mq;this.mq=null;try{c.end(true)}catch(e){}}this.visto=0},
+  mqOk(){return !!(this.mq&&this.mq.connected)},
 
-  // ---------- WebSocket direto com o kit ----------
-  url(){return 'ws://'+this.host},
-  connect(){
-    if(this.ws&&(this.ws.readyState===0||this.ws.readyState===1))return;
-    if(this.retry){clearTimeout(this.retry);this.retry=null}
-    let w;try{w=new WebSocket(this.url())}catch(e){LOGK('WebSocket inválido:',e.message);this.schedule();return}
-    this.ws=w;const self=this;let opened=false;
-    if(this.attempts===0)LOGK('tentando',this.url());
-    w.onopen=function(){opened=true;self.connected=true;self.synced=false;self.attempts=0;self.kitSeen=performance.now();
-      LOGK('WebSocket aberto',self.url());setEsp32Status('connecting','ESP32 LENDO POSIÇÃO…');NX.ver++;UI_TOAST('ESP32 conectado · lendo posição física')};
-    w.onmessage=function(ev){let t;try{t=JSON.parse(ev.data)}catch(e){return}self.receive(t)};
-    w.onclose=function(ev){if(self.ws!==w)return;self.ws=null;self.connected=false;self.kitOffline();
-      if(opened){LOGK('WebSocket fechou (código',ev.code+')');UI_TOAST('ESP32 desconectado · tentando reconectar')}
-      else if(self.attempts===0)LOGK('kit não respondeu em',self.url(),'(código',ev.code+'). Confira o IP no LCD, a rede Wi-Fi e use ?kit=IP');
-      setEsp32Status('offline');self.schedule()};
-    w.onerror=function(){};
-  },
-  schedule(){if(this.retry)return;this.attempts++;this.retry=setTimeout(()=>{this.retry=null;setEsp32Status('connecting');this.connect()},Math.min(1000*this.attempts,5000))},
+  // ---- WebSocket local: tenta o IP que o kit informou no "hello" e o endereço digitado, alternando ----
+  abreWs(){
+    if(!this.WS_OK||!this.cfg.ativo||this.cfg.via==='mqtt')return;
+    const k=this.cfg.kit.trim().replace(/^wss?:\/\//,'').replace(/\/+$/,''),l=[];if(this.ip)l.push(this.ip);if(k&&l.indexOf(k)<0)l.push(k);if(!l.length)return;
+    let h=l[this.wsTent%l.length];if(!/:\d+$/.test(h))h+=':81';const url='ws://'+h,avisar=this.wsTent<l.length;
+    let w;try{w=new WebSocket(url)}catch(e){this.log('Endereço inválido: '+url);return this.agendaWs()}
+    this.ws=w;let abriu=false;const lim=setTimeout(()=>{if(!abriu&&this.ws===w)w.close()},3000);
+    w.onopen=()=>{abriu=true;clearTimeout(lim);if(!this.mqOk())this.ressinc();this.wsOk=true;this.wsTent=0;
+      this.log('WebSocket local conectado: '+url+(this.mqOk()?' (MQTT fica de reserva)':''))};
+    w.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}
+      if(m.type==='pong'){this.rtt=Date.now()-this.ping;this.visto=Date.now();return}this.recebe(m)};
+    w.onclose=()=>{clearTimeout(lim);if(this.ws!==w)return;this.ws=null;
+      if(this.wsOk){this.log('WebSocket local caiu'+(this.mqOk()?': seguindo pelo MQTT':''));UI_TOAST('Braço físico: WebSocket caiu'+(this.mqOk()?', seguindo pelo MQTT':''))}
+      else if(avisar)this.log('Kit não respondeu em '+url+(this.mq?' · usando o MQTT enquanto isso':''));
+      this.wsOk=false;this.rtt=null;this.agendaWs()};
+    w.onerror=()=>{}},
+  agendaWs(){if(this.wsTimer||!this.cfg.ativo||this.cfg.via==='mqtt')return;this.wsTent++;
+    this.wsTimer=setTimeout(()=>{this.wsTimer=null;this.abreWs()},Math.min(2000*this.wsTent,10000))},   // 2 s, 4 s … até 10 s
 
-  // ---------- MQTT (página em https) ----------
-  connectMqtt(){
-    if(this.mqtt)return;   // um cliente só: o mqtt.js reconecta sozinho
-    if(typeof mqtt==='undefined'){LOGK('biblioteca MQTT não carregou (sem internet ou CDN bloqueado)');setEsp32Status('offline','BIBLIOTECA MQTT INDISPONÍVEL');return}
-    const self=this;
-    let c;
-    try{c=mqtt.connect(this.mqttUrl,{username:'public',password:'public',clientId:'nexus-vr-'+Math.random().toString(16).slice(2,10),clean:true,keepalive:30,reconnectPeriod:2000,connectTimeout:15000,queueQoSZero:false,resubscribe:true})}
-    catch(e){LOGK('erro ao criar cliente MQTT:',e.message);setEsp32Status('offline');return}
-    this.mqtt=c;
-    c.on('connect',()=>{self.connected=true;self.synced=false;self.kitOnline=false;
-      c.subscribe([self.topic+'/up',self.topic+'/online',self.topic+'/estop'],{qos:0},(err)=>{if(err)LOGK('falha ao assinar:',err.message)});
-      LOGK('broker MQTT conectado · aguardando o kit em',self.topic+'/up');
-      setEsp32Status('connecting','BROKER OK · AGUARDANDO KIT…');NX.ver++});
-    c.on('message',(topic,payload)=>{
-      const msg=payload.toString();
-      if(topic===self.topic+'/online'){
-        LOGK('kit online =',msg,'(mensagem retida do broker)');
-        if(msg==='0')self.kitOffline('KIT OFFLINE (last will)');
-        return;
-      }
-      if(topic===self.topic+'/estop'){self.aplicaEstop(msg==='1');return}
-      let t;try{t=JSON.parse(msg)}catch(e){return}
-      self.receive(t);
-    });
-    c.on('reconnect',()=>{setEsp32Status('connecting','BROKER RECONECTANDO…')});
-    c.on('offline',()=>{self.connected=false;self.kitOffline('BROKER OFFLINE');LOGK('broker MQTT offline')});
-    c.on('close',()=>{if(self.connected)LOGK('conexão MQTT fechada');self.connected=false;self.kitOffline('BROKER RECONECTANDO…')});
-    c.on('error',(e)=>{LOGK('erro MQTT:',e&&e.message)});
-  },
-  mqttPublish(sub,msg,opts){if(!this.mqtt||!this.mqtt.connected)return false;this.mqtt.publish(this.topic+'/'+sub,msg,opts||{qos:0,retain:false});return true},
+  // ---- MQTT (internet): a via do óculos ----
+  abreMqtt(){
+    if(typeof mqtt==='undefined'){this.log('Biblioteca MQTT não carregou (sem internet?): só o WebSocket local funciona.');return}
+    const c=this.mq=mqtt.connect(this.cfg.broker.trim(),{username:'public',password:'public',clientId:'nexus-vr-'+Math.random().toString(16).slice(2,8),
+      protocolVersion:4,clean:true,keepalive:30,reconnectPeriod:2000,connectTimeout:15000,queueQoSZero:false,resubscribe:true});
+    c.on('connect',()=>{if(this.mq!==c)return;c.subscribe([this.pre+'/up',this.pre+'/online',this.pre+'/estop'],{qos:0});
+      if(!this.wsOk)this.ressinc();this.log('MQTT conectado · tópico '+this.pre)});
+    c.on('error',e=>{if(this.mq!==c)return;const a=Date.now();if(a-this.tErr>5000){this.tErr=a;this.log('Erro MQTT: '+e.message)}});
+    c.on('message',(top,pl)=>{if(this.mq!==c)return;const s=pl.toString(),sub=top.slice(this.pre.length+1);
+      if(sub==='estop')return this.kitEstop(s==='1');
+      if(sub==='online'){   // "last will": o kit caiu do broker
+        if(s==='0'){if(!this.fora)this.log('Kit fora do broker: perdeu o Wi-Fi ou a energia. Veja o LCD do kit.');this.fora=true;if(!this.wsOk)this.visto=0}
+        else if(s==='1')this.fora=false;return}
+      if(this.wsOk)return;                                  // com WebSocket ativo, a telemetria vem por ele
+      let m;try{m=JSON.parse(s)}catch(e){return}this.recebe(m)})},
 
-  // ---------- estado do kit ----------
-  kitOffline(txt){
-    const era=this.kitOnline||this.synced;
-    this.kitOnline=false;this.synced=false;this.fis={};NX.ver++;
-    if(this.mode==='mqtt'&&this.connected)setEsp32Status('connecting',txt||'BROKER OK · KIT OFFLINE');
-    else if(txt)setEsp32Status('offline',txt);
-    if(era)LOGK('kit sem resposta:',txt||'');
-  },
-  aplicaEstop(on){
-    this.estop=on;
-    if(on&&!NX.halt){NX.halt=true;NX.freeze();NX.ver++;UI_TOAST('E-STOP ativo no kit')}
-    else if(!on&&NX.halt){NX.halt=false;NX.ver++}
-  },
-  receive(t){
-    if(t.type==='pong'){this.rtt=performance.now()-this.pingAt;return}
-    if(t.type==='hello'){
-      LOGK('hello do kit:',t.fw||'?','· IP',t.ip||'?',t.pins?'· pinos '+JSON.stringify(t.pins):'');
-      if(t.ip&&this.mode==='ws'){try{localStorage.setItem('nexus-kit-host',t.ip)}catch(e){}}
-      return;
-    }
-    if(t.type!=='telemetry')return;
-    this.kitSeen=performance.now();
-    if(!this.kitOnline){this.kitOnline=true;LOGK('telemetria chegando'+(t.rssi?' · Wi-Fi '+t.rssi+' dBm':''))}
-    // axes_atual/axes_rel já vêm em graus relativos (−90…90); axes_deg é absoluto (0…180).
-    const atual=t.axes_atual||null, rel=t.axes_rel||null, abs=t.axes_deg||null;
-    const num=(o,k)=>o&&o[k]!==null&&Number.isFinite(Number(o[k]))?Number(o[k]):NaN;
-    let recebeu=false;
-    AXES.forEach(a=>{
-      let f=num(atual,a.id);if(!Number.isFinite(f))f=num(rel,a.id);if(!Number.isFinite(f)&&Number.isFinite(num(abs,a.id)))f=num(abs,a.id)-90;
-      if(Number.isFinite(f)){this.fis[a.id]=clamp(f,a.min,a.max);recebeu=true}
-    });
-    if(typeof t.estop==='boolean'&&t.estop!==this.estop)this.aplicaEstop(t.estop);
-    if(recebeu&&!this.synced){
-      // Segurança: a posição física vence a pose do software, e a demo automática para.
-      if(typeof DEMO!=='undefined'&&DEMO.running)DEMO.pause(true);
-      AXES.forEach(a=>{if(a.id in this.fis){NX.v[a.id]=NX.t[a.id]=this.fis[a.id]}});
-      this.synced=true;this.pending=false;NX.ver++;
-      LOGK('posição física sincronizada',JSON.stringify(this.fis),'· controle liberado');
-      setEsp32Status('online',this.mode==='mqtt'?'ESP32 CONECTADO · MQTT':'ESP32 CONECTADO');
-      UI_TOAST('Braço físico sincronizado · demo pausada · controle liberado');
-      return;
-    }
-    // Já sincronizado: só segue o kit se ele foi movido por FORA (outra página, reinício),
-    // nunca durante o nosso próprio envio (senão o braço virtual "volta" e treme).
-    if(rel&&!this.pending&&performance.now()-this.lastSend>1500&&!NX.halt){
-      let mudou=false;
-      AXES.forEach(a=>{const r=num(rel,a.id);if(Number.isFinite(r)&&Math.abs(r-NX.t[a.id])>2){NX.t[a.id]=clamp(r,a.min,a.max);mudou=true}});
-      if(mudou){NX.ver++;LOGK('kit movido por fora: acompanhando',JSON.stringify(rel))}
-    }
-  },
+  // ---- o que o kit manda (mesmo JSON nas duas vias) ----
+  recebe(m){
+    if(m.type==='hello'){
+      const boot=Date.now()-(+m.uptime_s||0)*1000,novo=!this.info||this.info.fw!==m.fw||this.info.ip!==m.ip||Math.abs(boot-this.info.boot)>15000;
+      this.info={fw:m.fw||'',ip:m.ip||'',pins:m.pins||null,boot};
+      if(novo){   // 1º hello deste boot do kit (o MQTT repete a cada 30 s)
+        this.log('Kit: '+(m.fw||'?')+' · IP '+(m.ip||'?')+(typeof m.rssi==='number'&&m.rssi?' · Wi-Fi '+m.rssi+' dBm'+(m.rssi<-75?' (FRACO)':''):'')+(typeof m.uptime_s==='number'?' · ligado há '+this.dur(m.uptime_s):''));
+        const R={brownout:'⚠ O kit reiniciou por QUEDA DE TENSÃO: os servos puxaram mais corrente do que a fonte aguenta. Use fonte externa de 5 V (3 A ou mais) com o GND ligado ao do ESP32.',
+          panic:'⚠ O kit reiniciou por erro no programa (panic).',watchdog:'⚠ O kit reiniciou porque travou (watchdog).'};
+        if(R[m.reset])this.log(R[m.reset]);if(m.wifi_falhas>0)this.log('Wi-Fi do kit: '+m.wifi_falhas+' queda(s) desde que ligou.')}
+      if(m.reset==='brownout'&&m.uptime_s<60&&!this.avisou)UI_TOAST('Braço físico reiniciou por QUEDA DE TENSÃO: confira a fonte dos servos');
+      this.avisou=m.uptime_s<60;
+      const ip=typeof m.ip==='string'&&/^\d+\.\d+\.\d+\.\d+$/.test(m.ip)&&m.ip!=='0.0.0.0'?m.ip:'';
+      if(ip&&ip!==this.ip){this.ip=ip;   // o kit apareceu pelo MQTT: tenta já o WebSocket direto no IP dele
+        if(this.WS_OK&&!this.wsOk&&this.cfg.ativo&&this.cfg.via!=='mqtt'){clearTimeout(this.wsTimer);this.wsTimer=null;
+          if(this.ws){const w=this.ws;this.ws=null;w.onclose=null;try{w.close()}catch(e){}}this.wsTent=0;this.abreWs()}}
+      return}
+    if(m.type!=='telemetry')return;
+    const agora=Date.now();this.visto=agora;this.fora=false;
+    if(typeof m.uptime_ms==='number'){if(this.upt!=null&&m.uptime_ms+2000<this.upt)this.log('⚠ O kit reiniciou (estava ligado há '+this.dur(this.upt/1000)+').');this.upt=m.uptime_ms}
+    const r=m.axes_rel&&typeof m.axes_rel==='object'?m.axes_rel:null;
+    this.kit={rel:r,atual:m.axes_atual||null,deg:m.axes_deg||null,rssi:typeof m.rssi==='number'?m.rssi:this.kit?this.kit.rssi:null,t:agora};
+    if(typeof m.estop==='boolean')this.kitEstop(m.estop);
+    this.sincroniza(r,agora)},
 
-  // ---------- envio ----------
-  pose(){const o={};AXES.forEach(a=>{o[a.id]=Math.round(clamp(Number(NX.t[a.id])||0,a.min,a.max)*10)/10});return JSON.stringify(o)},
-  flush(force){
-    const now=performance.now();
-    if(!this.synced){this.pending=false;return false}   // sem kit sincronizado, nada sai (o gêmeo funciona sozinho)
-    if(!force&&now-this.lastSend<this.period()){this.pending=true;return true}
-    const payload=this.pose();
-    if(payload===this.lastPayload&&!force){this.pending=false;return true}
-    let ok=false;
-    if(this.mode==='mqtt')ok=this.mqttPublish('cmd',payload);
-    else if(this.ws&&this.ws.readyState===1){this.ws.send(payload);ok=true}
-    if(!ok){this.pending=true;return false}
-    this.pending=false;this.lastSend=now;this.lastPayload=payload;return true
-  },
-  send(comando,dados){
-    if(comando==='eixo'){this.pending=true;this.flush(false);return}
-    if(comando==='inicio'){AXES.forEach(a=>NX.t[a.id]=a.home);this.pending=true;this.flush(true);return}
-    if(comando==='parar'){this.estop=true;if(this.mode==='mqtt')this.mqttPublish('estop','1',{qos:1,retain:true});else if(this.ws&&this.ws.readyState===1)this.ws.send('{"estop":1}');return}
-    if(comando==='retomar'){this.estop=false;if(this.mode==='mqtt')this.mqttPublish('estop','0',{qos:1,retain:true});else if(this.ws&&this.ws.readyState===1)this.ws.send('{"estop":0}');this.pending=true;this.flush(true);return}
-  },
+  // ---- kit → gêmeo ----
+  sincroniza(r,agora){
+    if(!this.sinc){this.sinc=true;
+      // firmware sem axes_rel ou demonstração em curso: o braço físico recebe a pose do gêmeo
+      if(!r||DEMO.running){this.env={};if(r)this.log('Demonstração em curso: o braço físico entra nela.');return}
+      const l=[];for(const a of AXES)if(typeof r[a.id]==='number'){this.adota(a,r[a.id]);l.push(a.nome+' '+r[a.id]+'°')}
+      if(l.length)this.log('Gêmeo sincronizado com o braço físico: '+l.join(' · '));return}
+    if(!r||NX.halt||DEMO.running||NX.busy)return;
+    const jan=this.wsOk?this.SYNC_WS:this.SYNC_MQTT,l=[];
+    for(const a of AXES){const k=r[a.id];
+      if(typeof k!=='number'||k===this.env[a.id]||this.segura===a.id||agora-(this.tEnv[a.id]||0)<jan)continue;
+      if(this.adota(a,k))l.push(a.nome+' '+k+'°')}
+    if(l.length&&agora-this.tAd>1000){this.tAd=agora;this.log('Braço físico movido por outro controle: '+l.join(' · '))}},
+  // o gêmeo vai até o valor do kit (limitado ao curso dele) sem devolver nada ao kit enquanto anda
+  adota(a,k){const tw=this.gemeo(a,k);this.env[a.id]=this.kv(a,tw);
+    if(Math.abs(NX.t[a.id]-tw)<.01&&Math.abs(NX.v[a.id]-tw)<.05)return false;
+    NX.t[a.id]=tw;this.seg[a.id]=tw;NX.ver++;return true},
+
+  // E-STOP vindo do kit (outro site, outro óculos): só as MUDANÇAS valem, para não brigar com o daqui
+  kitEstop(v){const ant=this.estopKit;this.estopKit=v;if(ant===v)return;
+    if(ant!==null||v)this.log('E-STOP do kit: '+(v?'ATIVO':'liberado'));
+    if(v&&!NX.halt){NX.stop();UI_TOAST('E-STOP ativo no braço físico')}
+    else if(!v&&ant===true&&NX.halt){NX.resume();UI_TOAST('E-STOP do braço físico liberado')}},
+  estop(v){if(!this.cfg.ativo)return;let via='';
+    if(this.wsOk&&this.ws&&this.ws.readyState===1){this.ws.send('{"estop":'+v+'}');via='ws'}
+    if(this.mqOk()){this.mq.publish(this.pre+'/estop',String(v),{qos:1,retain:true});via+=(via?' + ':'')+'mqtt'}   // retido: quem conectar depois vê o mesmo E-STOP
+    if(via&&this.estopKit!==!!v)this.log('→ '+via+': E-STOP '+(v?'1 (parar)':'0 (liberar)'))},
+  // poses do site ATLAS: movem o gêmeo, e o gêmeo leva o braço físico
+  pose(nome){const P=this.POSES[nome];if(!P)return;
+    if(NX.halt)return UI_TOAST('E-STOP ativo: libere a parada antes de mover');
+    for(const a of AXES)NX.set(a.id,this.gemeo(a,P.p[a.id]),'atlas');NX.ver++;
+    this.log('Pose '+P.nome+': '+AXES.map(a=>a.nome+' '+this.kv(a,NX.t[a.id])+'°').join(' · '))},
+
+  // ---- ciclo (componente nexus-link): estado e envio da pose ----
   tick(){
-    if(this.pending)this.flush(false);
-    // kit parou de mandar telemetria (MQTT: pulso 1×/s · WS: 20×/s)
-    if(this.kitOnline&&performance.now()-this.kitSeen>this.KIT_TIMEOUT_MS){
-      this.kitOffline(this.mode==='mqtt'?'BROKER OK · KIT OFFLINE':'ESP32 SEM RESPOSTA');
-      if(this.mode==='ws'&&this.ws)this.ws.close();
-    }
-  }
+    const agora=Date.now(),wsPronto=this.wsOk&&this.ws&&this.ws.readyState===1;
+    if(wsPronto&&agora-this.ping>2000){this.ping=agora;this.ws.send('{"ping":1}')}   // latência (o kit responde "pong")
+    this.estado(agora);
+    // eixo que seguia o kit: acaba quando o gêmeo chega ou quando outro controle assume o eixo
+    for(const id in this.seg)if(DEMO.running||NX.t[id]!==this.seg[id]||Math.abs(NX.t[id]-NX.v[id])<.05)delete this.seg[id];
+    if(this.pend&&agora-this.tLog>1000){this.log(this.pend);this.pend='';this.tLog=agora}
+    if(!this.cfg.ativo||!this.sinc||NX.halt||agora-this.ult<(this.wsOk?this.ENVIO_WS:this.ENVIO_MQTT))return;
+    const via=wsPronto?'ws':this.mqOk()?'mqtt':null;if(!via)return;
+    const o={};let n=0;
+    for(const a of AXES){if(a.id in this.seg)continue;const v=this.kv(a,NX.v[a.id]);if(this.env[a.id]!==v){o[a.id]=v;n++;this.tMud[a.id]=agora}}
+    if(!n)return;
+    // MQTT: o firmware lê tudo o que chegou e aplica SÓ o último comando. Se a internet entregar duas
+    // mensagens juntas, a primeira se perde; por isso cada mensagem repete os eixos que este site mudou
+    // no último segundo (eixo de outro controle continua fora da mensagem).
+    if(via==='mqtt')for(const a of AXES)if(!(a.id in o)&&!(a.id in this.seg)&&agora-(this.tMud[a.id]||0)<this.REPETE_MQTT&&typeof this.env[a.id]==='number')o[a.id]=this.env[a.id];
+    this.ult=agora;const p=JSON.stringify(o);
+    if(via==='ws')this.ws.send(p);else this.mq.publish(this.pre+'/cmd',p,{qos:0,retain:false});
+    for(const id in o){this.env[id]=o[id];this.tEnv[id]=agora}
+    const l='→ '+via+': '+p;if(agora-this.tLog>1000){this.log(l);this.pend='';this.tLog=agora}else this.pend=l},   // no máx. 1 linha/s, e sempre a última
+  estado(agora){
+    const vivo=!!this.visto&&agora-this.visto<(this.wsOk?3000:6000);let r,c;
+    if(!this.cfg.ativo){r='DESLIGADO';c='#94a3b8'}
+    else if(vivo){r=this.wsOk?'CONECTADO · WS':'CONECTADO · MQTT';c='#4ade80'}
+    else if(this.fora){r='KIT FORA DO AR';c='#f87171'}
+    else if(this.wsOk||this.mqOk()){r='KIT SEM RESPOSTA';c='#fbbf24'}
+    else{r='NÃO CONECTADO';c='#94a3b8'}
+    this.connected=this.cfg.ativo&&vivo;
+    const txt='Braço físico: '+r+(vivo&&this.wsOk&&this.rtt!=null?' ('+this.rtt+' ms)':'');
+    if(r===this.rotulo&&txt===this.txt)return;
+    this.rotulo=r;this.cor=c;this.txt=txt;
+    document.querySelectorAll('.nxl-st').forEach(e=>{e.textContent=txt;e.style.color=c})},
+  // muda quando algo da aba BRAÇO FÍSICO do painel 3D precisa ser redesenhado
+  uiKey(){const k=this.kit,A=k&&k.atual;return[this.rotulo,this.rtt,this.cfg.ativo,this.wsOk,k&&k.rssi,A&&AXES.map(a=>A[a.id]).join(),this.info&&this.info.ip,this.lv].join('|')}
 };
-setInterval(()=>{NX_LINK.tick()},5);
-setInterval(()=>{if(NX_LINK.mode==='ws'&&NX_LINK.ws&&NX_LINK.ws.readyState===1){NX_LINK.pingAt=performance.now();NX_LINK.ws.send('{"ping":1}')}},2000);
-NX_LINK.init();
+AFRAME.registerComponent('nexus-link',{init(){NX_LINK.init()},tick(){NX_LINK.tick()}});
 
 /* ============ 1c) API DE COMANDOS DO BRAÇO ============
    As mesmas funções servem ao gêmeo virtual e, no futuro, ao braço físico (via NX_LINK). */
@@ -499,6 +563,14 @@ const DEMO={running:false,paused:false,auto:true,ready:false,segs:[],i:0,phase:'
 };
 
 // aviso curto: flutuante no VR (nexus-control) ou a faixa do rodapé no computador
+// teclado nos painéis HTML: digitar num campo ou usar as setas num slider não anda pela cena nem dispara atalhos.
+// Só o keydown é barrado: o keyup sempre chega à cena (tecla de andar nunca fica "presa").
+function NX_TECLA(e){const t=e.target,tp=t&&t.type;if(t&&(t.tagName==='SELECT'||(t.tagName==='INPUT'&&(tp==='text'||(tp==='range'&&/^(Arrow|Page|Home|End)/.test(e.key))))))e.stopPropagation()}
+// depois de um clique, botão, slider e caixa de seleção devolvem o teclado à cena: espaço não repete o E-STOP
+// e as setas não mexem o braço sem querer
+document.addEventListener('pointerup',e=>{const el=e.target&&e.target.closest&&e.target.closest('#atl button,#atl input[type=range],#atl input[type=checkbox],#dui button,#dui input[type=range]');if(el)setTimeout(()=>el.blur(),0)});
+// modo computador: painel do gêmeo (#dui) e painel ATLAS (#atl) aparecem juntos; no óculos, somem
+function NX_DESK(on){['dui','atl'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=on?'block':'none'})}
 function UI_TOAST(msg){const s=document.querySelector('a-scene'),c=s&&s.components&&s.components['nexus-control'];c?c.toast(msg):showError(msg,true)}
 
 // clique sonoro curto dos botões (o áudio é liberado no clique de entrada)
@@ -947,13 +1019,17 @@ AFRAME.registerComponent('axis-panel',{
 
  // zonas clicáveis em pixels do canvas (1280 x 810)
  layout(){
-  this.common=[{t:'tab',id:'eixos',x:868,y:16,w:150,h:44},{t:'tab',id:'demo',x:1028,y:16,w:234,h:44},
+  this.common=[{t:'tab',id:'eixos',x:740,y:16,w:110,h:44},{t:'tab',id:'demo',x:858,y:16,w:176,h:44},{t:'tab',id:'fisico',x:1042,y:16,w:220,h:44},
    {t:'btn',id:'modo',x:1140,y:352,w:112,h:44},{t:'btn',id:'sens-',x:1078,y:404,w:46,h:44},{t:'btn',id:'sens+',x:1206,y:404,w:46,h:44},
    {t:'btn',id:'origem',x:862,y:470,w:400,h:62},{t:'btn',id:'emerg',x:862,y:546,w:400,h:140}];
   this.zE=AXES.map((a,i)=>{const oy=90+i*126;return[{t:'slider',i,x:358,y:oy+12,w:270,h:88,tx0:368,tx1:618},{t:'jog',i,d:-1,x:638,y:oy+24,w:58,h:58},{t:'jog',i,d:1,x:704,y:oy+24,w:58,h:58},{t:'home',i,x:770,y:oy+24,w:58,h:58}]}).flat();
-  this.zD=[['d-start',18,318],['d-pause',297,318],['d-reset',576,318],['d-pick',18,442],['d-place',297,442],['d-auto',576,442]].map(([id,x,y])=>({t:'btn',id,x,y,w:266,h:112}))},
+  this.zD=[['d-start',18,318],['d-pause',297,318],['d-reset',576,318],['d-pick',18,442],['d-place',297,442],['d-auto',576,442]].map(([id,x,y])=>({t:'btn',id,x,y,w:266,h:112}));
+  // aba BRAÇO FÍSICO (controle do site ATLAS): 0-4 sliders em graus do kit, 5 ligar, 6 reconectar, 7-9 poses
+  this.zF=AXES.map((a,i)=>{const oy=232+i*82;return{t:'slider',i,x:290,y:oy+4,w:330,h:66,tx0:300,tx1:610}})
+   .concat([{t:'btn',id:'l-on',x:652,y:102,w:176,h:50},{t:'btn',id:'l-con',x:652,y:160,w:176,h:50}],
+    ['p-zero','p-rest','p-pick'].map((id,j)=>({t:'btn',id,x:18+j*279,y:652,w:266,h:88})))},
 
- zones(){return this.common.concat(this.tab==='eixos'?this.zE:this.zD)},
+ zones(){return this.common.concat(this.tab==='eixos'?this.zE:this.tab==='demo'?this.zD:this.zF)},
 
  loc(v){return this.el.object3D.worldToLocal(this.tmp.copy(v))},
 
@@ -980,7 +1056,9 @@ AFRAME.registerComponent('axis-panel',{
   const f={modo:()=>NexusArm.alternarModo(),'sens-':()=>{NX.sens=clamp(NX.sens-.25,.25,2);NX.ver++},'sens+':()=>{NX.sens=clamp(NX.sens+.25,.25,2);NX.ver++},
    origem:()=>NexusArm.todosOrigem(),emerg:()=>NX.halt?NexusArm.retomarMovimento():NexusArm.pararMovimento(),
    'd-start':()=>NexusArm.iniciarMovimento(),'d-pause':()=>NexusArm.pausarMovimento(),'d-reset':()=>NexusArm.reiniciar(),
-   'd-pick':()=>NexusArm.pegarCubo(),'d-place':()=>NexusArm.soltarCubo(),'d-auto':()=>NexusArm.alternarAutoManual()}[z.id];
+   'd-pick':()=>NexusArm.pegarCubo(),'d-place':()=>NexusArm.soltarCubo(),'d-auto':()=>NexusArm.alternarAutoManual(),
+   'l-on':()=>NX_LINK.liga(!NX_LINK.cfg.ativo),'l-con':()=>{if(!NX_LINK.cfg.ativo)return NX_LINK.liga(true);NX_LINK.ip='';NX_LINK.conecta();UI_TOAST('Braço físico: reconectando…')},
+   'p-zero':()=>NX_LINK.pose('zero'),'p-rest':()=>NX_LINK.pose('rest'),'p-pick':()=>NX_LINK.pose('pick')}[z.id];
   if(f)f();this.lastKey=''},
 
  flashZone(z){const l0=this.L(z.x,z.y),l1=this.L(z.x+z.w,z.y+z.h),m=this.hlPress;m.position.set((l0.x+l1.x)/2,(l0.y+l1.y)/2,.008);m.scale.set((l1.x-l0.x)*1.12,(l0.y-l1.y)*1.25,1);m.visible=true;this.flash=1},
@@ -996,11 +1074,11 @@ AFRAME.registerComponent('axis-panel',{
   if(this.drag)return;                                        /* evita comandos conflitantes das duas mãos */
   const H=this.hands&&this.hands.h[e.hand];if(!H)return;const l=this.loc(H.f).clone();if(Math.abs(l.z)>.07)return;
   const z=this.zoneAt(l,10);if(!z)return;
-  if(z.t==='slider')this.begin({i:z.i,hand:e.hand,x0:l.x,v0:NX.t[AXES[z.i].id]});else this.tap(l,id)},
+  if(z.t==='slider')this.begin({i:z.i,hand:e.hand,x0:l.x,v0:NX.t[AXES[z.i].id],L:z.tx1-z.tx0});else this.tap(l,id)},
 
  rayDown(c){const rc=c.components.raycaster;if(!rc||!rc.raycaster)return;const h=rc.raycaster.intersectObject(this.screen,false);if(!h.length)return;
   const l=this.loc(h[0].point).clone(),z=this.zoneAt(l,6);if(!z)return;
-  if(z.t==='slider'){this.flashZone(z);this.begin({i:z.i,ctrl:c,x0:l.x,v0:NX.t[AXES[z.i].id]})}else this.tap(l,'ctl-'+c.id)},
+  if(z.t==='slider'){this.flashZone(z);this.begin({i:z.i,ctrl:c,x0:l.x,v0:NX.t[AXES[z.i].id],L:z.tx1-z.tx0})}else this.tap(l,'ctl-'+c.id)},
 
  tcpMM(){if(!NX_IK.ready)return['—','—','—'];const p=NX_IK.tcp(this.tcpV);return[p.x*1000,(p.y-.9095)*1000,p.z*1000].map(v=>(v>=0?'+':'')+Math.round(v))},
 
@@ -1018,7 +1096,7 @@ AFRAME.registerComponent('axis-panel',{
    if(d.hand){const H=HS&&HS[d.hand];if(!H||!H.tr)this.release();else lx=this.loc(H.f).x}
    else if(d.ctrl){o.getWorldQuaternion(this.q);const n=this.tmp.set(0,0,1).applyQuaternion(this.q).clone();this.pl.setFromNormalAndCoplanarPoint(n,o.getWorldPosition(new THREE.Vector3()));
     const r=d.ctrl.components.raycaster.raycaster.ray,ip=new THREE.Vector3();if(r.intersectPlane(this.pl,ip))lx=this.loc(ip).x}
-   if(this.drag&&lx!==null){const a=AXES[d.i],Lm=250/this.CW*this.W;NX.set(a.id,d.v0+(lx-d.x0)/Lm*(a.max-a.min)*NX.sens,'painel')}}
+   if(this.drag&&lx!==null){const a=AXES[d.i],Lm=(d.L||250)/this.CW*this.W;NX.set(a.id,d.v0+(lx-d.x0)/Lm*(a.max-a.min)*NX.sens,'painel')}}
 
   // botão ± segurado: após 0,35 s move continuamente (25°/s x sensibilidade)
   if(this.hold){const h=this.hold;if(performance.now()-h.t0>350){const a=AXES[h.i];if(!NX.halt)NX.set(a.id,NX.t[a.id]+h.d*25*NX.sens*dt,'painel')}}
@@ -1041,8 +1119,8 @@ AFRAME.registerComponent('axis-panel',{
   const m=this.hlHover;if(hov){const l0=this.L(hov.x,hov.y),l1=this.L(hov.x+hov.w,hov.y+hov.h);m.position.set((l0.x+l1.x)/2,(l0.y+l1.y)/2,.007);m.scale.set((l1.x-l0.x)*1.1,(l0.y-l1.y)*1.22,1);m.visible=true;m.material.opacity=.75+.25*Math.sin(t*.008)}else m.visible=false;
   if(this.flash>0){this.flash=Math.max(0,this.flash-dt*4);this.hlPress.material.opacity=this.flash;this.hlPress.visible=this.flash>0}
 
-  // cursores 3D: posição real do eixo (NX.v); só aparecem na aba EIXOS
-  const showK=this.tab==='eixos';AXES.forEach((a,i)=>{const k=this.knobs[i];k.visible=showK;if(!showK)return;const f=(NX.v[a.id]-a.min)/(a.max-a.min),l=this.L(368+f*250,90+i*126+50);k.position.x=l.x;k.position.y=l.y;
+  // cursores 3D: posição real do eixo (NX.v); aparecem nas abas EIXOS e BRAÇO FÍSICO
+  const showK=this.tab!=='demo',fis=this.tab==='fisico';AXES.forEach((a,i)=>{const k=this.knobs[i];k.visible=showK;if(!showK)return;const f=(NX.v[a.id]-a.min)/(a.max-a.min),l=fis?this.L(300+f*310,232+i*82+37):this.L(368+f*250,90+i*126+50);k.position.x=l.x;k.position.y=l.y;
    const act=(this.drag&&this.drag.i===i)||(this.hold&&this.hold.i===i);k.material.emissiveIntensity=act?1.2:Math.abs(NX.t[a.id]-NX.v[a.id])>.05?.9:.45});
 
   this.draw(false);
@@ -1063,7 +1141,7 @@ AFRAME.registerComponent('axis-panel',{
 
   const now=performance.now(),tcp=this.tcpMM(),cs=CUBO.held?'PRESO NA GARRA':CUBO.at==='A'?'NA ÁREA DE COLETA':CUBO.at==='B'?'NA ÁREA DE ENTREGA':'FORA DAS ÁREAS';
 
-  const key=[this.tab,AXES.map(a=>NX.v[a.id].toFixed(1)+'/'+NX.t[a.id].toFixed(1)).join(),NX.halt,NX.mode,NX.sens,DEMO.stage,DEMO.running,DEMO.paused,DEMO.auto,DEMO.i,cs,tcp.join(),this.status(),this.drag&&this.drag.i,this.hold&&this.hold.i].join('|');
+  const key=[this.tab,AXES.map(a=>NX.v[a.id].toFixed(1)+'/'+NX.t[a.id].toFixed(1)).join(),NX.halt,NX.mode,NX.sens,DEMO.stage,DEMO.running,DEMO.paused,DEMO.auto,DEMO.i,cs,tcp.join(),this.status(),this.drag&&this.drag.i,this.hold&&this.hold.i,NX_LINK.connected,this.tab==='fisico'?NX_LINK.uiKey():''].join('|');
 
   if(key===this.lastKey||(!force&&now-this.lastDraw<120))return;this.lastKey=key;this.lastDraw=now;
 
@@ -1082,12 +1160,13 @@ AFRAME.registerComponent('axis-panel',{
 
   const st=NX.halt?['PARADO','#ef4444']:DEMO.running?['DEMONSTRAÇÃO','#22d3ee']:moving?['MOVENDO','#fbbf24']:['PRONTO','#4ade80'];
 
-  this.rr(660,20,196,36,18);c.fillStyle=st[1]+'2e';c.fill();c.lineWidth=2;c.strokeStyle=st[1];c.stroke();c.fillStyle=st[1];c.beginPath();c.arc(682,38,6,0,7);c.fill();this.tx(st[0],696,38,16,'#ffffff',700,'left',150);
+  this.rr(548,20,184,36,18);c.fillStyle=st[1]+'2e';c.fill();c.lineWidth=2;c.strokeStyle=st[1];c.stroke();c.fillStyle=st[1];c.beginPath();c.arc(570,38,6,0,7);c.fill();this.tx(st[0],584,38,16,'#ffffff',700,'left',140);
 
-  for(const z of this.common.slice(0,2)){const on=this.tab===z.id;this.rr(z.x,z.y,z.w,z.h,22);c.fillStyle=on?'#e0f2fe':'rgba(255,255,255,.04)';c.fill();c.lineWidth=2;c.strokeStyle=on?'#e0f2fe':'rgba(224,242,254,.4)';c.stroke();
-   this.tx(z.id==='eixos'?'EIXOS':'DEMONSTRAÇÃO',z.x+z.w/2,z.y+z.h/2,17,on?'#063056':'#e0f2fe',700,'center')}
+  for(const z of this.common.slice(0,3)){const on=this.tab===z.id;this.rr(z.x,z.y,z.w,z.h,22);c.fillStyle=on?'#e0f2fe':'rgba(255,255,255,.04)';c.fill();c.lineWidth=2;c.strokeStyle=on?'#e0f2fe':'rgba(224,242,254,.4)';c.stroke();
+   this.tx({eixos:'EIXOS',demo:'DEMONSTRAÇÃO',fisico:'BRAÇO FÍSICO'}[z.id],z.x+z.w/2,z.y+z.h/2,17,on?'#063056':'#e0f2fe',700,'center',z.w-12);
+   if(z.id==='fisico'){c.fillStyle=NX_LINK.cor;c.beginPath();c.arc(z.x+16,z.y+z.h/2,5,0,7);c.fill()}}   // ponto = estado da ligação com o kit
 
-  if(this.tab==='eixos')this.drawAxes();else this.drawDemo(cs);
+  if(this.tab==='eixos')this.drawAxes();else if(this.tab==='demo')this.drawDemo(cs);else this.drawFis();
 
   // coluna direita (comum às duas abas): ferramenta, modo, sensibilidade, origem e emergência simulada
   this.card(862,90,400,246);this.tx('FERRAMENTA  •  TCP',880,114,15,'#7dd3fc',700);this.tx('ponta da garra, relativa à base (mm)',1244,114,12,'#64748b',400,'right');
@@ -1095,16 +1174,16 @@ AFRAME.registerComponent('axis-panel',{
   this.tx('CUBO:',880,312,14,'#94a3b8',700);this.tx(cs,936,312,14,CUBO.held?'#fbbf24':'#e2e8f0',700,'left',306);
 
   this.card(862,346,400,112);this.tx('MODO DE CONTROLE',880,368,13,'#94a3b8',700);this.tx(NX.mode==='gestos'?'GESTOS (MÃOS)':'CONTROLES DO QUEST',880,390,19,'#ffffff',700,'left',250);
-  this.btn(this.common[2],'ALTERNAR','#0b4f8a',true);this.tx('SENSIBILIDADE',880,426,13,'#94a3b8',700);
-  this.btn(this.common[3],'−','#0b4f8a',true);this.btn(this.common[4],'+','#0b4f8a',true);this.tx('x'+NX.sens.toFixed(2),1165,426,18,'#ffffff',700,'center');
+  this.btn(this.common[3],'ALTERNAR','#0b4f8a',true);this.tx('SENSIBILIDADE',880,426,13,'#94a3b8',700);
+  this.btn(this.common[4],'−','#0b4f8a',true);this.btn(this.common[5],'+','#0b4f8a',true);this.tx('x'+NX.sens.toFixed(2),1165,426,18,'#ffffff',700,'center');
 
-  this.btn(this.common[5],'TODOS OS EIXOS À ORIGEM','#0b4f8a',true,'J1 a J5 voltam para 0°');
+  this.btn(this.common[6],'TODOS OS EIXOS À ORIGEM','#0b4f8a',true,'J1 a J5 voltam para 0°');
 
-  const ez=this.common[6];c.save();this.rr(ez.x,ez.y,ez.w,ez.h,16);c.clip();c.fillStyle='#f5c400';c.fillRect(ez.x,ez.y,ez.w,ez.h);c.fillStyle='#16191d';
+  const ez=this.common[7],fl=NX_LINK.connected;c.save();this.rr(ez.x,ez.y,ez.w,ez.h,16);c.clip();c.fillStyle='#f5c400';c.fillRect(ez.x,ez.y,ez.w,ez.h);c.fillStyle='#16191d';
   for(let i=-ez.h;i<ez.w+ez.h;i+=34){c.beginPath();c.moveTo(ez.x+i,ez.y+ez.h);c.lineTo(ez.x+i+17,ez.y+ez.h);c.lineTo(ez.x+i+17+ez.h,ez.y);c.lineTo(ez.x+i+ez.h,ez.y);c.closePath();c.fill()}
   this.rr(ez.x+10,ez.y+10,ez.w-20,ez.h-20,12);g=c.createLinearGradient(0,ez.y,0,ez.y+ez.h);g.addColorStop(0,NX.halt?'#92400e':'#dc2626');g.addColorStop(1,NX.halt?'#451a03':'#7f1d1d');c.fillStyle=g;c.fill();c.restore();
-  this.tx(NX.halt?'PARADA ATIVA':'PARADA DE EMERGÊNCIA',ez.x+ez.w/2,ez.y+52,26,'#ffffff',700,'center');this.tx(NX.halt?'TOQUE PARA LIBERAR O BRAÇO':'SIMULADA  •  TOQUE PARA PARAR TUDO',ez.x+ez.w/2,ez.y+90,15,'#fee2e2',700,'center');
-  this.tx('Parada apenas virtual do gêmeo digital: não substitui um',880,708,12,'#94a3b8',400);this.tx('sistema de segurança físico certificado (NR-12 / ISO 13850).',880,726,12,'#94a3b8',400);
+  this.tx(NX.halt?'PARADA ATIVA':'PARADA DE EMERGÊNCIA',ez.x+ez.w/2,ez.y+52,26,'#ffffff',700,'center');this.tx(NX.halt?'TOQUE PARA LIBERAR O BRAÇO':(fl?'GÊMEO + BRAÇO FÍSICO':'SIMULADA')+'  •  TOQUE PARA PARAR TUDO',ez.x+ez.w/2,ez.y+90,15,'#fee2e2',700,'center',ez.w-30);
+  this.tx(fl?'E-STOP por software (gêmeo e kit ESP32): não substitui um':'Parada apenas virtual do gêmeo digital: não substitui um',880,708,12,'#94a3b8',400);this.tx('sistema de segurança físico certificado (NR-12 / ISO 13850).',880,726,12,'#94a3b8',400);
 
   this.rr(18,752,1244,44,10);c.fillStyle='rgba(15,34,54,.92)';c.fill();this.tx(this.status(),36,774,15,'#cbd5e1',600,'left',1210);
 
@@ -1182,6 +1261,49 @@ AFRAME.registerComponent('axis-panel',{
   [['CUBO',cs,CUBO.held?'#fbbf24':'#e2e8f0'],['GARRA',ab+'% aberta  •  '+NX.v.grip.toFixed(1)+'°','#22d3ee'],['EIXOS','J1 '+NX.v.waist.toFixed(0)+'°  J2 '+NX.v.shoulder.toFixed(0)+'°  J3 '+NX.v.elbow.toFixed(0)+'°  J4 '+NX.v.pitch.toFixed(0)+'°','#e2e8f0']]
    .forEach(([l,v,cor],k)=>{const x=18+k*279;this.card(x,568,266,172);this.tx(l,x+18,594,14,'#94a3b8',700);this.tx(v,x+18,640,k===2?15:19,cor,700,'left',236)});
 
+ },
+
+ // aba BRAÇO FÍSICO: o controle do site ATLAS dentro do óculos (estado da ligação, GPIO, posição real
+ // de cada servo, sliders em graus do kit e poses). Os sliders mandam o gêmeo; o gêmeo manda o kit.
+ drawFis(){
+
+  const c=this.cx,L=NX_LINK,k=L.kit,vivo=L.connected,pins=L.info&&L.info.pins,z=this.zF;
+
+  this.card(18,90,824,132,vivo);
+  this.tx('BRAÇO FÍSICO  •  ESP32-C3  •  '+(L.info&&L.info.fw||'firmware kit-iot'),40,114,15,'#7dd3fc',700,'left',590);
+  this.tx(L.rotulo,40,150,30,L.cor,700,'left',590);
+  const det=!L.cfg.ativo?'Toque em LIGAR para comandar o braço real':[L.wsOk?'WebSocket local'+(L.rtt!=null?' '+L.rtt+' ms':''):L.mqOk()?'MQTT pela internet':'sem via de comando',
+   vivo&&k&&k.rssi?'Wi-Fi '+k.rssi+' dBm':'',L.info&&L.info.ip?'IP '+L.info.ip:'',L.pre?'tópico '+L.pre:''].filter(Boolean).join('  •  ');
+  this.tx(det,40,182,15,'#e2e8f0',600,'left',596);
+  this.tx(L.logs.length?L.logs[L.logs.length-1]:'',40,207,13,'#94a3b8',400,'left',596);
+  this.btn(z[5],L.cfg.ativo?'DESLIGAR':'LIGAR',L.cfg.ativo?'#b45309':'#16a34a',true);
+  this.btn(z[6],'RECONECTAR','#0b4f8a',L.cfg.ativo);
+
+  AXES.forEach((a,i)=>{const oy=232+i*82,s=z[i],x0=s.tx0,x1=s.tx1,ty=oy+37,f=g=>x0+(g-a.min)/(a.max-a.min)*(x1-x0),cmd=L.kv(a,NX.t[a.id]),r=L.faixa(a);
+
+   this.card(18,oy,824,74,this.drag&&this.drag.i===i);
+   this.rr(30,oy+12,50,50,10);c.fillStyle=this.COR[i];c.fill();this.tx('J'+(i+1),55,oy+37,22,'#ffffff',700,'center');
+   this.tx(a.nome.toUpperCase(),94,oy+27,21,'#ffffff',700,'left',190);
+   const pn=pins&&a.id in pins?pins[a.id]:undefined;
+   this.tx(pn===undefined?'GPIO —':typeof pn==='number'?'GPIO'+pn:'SEM PINO',94,oy+53,14,typeof pn==='number'?'#22d3ee':'#64748b',700);
+
+   // trilho: faixa do eixo em graus do kit, trecho do zero até o gêmeo, alvo (branco) e servo real (▲)
+   this.rr(x0,ty-5,x1-x0,10,5);c.fillStyle='#0b1a2c';c.fill();c.strokeStyle='rgba(148,163,184,.3)';c.lineWidth=1;c.stroke();
+   const z0=f(clamp(L.gemeo(a,0),a.min,a.max)),fv=f(NX.v[a.id]),fa=Math.min(z0,fv),fb=Math.max(z0,fv),g=c.createLinearGradient(fa,0,fb,0);
+   g.addColorStop(0,this.COR[i]);g.addColorStop(1,'#67e8f9');this.rr(fa,ty-5,Math.max(4,fb-fa),10,5);c.fillStyle=g;c.fill();
+   c.fillStyle='#ffffff';c.fillRect(f(NX.t[a.id])-1.5,ty-13,3,26);
+   const ka=vivo&&k&&k.atual&&typeof k.atual[a.id]==='number'?k.atual[a.id]:null;
+   if(ka!==null){const xk=f(L.gemeo(a,ka));c.fillStyle=Math.abs(ka-cmd)<=1?'#4ade80':'#fbbf24';c.beginPath();c.moveTo(xk,ty+8);c.lineTo(xk-8,ty+20);c.lineTo(xk+8,ty+20);c.closePath();c.fill()}
+   this.tx(r[0]+'°',x0,ty+26,11,'#64748b',600,'left');this.tx(r[1]+'°',x1,ty+26,11,'#64748b',600,'right');
+
+   const kd=k&&k.deg?k.deg[a.id]:undefined;
+   this.tx((cmd>0?'+':'')+cmd+'°',830,oy+27,26,'#ffffff',700,'right');
+   this.tx(ka===null?'kit —':'kit '+(ka>0?'+':'')+ka+'°'+(typeof kd==='number'?'  •  servo '+kd+'°':''),830,oy+55,13,ka===null?'#64748b':Math.abs(ka-cmd)<=1?'#4ade80':'#fbbf24',700,'right',196)});
+
+  // poses do site ATLAS (já limitadas ao curso do gêmeo)
+  ['zero','rest','pick'].forEach((id,j)=>{const P=L.POSES[id],sub=AXES.filter(a=>L.kv(a,L.gemeo(a,P.p[a.id]))).map(a=>a.nome.slice(0,3)+' '+L.kv(a,L.gemeo(a,P.p[a.id]))+'°').join('  ');
+   this.btn(z[7+j],P.nome.toUpperCase(),'#0891b2',!NX.halt,sub||'todos os eixos em 0°')});
+
  }
 
 });
@@ -1212,7 +1334,7 @@ AFRAME.registerComponent('nexus-desktop-ui',{
 
   const st=document.getElementById('dstop');st.onclick=()=>{NX.halt?NX.resume():NX.stop()};this.st=st;
 
-  const sc=this.el;sc.addEventListener('enter-vr',()=>box.style.display='none');sc.addEventListener('exit-vr',()=>box.style.display=document.getElementById('intro-screen').classList.contains('fade-out')?'block':'none');
+  const sc=this.el;sc.addEventListener('enter-vr',()=>NX_DESK(false));sc.addEventListener('exit-vr',()=>NX_DESK(document.getElementById('intro-screen').classList.contains('fade-out')));
 
  },
 
@@ -1225,6 +1347,63 @@ AFRAME.registerComponent('nexus-desktop-ui',{
   if(this.dd)this.dd.textContent=DEMO.running?'⏸ Pausar demo':DEMO.paused?'▶ Continuar':'▶ Demo';if(this.da)this.da.textContent=DEMO.auto?'Demo: automática':'Demo: manual';
 
   if(this.dw)this.dw.textContent='Andar pelo olhar: '+(NX.loco&&NX.loco.olhar?'ligado':'desligado');if(this.dm)this.dm.textContent='Modo: '+(NX.mode==='gestos'?'gestos (mãos)':'controles')}});
+
+
+
+/* ============ 5b) PAINEL ATLAS NO COMPUTADOR ============
+   O controle do site ATLAS dentro do laboratório: via e kit, GPIO de cada eixo, posição real de cada servo,
+   sliders em graus do kit, poses, E-STOP, conexão e registro. Os sliders mandam o gêmeo (mesmo estado NX)
+   e o gêmeo manda o braço físico pela NX_LINK: gêmeo, painel 3D do óculos e braço real andam juntos. */
+
+AFRAME.registerComponent('nexus-atlas-ui',{
+
+ init(){
+  const g=id=>document.getElementById(id),L=NX_LINK;this.box=g('atl');this.ax={};this.lv=-1;this.tDif=0;if(!this.box)return;
+  AXES.forEach(a=>{const r=L.faixa(a),d=document.createElement('div');d.className='ax';
+   d.innerHTML='<div><b>'+a.nome+'</b><i class="pin">GPIO –</i><small>kit: –</small></div><input type="range" min="'+r[0]+'" max="'+r[1]+'" step="1" value="'+L.kv(a,NX.t[a.id])+'" aria-label="'+a.nome+' (graus do kit)"><output>0°</output>';
+   g('atl-ax').appendChild(d);const i=d.querySelector('input'),o=d.querySelector('output');
+   i.addEventListener('pointerdown',()=>{L.segura=a.id});
+   i.addEventListener('input',()=>{if(NX.halt){UI_TOAST('E-STOP ativo: libere a parada antes de mover');i.value=L.kv(a,NX.t[a.id]);return}
+    NX.set(a.id,L.gemeo(a,+i.value),'atlas');o.textContent=(+i.value>0?'+':'')+i.value+'°'});
+   this.ax[a.id]={i,o,k:d.querySelector('small'),p:d.querySelector('.pin')}});
+  const solta=()=>{L.segura=null};window.addEventListener('pointerup',solta);window.addEventListener('pointercancel',solta);
+  this.box.querySelectorAll('[data-pose]').forEach(b=>b.onclick=()=>L.pose(b.dataset.pose));
+  g('atl-stop').onclick=()=>{NX.halt?NX.resume():NX.stop()};
+  g('atl-con').onclick=()=>{g('atl-on').checked=true;L.aplica('atl')};g('atl-dis').onclick=()=>L.liga(false);
+  g('atl-on').onchange=()=>L.aplica('atl');g('atl-via-sel').onchange=()=>L.aplica('atl');
+  g('atl-min').onclick=()=>{const m=this.box.classList.toggle('min');g('atl-min').textContent=m?'+':'–'};
+  if(!L.WS_OK)g('atl-https').textContent='Página em https (GitHub Pages, óculos): o navegador bloqueia ws://, então o comando vai pelo MQTT. Para usar o WebSocket local, abra o arquivo baixado no computador.';
+  L.campos()},
+
+ set(id,p,v){const e=document.getElementById(id);if(e&&e[p]!==v)e[p]=v},
+
+ tick(t){if(!this.box||this.box.style.display!=='block'||t-(this.tk||0)<80)return;this.tk=t;
+  const L=NX_LINK,k=L.kit,vivo=L.connected,pins=L.info&&L.info.pins,ag=Date.now();
+  const via=!L.cfg.ativo?['Desligado','']:L.wsOk?['WebSocket local'+(L.rtt!=null?' · '+L.rtt+' ms':''),'on']:L.mqOk()?['MQTT (internet)','on']:L.ws||L.mq?['Conectando…','w']:['Sem via de comando',''];
+  const kt=!L.cfg.ativo?['Kit não usado','']:vivo?['Kit online'+(k&&k.rssi?' · '+k.rssi+' dBm':''),'on']:L.fora?['Kit fora do ar','x']:L.visto?['Kit sem resposta há '+L.dur((ag-L.visto)/1000),'x']:['Kit offline','x'];
+  this.set('atl-tv','textContent',via[0]);this.set('atl-dv','className',via[1]);this.set('atl-tk','textContent',kt[0]);this.set('atl-dk','className',kt[1]);
+  AXES.forEach(a=>{const e=this.ax[a.id],cmd=L.kv(a,NX.t[a.id]);
+   if(L.segura!==a.id){if(+e.i.value!==cmd)e.i.value=cmd;const s=(cmd>0?'+':'')+cmd+'°';if(e.o.textContent!==s)e.o.textContent=s}
+   e.i.disabled=NX.halt;
+   const pn=pins&&a.id in pins?pins[a.id]:undefined,ps=pn===undefined?'GPIO –':typeof pn==='number'?'GPIO'+pn:'sem pino';if(e.p.textContent!==ps)e.p.textContent=ps;
+   const ka=vivo&&k&&k.atual&&typeof k.atual[a.id]==='number'?k.atual[a.id]:null,kd=k&&k.deg?k.deg[a.id]:undefined;
+   const ks=ka===null?'kit: –':'kit: '+(ka>0?'+':'')+ka+'°'+(typeof kd==='number'?' · servo '+kd+'°':' · sem servo');if(e.k.textContent!==ks)e.k.textContent=ks;
+   e.k.style.color=ka===null?'':Math.abs(ka-cmd)<=1?'#4ade80':'#fbbf24'});
+  // gêmeo × braço físico (pedido do kit = axes_rel)
+  let s='';
+  if(!L.cfg.ativo)s='Braço físico desligado: os controles mexem só o gêmeo.';
+  else if(!vivo)s=L.WS_OK?'Sem resposta do kit: confira se ele está ligado, o IP no LCD e o tópico.':'Sem resposta do kit pelo MQTT: confira se ele está ligado e com internet e se o tópico é o mesmo do site ATLAS.';
+  else if(k&&k.rel){const fora=AXES.filter(a=>{const v=k.rel[a.id],r=L.faixa(a);return typeof v==='number'&&(v<r[0]||v>r[1])});
+   const ok=AXES.every(a=>typeof k.rel[a.id]!=='number'||Math.abs(k.rel[a.id]-L.kv(a,NX.v[a.id]))<=1);
+   if(ok)this.tDif=0;else if(!this.tDif)this.tDif=ag;
+   s=fora.length?'Fora do curso do gêmeo: '+fora.map(a=>a.nome+' no kit '+k.rel[a.id]+'° (gêmeo '+L.faixa(a).join('…')+'°)').join(', ')
+    :NX.halt?'E-STOP ativo: braço físico congelado.':this.tDif&&ag-this.tDif>1500?'Sincronizando gêmeo e braço físico…':'✓ Gêmeo e braço físico sincronizados'}
+  this.set('atl-sync','textContent',s);
+  const st=document.getElementById('atl-stop');st.classList.toggle('on',NX.halt);this.set('atl-stop','textContent',NX.halt?'▶ LIBERAR E-STOP':'⚠ E-STOP');
+  if(this.lv!==L.lv){this.lv=L.lv;const p=document.getElementById('atl-log'),fim=p.scrollTop+p.clientHeight>=p.scrollHeight-4;p.textContent=L.logs.join('\n');if(fim)p.scrollTop=p.scrollHeight}
+ }
+
+});
 
 
 
@@ -1741,7 +1920,7 @@ AFRAME.registerComponent('nexus-lab',{
       x.font='400 16px '+FONT;x.fillStyle='#64748b';x.fillText(a.min+'°',L,y+30);x.textAlign='right';x.fillText(a.max+'°',L+BW,y+30);
       x.font='700 32px '+FONT;x.fillStyle='#fff';x.fillText((v>0&&a.id!=='grip'?'+':'')+v.toFixed(1)+'°',L+BW+150,y)});
     x.fillStyle='#0f2236';rr(x,822,100,176,330,14);x.fill();x.strokeStyle='#1e3a5f';x.lineWidth=2;x.stroke();x.textAlign='left';
-    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES','#e2e8f0'],['DEMO',DEMO.running?DEMO.stage.toUpperCase():DEMO.paused?'PAUSADA':'PARADA',DEMO.running?'#4ade80':'#e2e8f0'],['ESP32',NX_LINK.synced?'CONECTADO':NX_LINK.connected?'AGUARDANDO KIT':'NÃO CONECTADO',NX_LINK.synced?'#4ade80':NX_LINK.connected?'#fbbf24':'#94a3b8']].forEach(([l,v,c],i)=>{
+    [['ESTADO',['PRONTO','MOVENDO','PARADO'][st],['#4ade80','#fbbf24','#f87171'][st]],['MODO',NX.mode==='gestos'?'GESTOS':'CONTROLES','#e2e8f0'],['DEMO',DEMO.running?DEMO.stage.toUpperCase():DEMO.paused?'PAUSADA':'PARADA',DEMO.running?'#4ade80':'#e2e8f0'],['ESP32',NX_LINK.rotulo,NX_LINK.cor]].forEach(([l,v,c],i)=>{
       x.font='600 18px '+FONT;x.fillStyle='#94a3b8';x.fillText(l,840,130+i*84);x.font='700 26px '+FONT;x.fillStyle=c;x.fillText(v,840,164+i*84,150)});
     x.font='400 18px '+FONT;x.fillStyle='#64748b';x.fillText('Espelha em tempo real todos os comandos: painéis, gestos, controles e demonstração',30,Hd-22);
     twinT.needsUpdate=true;
@@ -1796,7 +1975,7 @@ AFRAME.registerComponent('nexus-lab',{
   if(st!==this.state){this.state=st;
     const on=['#39ff7a','#ffc21a','#ff3030'],off=['#0f3d1f','#4a3a0c','#4a1212'],lit=[st<2,st===1,st===2];
     this.lamp.forEach((m,i)=>m.color.set(lit[i]?on[i]:off[i]));this.ringM.color.set(['#22d3ee','#ffb020','#ff3b3b'][st])}
-  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st+NX.mode+(DEMO.running?1:DEMO.paused?2:0)+DEMO.stage+NX_LINK.connected+NX_LINK.synced;
+  const k=AXES.map(a=>NX.v[a.id].toFixed(1)).join()+st+NX.mode+(DEMO.running?1:DEMO.paused?2:0)+DEMO.stage+NX_LINK.rotulo;
   if(k!==this.twinKey){this.twinKey=k;this.drawTwin()}
  }
 
@@ -1928,14 +2107,14 @@ AFRAME.registerComponent('demo-console',{
   const ab=Math.round(100*(1-NX.v.grip/GARRA.FECHADA));
 
   [['ESTADO',st[0],st[1]],['GARRA',ab>=97?'ABERTA':ab<=3?'FECHADA':ab+'% ABERTA','#22d3ee'],['MODO',NX.mode==='gestos'?'GESTOS (MÃOS)':'CONTROLES DO QUEST','#e2e8f0'],
-   ['RASTREAMENTO',u.track||'—',u.trackC||'#94a3b8'],['GESTO',u.gesto||'—','#e2e8f0'],['ESP32',NX_LINK.synced?'CONECTADO':NX_LINK.connected?'AGUARDANDO KIT':'NÃO CONECTADO',NX_LINK.synced?'#4ade80':NX_LINK.connected?'#fbbf24':'#94a3b8']]
+   ['RASTREAMENTO',u.track||'—',u.trackC||'#94a3b8'],['GESTO',u.gesto||'—','#e2e8f0'],['ESP32',NX_LINK.rotulo,NX_LINK.cor]]
    .forEach(([l,v,c],i)=>{const y=66+i*36;x.font=`600 17px ${F}`;x.fillStyle='#94a3b8';x.textAlign='left';x.fillText(l,16,y);x.font=`700 21px ${F}`;x.fillStyle=c;x.textAlign='right';x.fillText(v,W-16,y,340)});
 
   this.sT.needsUpdate=true;
 
  },
 
- tick(t){if(t-(this.tk||0)<250)return;this.tk=t;const u=NX.ui||{},k=[NX.halt,DEMO.stage,DEMO.running,DEMO.paused,Math.round(NX.v.grip),NX.mode,u.track,u.gesto,NX_LINK.connected,NX_LINK.synced].join();if(k!==this.key){this.key=k;this.drawScreen()}}
+ tick(t){if(t-(this.tk||0)<250)return;this.tk=t;const u=NX.ui||{},k=[NX.halt,DEMO.stage,DEMO.running,DEMO.paused,Math.round(NX.v.grip),NX.mode,u.track,u.gesto,NX_LINK.rotulo].join();if(k!==this.key){this.key=k;this.drawScreen()}}
 
 });
 
@@ -2245,20 +2424,19 @@ function prepVR(){
   else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use “Explorar no computador”.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
   const go=()=>{pronto=true;upd()};sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});upd()}
 
-document.addEventListener('DOMContentLoaded',()=>{if(NX_LINK.synced)setEsp32Status('online');});
 document.addEventListener('DOMContentLoaded',prepVR);
 
 function enterExperience(vr){
   const sc=document.querySelector('a-scene');if(!sc)return showError('A cena VR não foi encontrada.');
   NX_AUDIO(true);   // libera o som dos botões (o navegador exige um gesto do usuário)
-  const desk=()=>{document.getElementById('intro-screen').classList.add('fade-out');document.getElementById('dui').style.display='block'};
+  const desk=()=>{document.getElementById('intro-screen').classList.add('fade-out');NX_DESK(true)};
   if(!vr)return desk();
   if(XR.ok===false){showError(XR.msg+' Abrindo o modo computador.');return desk()}
   if(!sc.hasLoaded){showError('Aguarde o laboratório terminar de carregar.',true);return}
   // enterVR() roda dentro do clique: o WebXR só abre a sessão imersiva com um gesto do usuário
   let p;try{p=sc.enterVR()}catch(e){p=Promise.reject(e)}
   document.getElementById('intro-screen').classList.add('fade-out');
-  Promise.resolve(p).catch(e=>{console.error(e);showError('O navegador não abriu a sessão VR ('+((e&&e.message)||e)+'). Abrindo o modo computador.');document.getElementById('dui').style.display='block'})
+  Promise.resolve(p).catch(e=>{console.error(e);showError('O navegador não abriu a sessão VR ('+((e&&e.message)||e)+'). Abrindo o modo computador.');NX_DESK(true)})
 }
 
 setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a carregar. Confira models/braco.glb e a conexão.')},45000);
@@ -2283,22 +2461,55 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
  <p id="xr-note"></p>
 
+ <details class="nxl" onkeydown="NX_TECLA(event)"><summary>🦾 <span class="nxl-st">Braço físico: NÃO CONECTADO</span></summary>
+  <label class="chk"><input type="checkbox" id="nxl-on" checked> Controlar o braço físico (ESP32) pelo laboratório</label>
+  <label for="nxl-kit">Kit na rede local · IP do LCD ou kit-iot.local (só com a página em http)</label>
+  <input type="text" id="nxl-kit" value="kit-iot.local" spellcheck="false">
+  <label for="nxl-top">Tópico MQTT · igual ao MQTT_TOPIC do kit e ao site ATLAS</label>
+  <input type="text" id="nxl-top" value="senai-sao-carlos/nexusatlas-x7k2" spellcheck="false">
+  <button type="button" onclick="NX_LINK.aplica()">Salvar e conectar</button>
+  <small>No óculos a página é https: o comando vai pela internet (MQTT). O braço físico repete os movimentos do gêmeo, inclusive a demonstração, e o gêmeo acompanha o que o site ATLAS mexer; o E-STOP do laboratório para o braço real. Controle: no computador, painel ATLAS (canto superior esquerdo); no óculos, aba BRAÇO FÍSICO do painel de eixos.</small>
+ </details>
+
  <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>GARRA</strong>Abra / feche a mão ou GRIP</div><div><strong>BOTÕES</strong>Toque, pinça ou gatilho</div></div>
 
 </div></div>
 
 <div id="vr-status">● META QUEST 2</div>
-<div id="esp32-status" class="connecting"><i></i><span>ESP32 CONECTANDO…</span></div>
 
 <div id="error-message"></div>
 
 <div id="nx-load">Carregando braço robótico…</div>
 
-<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><div class="b"><button id="ddemo">▶ Demo</button><button id="dpick">Pegar cubo</button><button id="ddrop">Soltar cubo</button></div><div class="b"><button id="dopen">Abrir garra</button><button id="dclose">Fechar garra</button><button id="dauto">Demo: automática</button></div><div class="b"><button id="dmode">Modo: gestos (mãos)</button><button id="dwalk">Andar pelo olhar: desligado</button></div><small>Q/E garra • C/X pegar/soltar cubo • M auto/manual • I demo • R reiniciar • G modo • V andar pelo olhar • P pivôs • 1-3 qualidade. O painel de eixos e o console 3D aceitam clique.</small></div>
+<div id="dui"><h3>🦾 Braço — controle por mouse</h3><div id="dsl"></div><div class="b"><button id="dhome">⟲ Início</button><button id="dstop">■ Parar</button></div><div class="b"><button id="ddemo">▶ Demo</button><button id="dpick">Pegar cubo</button><button id="ddrop">Soltar cubo</button></div><div class="b"><button id="dopen">Abrir garra</button><button id="dclose">Fechar garra</button><button id="dauto">Demo: automática</button></div><div class="b"><button id="dmode">Modo: gestos (mãos)</button><button id="dwalk">Andar pelo olhar: desligado</button></div><small>Q/E garra • C/X pegar/soltar cubo • M auto/manual • I demo • R reiniciar • G modo • V andar pelo olhar • P pivôs • 1-3 qualidade. O painel de eixos e o console 3D aceitam clique.</small><span class="nxl-st">Braço físico: NÃO CONECTADO</span></div>
+
+<!-- PAINEL ATLAS (computador): o mesmo controle do site ATLAS, ligado ao gêmeo e ao braço físico -->
+
+<div id="atl" onkeydown="NX_TECLA(event)">
+ <div class="h"><b>🦾 ATLAS · braço físico</b><button id="atl-min" title="Recolher / abrir o painel">–</button></div>
+ <div class="c">
+  <div class="chips"><span><i id="atl-dv"></i><em id="atl-tv">Sem via de comando</em></span><span><i id="atl-dk"></i><em id="atl-tk">Kit offline</em></span></div>
+  <div id="atl-ax"></div>
+  <div class="row"><button class="k alt" data-pose="zero">Pose zero</button><button class="k alt" data-pose="rest">Repouso</button><button class="k alt" data-pose="pick">Pegar</button></div>
+  <button id="atl-stop">⚠ E-STOP</button>
+  <small id="atl-sync"></small>
+  <details id="atl-cfg"><summary>Conexão</summary>
+   <label class="chk"><input type="checkbox" id="atl-on" checked> Controlar o braço físico (ESP32)</label>
+   <label for="atl-via-sel">Via de comando</label>
+   <select id="atl-via-sel"><option value="auto">Automático · WebSocket local, MQTT de reserva</option><option value="ws">Só WebSocket local (mesma rede)</option><option value="mqtt">Só MQTT (internet)</option></select>
+   <label for="atl-kit-h">Kit na rede local · IP do LCD ou kit-iot.local (porta 81)</label><input type="text" id="atl-kit-h" value="kit-iot.local" spellcheck="false">
+   <label for="atl-brk">Broker MQTT · WebSocket seguro</label><input type="text" id="atl-brk" value="wss://public.cloud.shiftr.io" spellcheck="false">
+   <label for="atl-top">Tópico · igual ao MQTT_TOPIC do kit e ao site ATLAS</label><input type="text" id="atl-top" value="senai-sao-carlos/nexusatlas-x7k2" spellcheck="false">
+   <div class="row"><button class="k" id="atl-con">Conectar</button><button class="k alt" id="atl-dis">Desconectar</button></div>
+   <small id="atl-https"></small>
+  </details>
+  <pre id="atl-log"></pre>
+ </div>
+</div>
 
 
 
-<a-scene light="defaultLightsEnabled:false" renderer="antialias:true;colorManagement:true;exposure:1.0;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui nexus-control>
+<a-scene light="defaultLightsEnabled:false" renderer="antialias:true;colorManagement:true;exposure:1.0;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui nexus-control nexus-link nexus-atlas-ui>
 
 
 
