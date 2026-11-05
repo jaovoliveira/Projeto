@@ -128,13 +128,15 @@ const NX={v:{},t:{},ver:0,halt:false,busy:false,sens:1,hands:{left:false,right:f
   // assume o braço e pausa a demonstração. Todo alvo novo também passa pela ponte NX_LINK.
   set(id,val,origem){
     if(this.halt)return;
+    // Durante a sincronização, a telemetria física é a única fonte de verdade.
+    if(NX_LINK.connected&&!NX_LINK.synced)return;
     const a=AXES.find(x=>x.id===id); if(!a)return;
     if(origem!=='demo'&&DEMO.running)DEMO.pause();
     this.t[id]=clamp(val,a.min,a.max);
     NX_LINK.send('eixo',{eixo:id,graus:this.t[id],origem:origem||'painel'});
   },
   freeze(){AXES.forEach(a=>this.t[a.id]=this.v[a.id])},
-  home(){if(this.halt)return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
+  home(){if(this.halt|| (NX_LINK.connected&&!NX_LINK.synced))return;AXES.forEach(a=>this.t[a.id]=a.home);NX_LINK.send('inicio')},
   stop(){DEMO.pause(true);this.freeze();this.halt=true;this.ver++;NX_LINK.send('parar')},
   resume(){this.halt=false;this.ver++;NX_LINK.send('retomar')}
 };
@@ -183,11 +185,21 @@ const NX_LINK={
     if(t.type==='pong'){this.rtt=performance.now()-this.pingAt;return}
     if(t.type==='hello'){if(t.ip){this.host=t.ip+':81';try{localStorage.setItem('nexus-kit-host',t.ip)}catch(e){}}return}
     if(t.type!=='telemetry')return;
-    const atual=t.axes_atual||null, rel=t.axes_rel||{};
+    // O firmware envia axes_atual e axes_rel já em graus relativos (-90…90).
+    // Só axes_deg é absoluto (0…180) e precisa da conversão -90.
+    const atual=t.axes_atual||null, rel=t.axes_rel||null, abs=t.axes_deg||null;
     let recebeuPosicao=false;
-    AXES.forEach(a=>{const bruto=atual&&Number.isFinite(Number(atual[a.id]))?Number(atual[a.id])-90:Number(rel[a.id]);if(Number.isFinite(bruto)){NX.v[a.id]=clamp(bruto,a.min,a.max);recebeuPosicao=true}});
+    AXES.forEach(a=>{
+      let bruto=atual&&Number.isFinite(Number(atual[a.id]))?Number(atual[a.id]):rel&&Number.isFinite(Number(rel[a.id]))?Number(rel[a.id]):abs&&Number.isFinite(Number(abs[a.id]))?Number(abs[a.id])-90:NaN;
+      if(Number.isFinite(bruto)){NX.v[a.id]=clamp(bruto,a.min,a.max);recebeuPosicao=true}
+    });
     // Segurança: na primeira telemetria após conectar, a posição física vence a pose inicial do software.
-    if(recebeuPosicao&&!this.synced){AXES.forEach(a=>{NX.t[a.id]=NX.v[a.id]});this.synced=true;this.pending=false;setEsp32Status('online',this.mode==='mqtt'?'ESP32 CONECTADO · MQTT':'ESP32 CONECTADO');UI_TOAST('Posição física sincronizada · controle liberado')}
+    if(recebeuPosicao&&!this.synced){
+      AXES.forEach(a=>{NX.t[a.id]=NX.v[a.id]});
+      this.synced=true;this.pending=false;NX.ver++;
+      setEsp32Status('online',this.mode==='mqtt'?'ESP32 CONECTADO · MQTT':'ESP32 CONECTADO');
+      UI_TOAST('Posição física sincronizada · controle liberado');
+    }
     if(typeof t.estop==='boolean'){
       this.estop=t.estop;
       if(t.estop&&!NX.halt){NX.halt=true;NX.freeze()}
