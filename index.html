@@ -199,16 +199,17 @@ AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
    navegador bloqueia ws://: no óculos o comando vai pelo MQTT.
    E-STOP: parar/retomar o gêmeo liga/desliga o E-STOP do kit; um E-STOP vindo do kit (site ATLAS)
    também para o gêmeo. Configuração: painel ATLAS (computador), aba BRAÇO FÍSICO (óculos), tela inicial
-   ou URL (?kit=10.110.22.50&topico=senai-sao-carlos/nexusatlas-x7k2&via=mqtt · &link=0 desliga). */
+   ou URL (?kit=10.110.22.50&topico=senai-sao-carlos/nexusatlas-tcc-r7q2&via=mqtt · &link=0 desliga). */
 const NX_LINK={
   connected:false,rotulo:'NÃO CONECTADO',cor:'#94a3b8',txt:'',   // connected = o kit está respondendo
-  cfg:{ativo:true,via:'auto',kit:'kit-iot.local',broker:'wss://public.cloud.shiftr.io',topico:'senai-sao-carlos/nexusatlas-x7k2',garra:90},
+  cfg:{ativo:true,via:'auto',kit:'kit-iot.local',broker:'wss://public.cloud.shiftr.io',topico:'senai-sao-carlos/nexusatlas-tcc-r7q2',garra:90,abre:-90},
   // gêmeo → braço físico, por eixo: valor = s × graus do gêmeo + o. Se um eixo do braço real girar
   // ao contrário, troque s para -1; se o zero estiver deslocado, ajuste o (em graus).
-  // GARRA: os dedos do gêmeo andam 0…60°, mas o servo da garra física precisa de mais curso para fechar.
-  // "garra" = valor do kit com a garra FECHADA (padrão +90 = servo 180°, o máximo do site ATLAS); o s da
-  // garra sai dele (aplicaGarra). Ajuste com −5/+5 nos painéis; vale para todos os aparelhos (MQTT retido).
-  MAPA:{waist:{s:1,o:0},shoulder:{s:1,o:0},elbow:{s:1,o:0},pitch:{s:1,o:0},grip:{s:1.5,o:0}},
+  // GARRA: os dedos do gêmeo andam 0…60° (0 = aberta), e a garra física usa o curso INTEIRO do servo:
+  // aberta = "abre" (padrão −90 = servo 0°) e fechada = "garra" (padrão +90 = servo 180°). O s e o o da
+  // garra saem desses dois (aplicaGarra). O fechamento se ajusta com −5/+5 nos painéis e vale para todos
+  // os aparelhos (MQTT retido); a abertura muda pela URL (?abre=-80).
+  MAPA:{waist:{s:1,o:0},shoulder:{s:1,o:0},elbow:{s:1,o:0},pitch:{s:1,o:0},grip:{s:3,o:-90}},
   WS_OK:location.protocol!=='https:',ENVIO_WS:25,ENVIO_MQTT:100,
   SERVIDO_PELO_KIT:location.protocol==='http:'&&location.pathname.indexOf('/oculos')===0,
   // kit → gêmeo: tempo desde o último comando DESTE site antes de aceitar outro valor do kit
@@ -232,18 +233,24 @@ const NX_LINK={
   send(comando){if(comando==='parar')this.estop(1);else if(comando==='retomar')this.estop(0)},
   init(){
     try{Object.assign(this.cfg,JSON.parse(localStorage.getItem('nxlink')||'{}'))}catch(e){}
+    // tópico antigo (…x7k2) ficou com páginas velhas repetindo o E-STOP: quem o tinha salvo passa para o novo
+    if(this.cfg.topico==='senai-sao-carlos/nexusatlas-x7k2')this.cfg.topico='senai-sao-carlos/nexusatlas-tcc-r7q2';
     if(this.SERVIDO_PELO_KIT)this.cfg.kit=location.hostname;   // http://<kit>/oculos: o próprio kit é o servidor
     const q=new URLSearchParams(location.search);
     if(q.get('kit'))this.cfg.kit=q.get('kit');if(q.get('topico'))this.cfg.topico=q.get('topico');if(q.get('via'))this.cfg.via=q.get('via');
     if(q.get('broker'))this.cfg.broker=q.get('broker');if(q.get('link'))this.cfg.ativo=q.get('link')!=='0';
-    if(q.get('garra'))this.cfg.garra=+q.get('garra');
+    if(q.get('garra'))this.cfg.garra=+q.get('garra');if(q.get('abre'))this.cfg.abre=+q.get('abre');
     this.aplicaGarra();this.campos();this.conecta()},
   // curso da garra física: valor do kit com a garra fechada (30…90; +90 = servo 180°)
-  aplicaGarra(){const g=AXES.find(a=>a.id==='grip'),f=clamp(Math.round(+this.cfg.garra||90),30,90);this.cfg.garra=f;this.MAPA.grip.s=f/g.max},
+  // curso da garra física em graus do kit: abre (−90 = servo 0°) … garra/fechada (+90 = servo 180°)
+  aplicaGarra(){const g=AXES.find(a=>a.id==='grip'),n=v=>Number.isFinite(+v)?Math.round(+v):null;
+    const o=clamp(n(this.cfg.abre)??-90,-90,0),f=clamp(n(this.cfg.garra)??90,o+30,90);
+    this.cfg.abre=o;this.cfg.garra=f;this.MAPA.grip.o=o;this.MAPA.grip.s=(f-o)/g.max},
   calGarra(d){const g=AXES.find(a=>a.id==='grip');
-    this.cfg.garra=clamp((this.cfg.garra||90)+d,30,90);this.aplicaGarra();this.salva();delete this.env.grip;
+    // tEnv = agora: a telemetria com o valor antigo não "puxa" o gêmeo de volta; o novo valor sai no próximo ciclo
+    this.cfg.garra=clamp((this.cfg.garra??90)+d,this.cfg.abre+30,90);this.aplicaGarra();this.salva();this.tEnv.grip=Date.now();
     if(this.mqOk())this.mq.publish(this.pre+'/garra',String(this.cfg.garra),{qos:1,retain:true});   // o óculos e o PC usam o mesmo ajuste
-    this.log('Garra física: fechada = +'+this.cfg.garra+'° (servo '+(90+this.cfg.garra)+'°)');
+    this.log('Garra física: aberta = servo '+(90+this.cfg.abre)+'° · fechada = servo '+(90+this.cfg.garra)+'°');
     if(!NX.halt)NX.set('grip',g.max,'atlas');   // fecha a garra para ver o ajuste no braço real
     NX.ver++},
   // campos de configuração: tela inicial (nxl-*) e painel ATLAS do computador (atl-*)
@@ -302,7 +309,7 @@ const NX_LINK={
     c.on('message',(top,pl)=>{if(this.mq!==c)return;const s=pl.toString(),sub=top.slice(this.pre.length+1);
       if(sub==='estop')return;   // E-STOP retido no broker pode estar velho: vale o "estop" da telemetria do kit
       if(sub==='garra'){const v=Math.round(+s);   // ajuste da garra feito em outro aparelho (retido)
-        if(v>=30&&v<=90&&v!==this.cfg.garra){this.cfg.garra=v;this.aplicaGarra();this.salva();delete this.env.grip;NX.ver++;this.log('Ajuste da garra recebido: fechada = +'+v+'°')}return}
+        if(v>=this.cfg.abre+30&&v<=90&&v!==this.cfg.garra){this.cfg.garra=v;this.aplicaGarra();this.salva();this.tEnv.grip=Date.now();NX.ver++;this.log('Ajuste da garra recebido: fechada = servo '+(90+v)+'°')}return}
       if(sub==='online'){   // "last will": o kit caiu do broker
         if(s==='0'){if(!this.fora)this.log('Kit fora do broker: perdeu o Wi-Fi ou a energia. Veja o LCD do kit.');this.fora=true;if(!this.wsOk)this.visto=0}
         else if(s==='1')this.fora=false;return}
@@ -1321,7 +1328,7 @@ AFRAME.registerComponent('axis-panel',{
    const pn=pins&&a.id in pins?pins[a.id]:undefined;
    this.tx(pn===undefined?'GPIO —':typeof pn==='number'?'GPIO'+pn:'SEM PINO',94,oy+53,14,typeof pn==='number'?'#22d3ee':'#64748b',700);
    if(a.id==='grip'){this.btn(z[10],'−5','#0b4f8a',true);this.btn(z[11],'+5','#0b4f8a',true);   // ajuste do fechamento da garra física
-    this.tx('fecha +'+L.cfg.garra+'°',238,oy+64,11,'#94a3b8',600,'center')}
+    this.tx('fecha servo '+(90+L.cfg.garra)+'°',238,oy+64,11,'#94a3b8',600,'center')}
 
    // trilho: faixa do eixo em graus do kit, trecho do zero até o gêmeo, alvo (branco) e servo real (▲)
    this.rr(x0,ty-5,x1-x0,10,5);c.fillStyle='#0b1a2c';c.fill();c.strokeStyle='rgba(148,163,184,.3)';c.lineWidth=1;c.stroke();
@@ -1419,7 +1426,7 @@ AFRAME.registerComponent('nexus-atlas-ui',{
   const via=!L.cfg.ativo?['Desligado','']:L.wsOk?['WebSocket local'+(L.rtt!=null?' · '+L.rtt+' ms':''),'on']:L.mqOk()?['MQTT (internet)','on']:L.ws||L.mq?['Conectando…','w']:['Sem via de comando',''];
   const kt=!L.cfg.ativo?['Kit não usado','']:vivo?['Kit online'+(k&&k.rssi?' · '+k.rssi+' dBm':''),'on']:L.fora?['Kit fora do ar','x']:L.visto?['Kit sem resposta há '+L.dur((ag-L.visto)/1000),'x']:['Kit offline','x'];
   this.set('atl-tv','textContent',via[0]);this.set('atl-dv','className',via[1]);this.set('atl-tk','textContent',kt[0]);this.set('atl-dk','className',kt[1]);
-  this.set('atl-garra','textContent','+'+L.cfg.garra+'°');this.set('atl-garra-s','textContent','servo '+(90+L.cfg.garra)+'°');
+  this.set('atl-garra','textContent','servo '+(90+L.cfg.garra)+'°');this.set('atl-garra-s','textContent','aberta = servo '+(90+L.cfg.abre)+'° · fechada = '+(L.cfg.garra>0?'+':'')+L.cfg.garra+'° no kit');
   AXES.forEach(a=>{const e=this.ax[a.id],cmd=L.kv(a,NX.t[a.id]),fx=L.faixa(a);
    if(+e.i.min!==fx[0])e.i.min=fx[0];if(+e.i.max!==fx[1])e.i.max=fx[1];   // curso da garra muda com o ajuste
    if(L.segura!==a.id){if(+e.i.value!==cmd)e.i.value=cmd;const s=(cmd>0?'+':'')+cmd+'°';if(e.o.textContent!==s)e.o.textContent=s}
@@ -2505,7 +2512,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
   <label for="nxl-kit">Kit na rede local · IP do LCD ou kit-iot.local (só com a página em http)</label>
   <input type="text" id="nxl-kit" value="kit-iot.local" spellcheck="false">
   <label for="nxl-top">Tópico MQTT · igual ao MQTT_TOPIC do kit e ao site ATLAS</label>
-  <input type="text" id="nxl-top" value="senai-sao-carlos/nexusatlas-x7k2" spellcheck="false">
+  <input type="text" id="nxl-top" value="senai-sao-carlos/nexusatlas-tcc-r7q2" spellcheck="false">
   <button type="button" onclick="NX_LINK.aplica()">Salvar e conectar</button>
   <small>No óculos a página é https: o comando vai pela internet (MQTT). O braço físico repete os movimentos do gêmeo, inclusive a demonstração, e o gêmeo acompanha o que o site ATLAS mexer; o E-STOP do laboratório para o braço real. Controle: no computador, painel ATLAS (canto superior esquerdo); no óculos, aba BRAÇO FÍSICO do painel de eixos.</small>
  </details>
@@ -2530,7 +2537,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
   <div class="chips"><span><i id="atl-dv"></i><em id="atl-tv">Sem via de comando</em></span><span><i id="atl-dk"></i><em id="atl-tk">Kit offline</em></span></div>
   <div id="atl-ax"></div>
   <div class="row"><button class="k alt" data-pose="zero">Pose zero</button><button class="k alt" data-pose="rest">Repouso</button><button class="k alt" data-pose="pick">Pegar</button></div>
-  <div class="row cal"><span>Garra física fecha em <b id="atl-garra">+90°</b><small id="atl-garra-s">servo 180°</small></span><button class="k alt" id="atl-gm" title="Fecha menos (se o servo força ou zumbe com a garra fechada)">−5</button><button class="k alt" id="atl-gp" title="Fecha mais (se a garra não fecha totalmente)">+5</button></div>
+  <div class="row cal"><span>Garra física fecha em <b id="atl-garra">servo 180°</b><small id="atl-garra-s">aberta = servo 0° · fechada = +90° no kit</small></span><button class="k alt" id="atl-gm" title="Fecha menos (se o servo força ou zumbe com a garra fechada)">−5</button><button class="k alt" id="atl-gp" title="Fecha mais (se a garra não fecha totalmente)">+5</button></div>
   <button id="atl-stop">⚠ E-STOP</button>
   <small id="atl-sync"></small>
   <details id="atl-cfg"><summary>Conexão</summary>
@@ -2539,7 +2546,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
    <select id="atl-via-sel"><option value="auto">Automático · WebSocket local, MQTT de reserva</option><option value="ws">Só WebSocket local (mesma rede)</option><option value="mqtt">Só MQTT (internet)</option></select>
    <label for="atl-kit-h">Kit na rede local · IP do LCD ou kit-iot.local (porta 81)</label><input type="text" id="atl-kit-h" value="kit-iot.local" spellcheck="false">
    <label for="atl-brk">Broker MQTT · WebSocket seguro</label><input type="text" id="atl-brk" value="wss://public.cloud.shiftr.io" spellcheck="false">
-   <label for="atl-top">Tópico · igual ao MQTT_TOPIC do kit e ao site ATLAS</label><input type="text" id="atl-top" value="senai-sao-carlos/nexusatlas-x7k2" spellcheck="false">
+   <label for="atl-top">Tópico · igual ao MQTT_TOPIC do kit e ao site ATLAS</label><input type="text" id="atl-top" value="senai-sao-carlos/nexusatlas-tcc-r7q2" spellcheck="false">
    <div class="row"><button class="k" id="atl-con">Conectar</button><button class="k alt" id="atl-dis">Desconectar</button></div>
    <small id="atl-https"></small>
   </details>
