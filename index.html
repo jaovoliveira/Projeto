@@ -117,6 +117,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Titillium Web',san
 #atl button.k{flex:1;padding:7px 6px;border:0;border-radius:8px;background:#0284c7;color:#fff;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer}
 #atl button.k.alt{background:transparent;border:1px solid #334155;color:#e2e8f0}
 #atl button.k:hover{filter:brightness(1.15)}
+#atl .cal{align-items:center}
+#atl .cal span{flex:1;font-size:12px;color:#cbd5e1;line-height:1.25}
+#atl .cal b{color:#fff}
+#atl .cal small{display:block;font-size:10.5px;color:#94a3b8}
+#atl .cal button.k{flex:0 0 44px}
 #atl-stop{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid #ef4444;border-radius:8px;color:#fff;font-family:inherit;font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;background:repeating-linear-gradient(-45deg,#d92626 0 10px,#b31c1c 10px 20px)}
 #atl-stop.on{background:#92400e;border-color:#fbbf24;animation:atlpisca 1s steps(2) infinite}
 @keyframes atlpisca{50%{box-shadow:0 0 18px rgba(251,191,36,.7)}}
@@ -197,10 +202,13 @@ AXES.forEach(a=>{NX.v[a.id]=NX.t[a.id]=a.home});
    ou URL (?kit=10.110.22.50&topico=senai-sao-carlos/nexusatlas-x7k2&via=mqtt · &link=0 desliga). */
 const NX_LINK={
   connected:false,rotulo:'NÃO CONECTADO',cor:'#94a3b8',txt:'',   // connected = o kit está respondendo
-  cfg:{ativo:true,via:'auto',kit:'kit-iot.local',broker:'wss://public.cloud.shiftr.io',topico:'senai-sao-carlos/nexusatlas-x7k2'},
+  cfg:{ativo:true,via:'auto',kit:'kit-iot.local',broker:'wss://public.cloud.shiftr.io',topico:'senai-sao-carlos/nexusatlas-x7k2',garra:90},
   // gêmeo → braço físico, por eixo: valor = s × graus do gêmeo + o. Se um eixo do braço real girar
   // ao contrário, troque s para -1; se o zero estiver deslocado, ajuste o (em graus).
-  MAPA:{waist:{s:1,o:0},shoulder:{s:1,o:0},elbow:{s:1,o:0},pitch:{s:1,o:0},grip:{s:1,o:0}},
+  // GARRA: os dedos do gêmeo andam 0…60°, mas o servo da garra física precisa de mais curso para fechar.
+  // "garra" = valor do kit com a garra FECHADA (padrão +90 = servo 180°, o máximo do site ATLAS); o s da
+  // garra sai dele (aplicaGarra). Ajuste com −5/+5 nos painéis; vale para todos os aparelhos (MQTT retido).
+  MAPA:{waist:{s:1,o:0},shoulder:{s:1,o:0},elbow:{s:1,o:0},pitch:{s:1,o:0},grip:{s:1.5,o:0}},
   WS_OK:location.protocol!=='https:',ENVIO_WS:25,ENVIO_MQTT:100,
   SERVIDO_PELO_KIT:location.protocol==='http:'&&location.pathname.indexOf('/oculos')===0,
   // kit → gêmeo: tempo desde o último comando DESTE site antes de aceitar outro valor do kit
@@ -211,7 +219,7 @@ const NX_LINK={
          rest:{nome:'Repouso',p:{waist:0,shoulder:-60,elbow:60,pitch:0,grip:0}},
          pick:{nome:'Pegar',p:{waist:0,shoulder:30,elbow:-40,pitch:-20,grip:-30}}},
   ws:null,wsOk:false,wsTent:0,wsTimer:null,mq:null,pre:'',ip:'',visto:0,rtt:null,ping:0,ult:0,estopKit:null,avisou:false,
-  env:{},tEnv:{},tMud:{},seg:{},sinc:false,   // env = valor que o kit tem de cada eixo, até onde este site sabe
+  env:{},tEnv:{},tMud:{},seg:{},sinc:false,pendEstop:null,doKit:false,haltDoKit:false,   // env = valor que o kit tem de cada eixo, até onde este site sabe
   kit:null,info:null,upt:null,fora:false,segura:null,logs:[],lv:0,pend:'',tLog:0,tAd:0,tErr:0,
 
   log(t){this.logs.push(new Date().toLocaleTimeString('pt-BR')+'  '+t);if(this.logs.length>60)this.logs.shift();this.lv++;console.info('[NX_LINK] '+t)},
@@ -228,7 +236,16 @@ const NX_LINK={
     const q=new URLSearchParams(location.search);
     if(q.get('kit'))this.cfg.kit=q.get('kit');if(q.get('topico'))this.cfg.topico=q.get('topico');if(q.get('via'))this.cfg.via=q.get('via');
     if(q.get('broker'))this.cfg.broker=q.get('broker');if(q.get('link'))this.cfg.ativo=q.get('link')!=='0';
-    this.campos();this.conecta()},
+    if(q.get('garra'))this.cfg.garra=+q.get('garra');
+    this.aplicaGarra();this.campos();this.conecta()},
+  // curso da garra física: valor do kit com a garra fechada (30…90; +90 = servo 180°)
+  aplicaGarra(){const g=AXES.find(a=>a.id==='grip'),f=clamp(Math.round(+this.cfg.garra||90),30,90);this.cfg.garra=f;this.MAPA.grip.s=f/g.max},
+  calGarra(d){const g=AXES.find(a=>a.id==='grip');
+    this.cfg.garra=clamp((this.cfg.garra||90)+d,30,90);this.aplicaGarra();this.salva();delete this.env.grip;
+    if(this.mqOk())this.mq.publish(this.pre+'/garra',String(this.cfg.garra),{qos:1,retain:true});   // o óculos e o PC usam o mesmo ajuste
+    this.log('Garra física: fechada = +'+this.cfg.garra+'° (servo '+(90+this.cfg.garra)+'°)');
+    if(!NX.halt)NX.set('grip',g.max,'atlas');   // fecha a garra para ver o ajuste no braço real
+    NX.ver++},
   // campos de configuração: tela inicial (nxl-*) e painel ATLAS do computador (atl-*)
   campos(){const c=this.cfg,f=(id,p,v)=>{const e=document.getElementById(id);if(e)e[p]=v};
     if(['auto','ws','mqtt'].indexOf(c.via)<0||(!this.WS_OK&&c.via==='ws'))c.via='auto';
@@ -249,7 +266,7 @@ const NX_LINK={
     this.log('Conectando'+(ws?' · WebSocket '+this.cfg.kit:'')+(mq?' · MQTT '+this.pre:'')+(this.WS_OK?'':' (página https: só MQTT)'));
     if(ws)this.abreWs();if(mq)this.abreMqtt()},
   // via nova depois de ficar sem nenhuma: o gêmeo volta a assumir a pose do kit antes de mandar qualquer coisa
-  ressinc(){this.sinc=false;this.env={};this.seg={}},
+  ressinc(){this.sinc=false;this.env={};this.seg={};this.estopKit=null;this.pendEstop=null},
   para(){clearTimeout(this.wsTimer);this.wsTimer=null;
     if(this.ws){const w=this.ws;this.ws=null;w.onclose=null;try{w.close()}catch(e){}}this.wsOk=false;this.rtt=null;
     if(this.mq){const c=this.mq;this.mq=null;try{c.end(true)}catch(e){}}this.visto=0},
@@ -279,11 +296,13 @@ const NX_LINK={
     if(typeof mqtt==='undefined'){this.log('Biblioteca MQTT não carregou (sem internet?): só o WebSocket local funciona.');return}
     const c=this.mq=mqtt.connect(this.cfg.broker.trim(),{username:'public',password:'public',clientId:'nexus-vr-'+Math.random().toString(16).slice(2,8),
       protocolVersion:4,clean:true,keepalive:30,reconnectPeriod:2000,connectTimeout:15000,queueQoSZero:false,resubscribe:true});
-    c.on('connect',()=>{if(this.mq!==c)return;c.subscribe([this.pre+'/up',this.pre+'/online',this.pre+'/estop'],{qos:0});
+    c.on('connect',()=>{if(this.mq!==c)return;c.subscribe([this.pre+'/up',this.pre+'/online',this.pre+'/estop',this.pre+'/garra'],{qos:0});
       if(!this.wsOk)this.ressinc();this.log('MQTT conectado · tópico '+this.pre)});
     c.on('error',e=>{if(this.mq!==c)return;const a=Date.now();if(a-this.tErr>5000){this.tErr=a;this.log('Erro MQTT: '+e.message)}});
     c.on('message',(top,pl)=>{if(this.mq!==c)return;const s=pl.toString(),sub=top.slice(this.pre.length+1);
-      if(sub==='estop')return this.kitEstop(s==='1');
+      if(sub==='estop')return;   // E-STOP retido no broker pode estar velho: vale o "estop" da telemetria do kit
+      if(sub==='garra'){const v=Math.round(+s);   // ajuste da garra feito em outro aparelho (retido)
+        if(v>=30&&v<=90&&v!==this.cfg.garra){this.cfg.garra=v;this.aplicaGarra();this.salva();delete this.env.grip;NX.ver++;this.log('Ajuste da garra recebido: fechada = +'+v+'°')}return}
       if(sub==='online'){   // "last will": o kit caiu do broker
         if(s==='0'){if(!this.fora)this.log('Kit fora do broker: perdeu o Wi-Fi ou a energia. Veja o LCD do kit.');this.fora=true;if(!this.wsOk)this.visto=0}
         else if(s==='1')this.fora=false;return}
@@ -333,15 +352,27 @@ const NX_LINK={
     if(Math.abs(NX.t[a.id]-tw)<.01&&Math.abs(NX.v[a.id]-tw)<.05)return false;
     NX.t[a.id]=tw;this.seg[a.id]=tw;NX.ver++;return true},
 
-  // E-STOP vindo do kit (outro site, outro óculos): só as MUDANÇAS valem, para não brigar com o daqui
-  kitEstop(v){const ant=this.estopKit;this.estopKit=v;if(ant===v)return;
+  // E-STOP: quem decide é o estado REAL do kit ("estop" da telemetria). Este site só MANDA E-STOP quando
+  // alguém aperta o botão aqui. Quando o kit muda por outro controle (site ATLAS, outro óculos), o gêmeo
+  // só acompanha, sem responder ao kit: responder fazia dois controles se rebaterem (liga/desliga sem parar).
+  kitEstop(v){
+    const ag=Date.now(),p=this.pendEstop;
+    // comando daqui ainda a caminho: telemetria com o estado antigo não vale (até chegar ou até o prazo)
+    if(p){if(v===p.v||ag-p.t>(this.wsOk?1500:5000))this.pendEstop=null;else return}
+    const ant=this.estopKit;this.estopKit=v;if(ant===v)return;
     if(ant!==null||v)this.log('E-STOP do kit: '+(v?'ATIVO':'liberado'));
-    if(v&&!NX.halt){NX.stop();UI_TOAST('E-STOP ativo no braço físico')}
-    else if(!v&&ant===true&&NX.halt){NX.resume();UI_TOAST('E-STOP do braço físico liberado')}},
-  estop(v){if(!this.cfg.ativo)return;let via='';
+    // (re)conectou com o gêmeo parado por alguém AQUI e o kit andando: o braço também para
+    if(ant===null&&!v&&NX.halt&&!this.haltDoKit){this.estop(1);return}
+    this.doKit=true;
+    try{
+      if(v&&!NX.halt){NX.stop();this.haltDoKit=true;UI_TOAST('E-STOP ativo no braço físico')}
+      else if(!v&&NX.halt&&(ant===true||this.haltDoKit)){NX.resume();UI_TOAST('E-STOP do braço físico liberado')}
+    }finally{this.doKit=false}},
+  estop(v){if(!this.cfg.ativo||this.doKit)return;let via='';   // doKit: o gêmeo só está acompanhando o kit
+    this.haltDoKit=false;                                         // parada/liberação feita por alguém aqui
     if(this.wsOk&&this.ws&&this.ws.readyState===1){this.ws.send('{"estop":'+v+'}');via='ws'}
     if(this.mqOk()){this.mq.publish(this.pre+'/estop',String(v),{qos:1,retain:true});via+=(via?' + ':'')+'mqtt'}   // retido: quem conectar depois vê o mesmo E-STOP
-    if(via&&this.estopKit!==!!v)this.log('→ '+via+': E-STOP '+(v?'1 (parar)':'0 (liberar)'))},
+    if(via){this.pendEstop={v:!!v,t:Date.now()};this.log('→ '+via+': E-STOP '+(v?'1 (parar)':'0 (liberar)'))}},
   // poses do site ATLAS: movem o gêmeo, e o gêmeo leva o braço físico
   pose(nome){const P=this.POSES[nome];if(!P)return;
     if(NX.halt)return UI_TOAST('E-STOP ativo: libere a parada antes de mover');
@@ -382,7 +413,7 @@ const NX_LINK={
     this.rotulo=r;this.cor=c;this.txt=txt;
     document.querySelectorAll('.nxl-st').forEach(e=>{e.textContent=txt;e.style.color=c})},
   // muda quando algo da aba BRAÇO FÍSICO do painel 3D precisa ser redesenhado
-  uiKey(){const k=this.kit,A=k&&k.atual;return[this.rotulo,this.rtt,this.cfg.ativo,this.wsOk,k&&k.rssi,A&&AXES.map(a=>A[a.id]).join(),this.info&&this.info.ip,this.lv].join('|')}
+  uiKey(){const k=this.kit,A=k&&k.atual;return[this.rotulo,this.rtt,this.cfg.ativo,this.cfg.garra,this.wsOk,k&&k.rssi,A&&AXES.map(a=>A[a.id]).join(),this.info&&this.info.ip,this.lv].join('|')}
 };
 AFRAME.registerComponent('nexus-link',{init(){NX_LINK.init()},tick(){NX_LINK.tick()}});
 
@@ -1024,10 +1055,12 @@ AFRAME.registerComponent('axis-panel',{
    {t:'btn',id:'origem',x:862,y:470,w:400,h:62},{t:'btn',id:'emerg',x:862,y:546,w:400,h:140}];
   this.zE=AXES.map((a,i)=>{const oy=90+i*126;return[{t:'slider',i,x:358,y:oy+12,w:270,h:88,tx0:368,tx1:618},{t:'jog',i,d:-1,x:638,y:oy+24,w:58,h:58},{t:'jog',i,d:1,x:704,y:oy+24,w:58,h:58},{t:'home',i,x:770,y:oy+24,w:58,h:58}]}).flat();
   this.zD=[['d-start',18,318],['d-pause',297,318],['d-reset',576,318],['d-pick',18,442],['d-place',297,442],['d-auto',576,442]].map(([id,x,y])=>({t:'btn',id,x,y,w:266,h:112}));
-  // aba BRAÇO FÍSICO (controle do site ATLAS): 0-4 sliders em graus do kit, 5 ligar, 6 reconectar, 7-9 poses
+  // aba BRAÇO FÍSICO (controle do site ATLAS): 0-4 sliders em graus do kit, 5 ligar, 6 reconectar, 7-9 poses,
+  // 10-11 ajuste da garra física (−5/+5 no fechamento), na linha da garra
   this.zF=AXES.map((a,i)=>{const oy=232+i*82;return{t:'slider',i,x:290,y:oy+4,w:330,h:66,tx0:300,tx1:610}})
    .concat([{t:'btn',id:'l-on',x:652,y:102,w:176,h:50},{t:'btn',id:'l-con',x:652,y:160,w:176,h:50}],
-    ['p-zero','p-rest','p-pick'].map((id,j)=>({t:'btn',id,x:18+j*279,y:652,w:266,h:88})))},
+    ['p-zero','p-rest','p-pick'].map((id,j)=>({t:'btn',id,x:18+j*279,y:652,w:266,h:88})),
+    [{t:'btn',id:'g-',x:192,y:570,w:44,h:40},{t:'btn',id:'g+',x:240,y:570,w:44,h:40}])},
 
  zones(){return this.common.concat(this.tab==='eixos'?this.zE:this.tab==='demo'?this.zD:this.zF)},
 
@@ -1058,7 +1091,8 @@ AFRAME.registerComponent('axis-panel',{
    'd-start':()=>NexusArm.iniciarMovimento(),'d-pause':()=>NexusArm.pausarMovimento(),'d-reset':()=>NexusArm.reiniciar(),
    'd-pick':()=>NexusArm.pegarCubo(),'d-place':()=>NexusArm.soltarCubo(),'d-auto':()=>NexusArm.alternarAutoManual(),
    'l-on':()=>NX_LINK.liga(!NX_LINK.cfg.ativo),'l-con':()=>{if(!NX_LINK.cfg.ativo)return NX_LINK.liga(true);NX_LINK.ip='';NX_LINK.conecta();UI_TOAST('Braço físico: reconectando…')},
-   'p-zero':()=>NX_LINK.pose('zero'),'p-rest':()=>NX_LINK.pose('rest'),'p-pick':()=>NX_LINK.pose('pick')}[z.id];
+   'p-zero':()=>NX_LINK.pose('zero'),'p-rest':()=>NX_LINK.pose('rest'),'p-pick':()=>NX_LINK.pose('pick'),
+   'g-':()=>NX_LINK.calGarra(-5),'g+':()=>NX_LINK.calGarra(5)}[z.id];
   if(f)f();this.lastKey=''},
 
  flashZone(z){const l0=this.L(z.x,z.y),l1=this.L(z.x+z.w,z.y+z.h),m=this.hlPress;m.position.set((l0.x+l1.x)/2,(l0.y+l1.y)/2,.008);m.scale.set((l1.x-l0.x)*1.12,(l0.y-l1.y)*1.25,1);m.visible=true;this.flash=1},
@@ -1286,6 +1320,8 @@ AFRAME.registerComponent('axis-panel',{
    this.tx(a.nome.toUpperCase(),94,oy+27,21,'#ffffff',700,'left',190);
    const pn=pins&&a.id in pins?pins[a.id]:undefined;
    this.tx(pn===undefined?'GPIO —':typeof pn==='number'?'GPIO'+pn:'SEM PINO',94,oy+53,14,typeof pn==='number'?'#22d3ee':'#64748b',700);
+   if(a.id==='grip'){this.btn(z[10],'−5','#0b4f8a',true);this.btn(z[11],'+5','#0b4f8a',true);   // ajuste do fechamento da garra física
+    this.tx('fecha +'+L.cfg.garra+'°',238,oy+64,11,'#94a3b8',600,'center')}
 
    // trilho: faixa do eixo em graus do kit, trecho do zero até o gêmeo, alvo (branco) e servo real (▲)
    this.rr(x0,ty-5,x1-x0,10,5);c.fillStyle='#0b1a2c';c.fill();c.strokeStyle='rgba(148,163,184,.3)';c.lineWidth=1;c.stroke();
@@ -1369,6 +1405,7 @@ AFRAME.registerComponent('nexus-atlas-ui',{
   const solta=()=>{L.segura=null};window.addEventListener('pointerup',solta);window.addEventListener('pointercancel',solta);
   this.box.querySelectorAll('[data-pose]').forEach(b=>b.onclick=()=>L.pose(b.dataset.pose));
   g('atl-stop').onclick=()=>{NX.halt?NX.resume():NX.stop()};
+  g('atl-gm').onclick=()=>L.calGarra(-5);g('atl-gp').onclick=()=>L.calGarra(5);
   g('atl-con').onclick=()=>{g('atl-on').checked=true;L.aplica('atl')};g('atl-dis').onclick=()=>L.liga(false);
   g('atl-on').onchange=()=>L.aplica('atl');g('atl-via-sel').onchange=()=>L.aplica('atl');
   g('atl-min').onclick=()=>{const m=this.box.classList.toggle('min');g('atl-min').textContent=m?'+':'–'};
@@ -1382,7 +1419,9 @@ AFRAME.registerComponent('nexus-atlas-ui',{
   const via=!L.cfg.ativo?['Desligado','']:L.wsOk?['WebSocket local'+(L.rtt!=null?' · '+L.rtt+' ms':''),'on']:L.mqOk()?['MQTT (internet)','on']:L.ws||L.mq?['Conectando…','w']:['Sem via de comando',''];
   const kt=!L.cfg.ativo?['Kit não usado','']:vivo?['Kit online'+(k&&k.rssi?' · '+k.rssi+' dBm':''),'on']:L.fora?['Kit fora do ar','x']:L.visto?['Kit sem resposta há '+L.dur((ag-L.visto)/1000),'x']:['Kit offline','x'];
   this.set('atl-tv','textContent',via[0]);this.set('atl-dv','className',via[1]);this.set('atl-tk','textContent',kt[0]);this.set('atl-dk','className',kt[1]);
-  AXES.forEach(a=>{const e=this.ax[a.id],cmd=L.kv(a,NX.t[a.id]);
+  this.set('atl-garra','textContent','+'+L.cfg.garra+'°');this.set('atl-garra-s','textContent','servo '+(90+L.cfg.garra)+'°');
+  AXES.forEach(a=>{const e=this.ax[a.id],cmd=L.kv(a,NX.t[a.id]),fx=L.faixa(a);
+   if(+e.i.min!==fx[0])e.i.min=fx[0];if(+e.i.max!==fx[1])e.i.max=fx[1];   // curso da garra muda com o ajuste
    if(L.segura!==a.id){if(+e.i.value!==cmd)e.i.value=cmd;const s=(cmd>0?'+':'')+cmd+'°';if(e.o.textContent!==s)e.o.textContent=s}
    e.i.disabled=NX.halt;
    const pn=pins&&a.id in pins?pins[a.id]:undefined,ps=pn===undefined?'GPIO –':typeof pn==='number'?'GPIO'+pn:'sem pino';if(e.p.textContent!==ps)e.p.textContent=ps;
@@ -2491,6 +2530,7 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
   <div class="chips"><span><i id="atl-dv"></i><em id="atl-tv">Sem via de comando</em></span><span><i id="atl-dk"></i><em id="atl-tk">Kit offline</em></span></div>
   <div id="atl-ax"></div>
   <div class="row"><button class="k alt" data-pose="zero">Pose zero</button><button class="k alt" data-pose="rest">Repouso</button><button class="k alt" data-pose="pick">Pegar</button></div>
+  <div class="row cal"><span>Garra física fecha em <b id="atl-garra">+90°</b><small id="atl-garra-s">servo 180°</small></span><button class="k alt" id="atl-gm" title="Fecha menos (se o servo força ou zumbe com a garra fechada)">−5</button><button class="k alt" id="atl-gp" title="Fecha mais (se a garra não fecha totalmente)">+5</button></div>
   <button id="atl-stop">⚠ E-STOP</button>
   <small id="atl-sync"></small>
   <details id="atl-cfg"><summary>Conexão</summary>
