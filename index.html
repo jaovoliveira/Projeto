@@ -8,7 +8,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>NEXUS ATLAS - Laboratório VR</title>
+<title>NEXUS ATLAS · SynchroArm — Laboratório de Robótica Imersiva</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23081321'/%3E%3Cpath d='M8 23 L16 9 L24 23' stroke='%2300E5FF' stroke-width='3' fill='none'/%3E%3C/svg%3E">
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
@@ -1649,7 +1651,7 @@ AFRAME.registerComponent('nexus-lab',{
   fx.lineCap='round';for(let i=0;i<40;i++){const X=rnd()*1024,Y=rnd()*1024;fx.strokeStyle=`rgba(40,45,50,${.04+rnd()*.05})`;fx.lineWidth=1+rnd()*3;fx.beginPath();fx.moveTo(X,Y);fx.quadraticCurveTo(X+rnd()*80-40,Y+rnd()*80-40,X+rnd()*160-80,Y+rnd()*160-80);fx.stroke()}
   const[gc,gx]=cnv(512,512);gx.fillStyle='#5a5a5a';gx.fillRect(0,0,512,512);blobs(gx,512,512,120,30,120,.12,1);dots(gx,512,512,20000,.25,60,140);
   gx.fillStyle='#c8c8c8';for(const p of[0,256]){gx.fillRect(p,0,2,512);gx.fillRect(0,p,512,2)}
-  const floorMat=new T.MeshStandardMaterial({color:'#9aa2ab',map:tex(fc,3),roughnessMap:tex(gc,3,1),roughness:1,metalness:0,envMapIntensity:.85});
+  const floorMat=new T.MeshStandardMaterial({color:'#8a949f',map:tex(fc,3),roughnessMap:tex(gc,3,1),roughness:1,metalness:0,envMapIntensity:.85});
 
   // parede (12 x 4,8 m): lambri azul-acinzentado, faixa azul industrial, painéis claros, sanca com luz ciano e AO nas bordas
   const[wc,wx]=cnv(2048,1024),WY=h=>(4.8-h)/4.8*1024,WX=m=>m/12*2048;
@@ -1657,9 +1659,9 @@ AFRAME.registerComponent('nexus-lab',{
   for(let m=0;m<=12;m++){const p=WX(m);wx.fillStyle='rgba(95,106,118,.35)';wx.fillRect(p-1,WY(4.35),2,WY(1.25)-WY(4.35));wx.fillStyle='rgba(255,255,255,.4)';wx.fillRect(p+1,WY(4.35),1,WY(1.25)-WY(4.35))}
   wx.fillStyle='#9ea8b3';wx.fillRect(0,0,2048,WY(4.35));
   let gr=wx.createLinearGradient(0,WY(4.33),0,WY(3.4));gr.addColorStop(0,'rgba(90,205,240,.30)');gr.addColorStop(1,'rgba(90,205,240,0)');wx.fillStyle=gr;wx.fillRect(0,WY(4.33),2048,WY(3.4)-WY(4.33));
-  gr=wx.createLinearGradient(0,WY(1.1),0,1024);gr.addColorStop(0,'#66768a');gr.addColorStop(1,'#56657a');wx.fillStyle=gr;wx.fillRect(0,WY(1.1),2048,1024-WY(1.1));
+  gr=wx.createLinearGradient(0,WY(1.1),0,1024);gr.addColorStop(0,'#2c3846');gr.addColorStop(1,'#222c38');wx.fillStyle=gr;wx.fillRect(0,WY(1.1),2048,1024-WY(1.1));
   for(let m=0;m<=12;m+=1.2){const p=WX(m);wx.fillStyle='rgba(30,38,48,.45)';wx.fillRect(p-1,WY(1.1),2,1024-WY(1.1));wx.fillStyle='rgba(255,255,255,.15)';wx.fillRect(p+1,WY(1.1),1,1024-WY(1.1))}
-  wx.fillStyle='#005696';wx.fillRect(0,WY(1.25),2048,WY(1.1)-WY(1.25));wx.fillStyle='#22d3ee';wx.fillRect(0,WY(1.265),2048,WY(1.25)-WY(1.265));
+  wx.fillStyle='#081321';wx.fillRect(0,WY(1.25),2048,WY(1.1)-WY(1.25));wx.fillStyle='#00E5FF';wx.fillRect(0,WY(1.265),2048,WY(1.25)-WY(1.265));
   gr=wx.createLinearGradient(0,1024,0,WY(.45));gr.addColorStop(0,'rgba(0,0,0,.28)');gr.addColorStop(1,'rgba(0,0,0,0)');wx.fillStyle=gr;wx.fillRect(0,WY(.45),2048,1024-WY(.45));
   gr=wx.createLinearGradient(0,0,0,WY(4.3));gr.addColorStop(0,'rgba(0,0,0,.25)');gr.addColorStop(1,'rgba(0,0,0,0)');wx.fillStyle=gr;wx.fillRect(0,0,2048,WY(4.3));
   for(const s of[0,1]){gr=wx.createLinearGradient(s?2048:0,0,s?2048-WX(.5):WX(.5),0);gr.addColorStop(0,'rgba(0,0,0,.18)');gr.addColorStop(1,'rgba(0,0,0,0)');wx.fillStyle=gr;wx.fillRect(s?2048-WX(.5):0,0,WX(.5),1024)}
@@ -1704,7 +1706,7 @@ AFRAME.registerComponent('nexus-lab',{
     for(let i=0;i<300;i++){A.fillStyle=`rgba(255,255,255,${rnd()*.25})`;A.fillRect(rnd()*480+10,rnd()*116+6,20+rnd()*100,1)}
     TX('NX-01',96,66,54,'#0b3d6e');A.fillStyle='#0b3d6e';A.fillRect(188,22,3,84);TX('BRAÇO ROBÓTICO • 5 EIXOS',204,48,24,'#1f2937',700,'left');TX('SENAI SÃO CARLOS • MECATRÔNICA',204,84,18,'#334155',600,'left');
     A.fillStyle='#6b7480';[[16,16],[494,16],[16,110],[494,110]].forEach(([x,y])=>{A.beginPath();A.arc(x,y,5,0,7);A.fill()});A.restore();
-    A.save();A.translate(1152,128);A.fillStyle='#005696';A.fillRect(0,0,512,96);A.fillStyle='#22d3ee';A.fillRect(0,88,512,4);TX('BANCADA NEXUS ATLAS',256,38,38,'#fff');TX('CÉLULA ROBÓTICA 01',256,72,20,'#7dd3fc',600);A.restore();
+    A.save();A.translate(1152,128);A.fillStyle='#081321';A.fillRect(0,0,512,96);A.fillStyle='#00E5FF';A.fillRect(0,88,512,4);TX('BANCADA NEXUS ATLAS',256,38,38,'#fff');TX('CÉLULA ROBÓTICA 01',256,72,20,'#7dd3fc',600);A.restore();
     A.save();A.translate(1152,224);A.fillStyle='#f1f3f5';A.fillRect(0,0,512,96);A.strokeStyle='#111';A.lineWidth=4;A.strokeRect(2,2,508,92);TX('QD-01 • QUADRO DE DISTRIBUIÇÃO',256,36,26,'#111');TX('220 / 380 V • 60 Hz',256,70,20,'#334155',600);A.restore();
     A.save();A.translate(1664,0);A.fillStyle='#f1f3f5';A.fillRect(0,0,384,96);A.strokeStyle='#111';A.lineWidth=4;A.strokeRect(2,2,380,92);TX('PAINEL DE CONTROLE',192,36,28,'#111');TX('CLP • ESP32 • REDE',192,70,18,'#334155',600);A.restore();
     A.save();A.translate(0,320);A.shadowColor='#22d3ee';A.shadowBlur=18;if('letterSpacing' in A)A.letterSpacing='8px';TX('NEXUS ATLAS',512,78,112,'#f0fbff');
@@ -1783,14 +1785,14 @@ AFRAME.registerComponent('nexus-lab',{
   const zebra=(x0,z0,x1,z1,y,w,seg)=>{const L=Math.hypot(x1-x0,z1-z0),n=Math.max(1,Math.round(L/seg)),ang=Math.atan2(-(z1-z0),x1-x0)*R2D;
     for(let i=0;i<n;i++)flat('mark',L/n,w,x0+(x1-x0)*(i+.5)/n,y,z0+(z1-z0)*(i+.5)/n,ang,i%2?'#16191d':'#f2b705')};
 
-  const GRAF='#2b333d',BLUE='#0b4f8a',STEEL='#5b6672',ALU='#c4ccd4',INOX='#bcc4cc',RAL='#d3d6d1',YEL='#f2b705',W=6,H=4.8;
+  const GRAF='#2b333d',BLUE='#0d2a4a',STEEL='#5b6672',ALU='#c4ccd4',INOX='#bcc4cc',RAL='#d3d6d1',YEL='#f2b705',W=6,H=4.8;
 
   /* 1) arquitetura: paredes, rodapé, fitas de LED, pilares, treliças e teto */
   quad('wall',12,H,0,H/2,-W,0,0);quad('wall',12,H,0,H/2,W,180,0);quad('wall',12,H,-W,H/2,0,90,0);quad('wall',12,H,W,H/2,0,-90,0);
   put('ceil',new T.PlaneGeometry(12,12),0,H,0,undefined,0,90);
   [[0,-W+.01,0],[0,W-.01,180],[-W+.01,0,90],[W-.01,0,-90]].forEach(([x,z,r])=>grp(x,0,z,r,()=>{
     box('paint',12,.12,.02,0,.06,0,GRAF);                 // rodapé
-    box('glow',11.9,.012,.01,0,1.256,.006,'#2fd3ef');      // fita LED da faixa azul
+    box('glow',11.9,.012,.01,0,1.256,.006,'#00E5FF');      // fita LED da faixa azul
     box('glow',11.9,.02,.02,0,4.34,.02,'#8fe7f8');         // sanca de luz indireta
   }));
   const pillar=()=>{box('paint',.3,H,.022,0,H/2,-.139,BLUE);box('paint',.3,H,.022,0,H/2,.139,BLUE);box('paint',.012,H,.256,0,H/2,0,BLUE);
@@ -2467,7 +2469,7 @@ function prepVR(){
    if(XR.ok===false){t.textContent='VR INDISPONÍVEL AQUI';n.textContent=XR.msg}else{t.textContent='ENTRAR NO LABORATÓRIO (VR)';n.textContent=XR.ok?'Headset detectado: o navegador vai pedir permissão para a sessão imersiva.':''}};
   if(!window.isSecureContext){XR.ok=false;XR.msg='O modo VR exige HTTPS: abra pelo endereço https:// do GitHub Pages.'}
   else if(!navigator.xr){XR.ok=false;XR.msg='Este navegador não tem WebXR. No Quest 2, use o Meta Quest Browser.'}
-  else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use “Explorar no computador”.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
+  else navigator.xr.isSessionSupported('immersive-vr').then(s=>{XR.ok=s;if(!s)XR.msg='Nenhum headset VR disponível neste aparelho. Use EXPLORAR LABORATÓRIO, TREINAMENTO ou OPERAÇÃO.';upd()}).catch(()=>{XR.ok=false;XR.msg='Não foi possível verificar o suporte a VR.';upd()});
   const go=()=>{pronto=true;upd()};sc.hasLoaded?go():sc.addEventListener('loaded',go,{once:true});upd()}
 
 document.addEventListener('DOMContentLoaded',prepVR);
@@ -2489,21 +2491,669 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 
 </script>
 
+<style>
+/* ======== SynchroArm v4 · CAMADA VISUAL ======== */
+/* =====================================================================
+   CAMADA VISUAL · SynchroArm v4 (Nexus Atlas)
+   Só aparência. Nenhum seletor aqui muda comportamento: os ids usados pelo
+   controle (#atl, #dui, #atl-*, #dsl, #btnVR, .nxl-st…) continuam os mesmos.
+   ===================================================================== */
+:root{
+  --sa-black:#05070A;--sa-navy:#081321;--sa-navy2:#0c1b2e;--sa-cyan:#00E5FF;--sa-blue:#008CFF;
+  --sa-white:#F5F7FA;--sa-gray:#8D99A6;--sa-line:rgba(141,153,166,.22);--sa-line2:rgba(0,229,255,.28);
+  --sa-ok:#34d399;--sa-warn:#fbbf24;--sa-bad:#f87171;
+  --sa-font:'Titillium Web',system-ui,sans-serif;--sa-mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --sa-ease:cubic-bezier(.2,.8,.2,1);
+}
+html,body{background:var(--sa-black)}
+
+/* ---------- tela de entrada ---------- */
+#intro-screen{background:
+   radial-gradient(1200px 600px at 70% 10%,rgba(0,140,255,.16),transparent 60%),
+   radial-gradient(900px 500px at 10% 90%,rgba(0,229,255,.10),transparent 60%),
+   linear-gradient(180deg,#05070A 0%,#081321 100%);
+  backdrop-filter:none;transition:opacity .7s var(--sa-ease),visibility .7s,transform .7s var(--sa-ease)}
+#intro-screen.fade-out{transform:scale(1.03)}
+#intro-screen::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(rgba(0,229,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.06) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 75%)}
+.intro-card{background:linear-gradient(180deg,rgba(12,27,46,.92),rgba(5,7,10,.94));border:1px solid var(--sa-line2);border-radius:18px;
+  max-width:760px;padding:42px 44px 30px;box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04);animation:saRise .8s var(--sa-ease) both}
+.intro-card::before{height:2px;background:linear-gradient(90deg,transparent,var(--sa-cyan),var(--sa-blue),transparent)}
+@keyframes saRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sa-kicker{display:flex;align-items:center;justify-content:center;gap:10px;font:600 .78rem var(--sa-font);letter-spacing:.32em;color:var(--sa-gray);text-transform:uppercase;margin-bottom:14px}
+.sa-kicker i{width:28px;height:1px;background:var(--sa-line2)}
+.intro-card h1{font-size:3.4rem;letter-spacing:.14em;margin-bottom:2px;background:linear-gradient(180deg,#fff 30%,#a5f3fc);-webkit-background-clip:text;background-clip:text}
+.sa-product{font:700 1.15rem var(--sa-font);letter-spacing:.5em;color:var(--sa-cyan);margin:4px 0 6px;text-indent:.5em}
+.intro-card h2{font-size:.95rem;color:var(--sa-gray);letter-spacing:.28em;margin-bottom:26px;text-transform:uppercase}
+.intro-card p.sa-lead{font-size:1rem;color:#c9d3dd;text-align:center;text-align-last:center;margin:0 auto 26px;max-width:600px}
+.sa-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.sa-mode{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px 16px 14px;border-radius:12px;border:1px solid var(--sa-line);
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));color:var(--sa-white);font-family:var(--sa-font);text-align:left;cursor:pointer;
+  transition:border-color .25s,transform .25s var(--sa-ease),background .25s}
+.sa-mode:hover,.sa-mode:focus-visible{border-color:var(--sa-cyan);transform:translateY(-2px);background:linear-gradient(180deg,rgba(0,229,255,.08),rgba(0,140,255,.03));outline:none}
+.sa-mode b{font-size:.92rem;letter-spacing:.12em}
+.sa-mode span{font-size:.78rem;color:var(--sa-gray);line-height:1.35}
+.sa-mode em{font-style:normal;font:700 .66rem var(--sa-mono);color:var(--sa-cyan);letter-spacing:.14em}
+.sa-mode:disabled{opacity:.45;cursor:wait;transform:none}
+.btn-enter-vr{background:linear-gradient(135deg,#006fd6,#00a9d6);border:1px solid rgba(0,229,255,.6);border-radius:12px;padding:15px 28px;font-size:1rem;letter-spacing:.16em;
+  box-shadow:0 10px 30px rgba(0,140,255,.25);width:100%;justify-content:center}
+.btn-enter-vr:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,229,255,.3)}
+#xr-note{text-align:center;text-align-last:center;margin:10px 0 0!important}
+.nxl{background:rgba(5,7,10,.5);border-color:var(--sa-line)}
+.controls-guide{border-top-color:var(--sa-line);font-size:.78rem}
+.controls-guide strong{color:var(--sa-cyan);letter-spacing:.08em}
+.badge-senai{display:none}
+
+/* ---------- barra superior (HUD) ---------- */
+#sa-top{position:absolute;left:12px;right:12px;top:10px;height:50px;z-index:950;display:none;align-items:center;gap:14px;padding:0 10px 0 16px;border-radius:12px;
+  background:rgba(5,7,10,.82);border:1px solid var(--sa-line);backdrop-filter:blur(8px);font-family:var(--sa-font);animation:saDrop .5s var(--sa-ease) backwards}
+@keyframes saDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+#sa-top .brand{display:flex;flex-direction:column;line-height:1}
+#sa-top .brand b{font-size:.95rem;letter-spacing:.24em;color:var(--sa-white)}
+#sa-top .brand small{font:700 .62rem var(--sa-font);letter-spacing:.42em;color:var(--sa-cyan);margin-top:4px}
+#sa-top .sep{width:1px;height:26px;background:var(--sa-line)}
+.sa-chip{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--sa-line);font-size:.74rem;color:var(--sa-gray);white-space:nowrap}
+.sa-chip b{color:var(--sa-white);font-weight:700;letter-spacing:.06em}
+.sa-dot{width:8px;height:8px;border-radius:50%;background:#64748b;flex:none}
+.sa-dot.ok{background:var(--sa-ok);box-shadow:0 0 0 3px rgba(52,211,153,.18);animation:saPulse 2.4s infinite}
+.sa-dot.warn{background:var(--sa-warn);box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+.sa-dot.bad{background:var(--sa-bad);box-shadow:0 0 0 3px rgba(248,113,113,.2);animation:saPulse 1s infinite}
+.sa-dot.cy{background:var(--sa-cyan);box-shadow:0 0 0 3px rgba(0,229,255,.18)}
+@keyframes saPulse{50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+#sa-top .grow{flex:1}
+.sa-ibtn{height:32px;min-width:32px;padding:0 10px;border-radius:8px;border:1px solid var(--sa-line);background:transparent;color:var(--sa-white);font:600 .74rem var(--sa-font);letter-spacing:.06em;cursor:pointer;transition:.2s}
+.sa-ibtn:hover,.sa-ibtn:focus-visible{border-color:var(--sa-cyan);color:var(--sa-cyan);outline:none}
+.sa-ibtn[aria-pressed="true"]{background:rgba(0,229,255,.12);border-color:var(--sa-cyan);color:var(--sa-cyan)}
+#sa-halt{display:none;height:30px;align-items:center;gap:8px;padding:0 12px;border-radius:8px;background:rgba(127,29,29,.55);border:1px solid var(--sa-bad);color:#fee2e2;font:700 .74rem var(--sa-font);letter-spacing:.12em;animation:saPulseBg 1.2s infinite}
+@keyframes saPulseBg{50%{background:rgba(185,28,28,.7)}}
+
+/* aviso de perda de comunicação */
+#sa-lost{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:949;display:none;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;
+  background:rgba(69,26,3,.9);border:1px solid var(--sa-warn);color:#fde68a;font:600 .82rem var(--sa-font)}
+
+/* ---------- painel lateral ---------- */
+#sa-dock{position:absolute;right:12px;top:70px;bottom:12px;width:392px;z-index:940;display:none;flex-direction:column;border-radius:14px;overflow:hidden;
+  background:rgba(5,7,10,.86);border:1px solid var(--sa-line);backdrop-filter:blur(10px);font-family:var(--sa-font);animation:saSlide .55s var(--sa-ease) backwards;transition:transform .35s var(--sa-ease)}
+@keyframes saSlide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+#sa-dock.hide{transform:translateX(calc(100% + 16px))}
+.sa-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--sa-line);flex:none}
+.sa-tabs button{position:relative;height:44px;border:0;background:transparent;color:var(--sa-gray);font:700 .68rem var(--sa-font);letter-spacing:.14em;cursor:pointer;transition:color .2s}
+.sa-tabs button::after{content:'';position:absolute;left:18%;right:18%;bottom:-1px;height:2px;background:var(--sa-cyan);transform:scaleX(0);transition:transform .3s var(--sa-ease)}
+.sa-tabs button[aria-selected="true"]{color:var(--sa-white)}
+.sa-tabs button[aria-selected="true"]::after{transform:scaleX(1)}
+.sa-tabs button:focus-visible{outline:1px solid var(--sa-cyan);outline-offset:-3px}
+.sa-tabs i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:1px;background:#64748b}
+.sa-pane{display:none;flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:#22303f transparent;animation:saFade .3s var(--sa-ease)}
+.sa-pane.on{display:block}
+@keyframes saFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.sa-h{display:flex;align-items:baseline;justify-content:space-between;margin:2px 2px 10px}
+.sa-h b{font-size:.72rem;letter-spacing:.22em;color:var(--sa-gray);font-weight:700}
+.sa-h small{font-size:.7rem;color:#5d6b7a}
+
+/* cartões de eixo J1–J5 */
+.sa-ax{display:grid;grid-template-columns:46px 1fr auto;grid-template-rows:auto auto;gap:6px 10px;padding:10px 10px 10px 10px;margin-bottom:8px;border-radius:10px;
+  border:1px solid var(--sa-line);background:linear-gradient(180deg,rgba(12,27,46,.7),rgba(8,19,33,.55));transition:border-color .2s,box-shadow .2s,transform .2s}
+.sa-ax.sel{border-color:var(--sa-cyan);box-shadow:0 0 0 1px rgba(0,229,255,.25),0 0 22px rgba(0,229,255,.10)}
+.sa-ax.flash{animation:saFlash .5s var(--sa-ease)}
+@keyframes saFlash{0%{box-shadow:0 0 0 2px rgba(0,229,255,.6)}100%{box-shadow:0 0 0 1px rgba(0,229,255,.25)}}
+.sa-ax .id{grid-row:1/3;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;background:#0b2440;border:1px solid rgba(0,140,255,.35);cursor:pointer}
+.sa-ax.sel .id{background:linear-gradient(180deg,#006fd6,#004a8f);border-color:var(--sa-cyan)}
+.sa-ax .id b{font:700 1.05rem var(--sa-font);color:#fff}
+.sa-ax .id small{font:700 .52rem var(--sa-font);letter-spacing:.14em;color:#9fd8ff}
+.sa-ax .nm{display:flex;flex-direction:column;justify-content:center;min-width:0;cursor:pointer}
+.sa-ax .nm b{font-size:.86rem;letter-spacing:.16em;color:var(--sa-white)}
+.sa-ax .nm span{font-size:.7rem;color:var(--sa-gray);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sa-ax .val{text-align:right}
+.sa-ax .val b{display:block;font:700 1.15rem var(--sa-mono);color:#fff;font-variant-numeric:tabular-nums}
+.sa-ax .val small{font:600 .64rem var(--sa-mono);color:#7aa7c7}
+.sa-ax .ctl{grid-column:2/4;display:grid;grid-template-columns:30px 1fr 30px 30px;gap:6px;align-items:center}
+.sa-ax .ctl button{height:28px;border-radius:7px;border:1px solid var(--sa-line);background:#0b1626;color:var(--sa-white);font:700 .95rem var(--sa-font);cursor:pointer;transition:.15s}
+.sa-ax .ctl button:hover,.sa-ax .ctl button:focus-visible{border-color:var(--sa-cyan);color:var(--sa-cyan);outline:none}
+.sa-ax .ctl button:active{transform:scale(.94)}
+.sa-ax .ctl button.h{font-size:.62rem;letter-spacing:.04em}
+.sa-range{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer}
+.sa-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--sa-blue) 0 var(--p,50%),#1a2738 var(--p,50%) 100%)}
+.sa-range::-moz-range-track{height:6px;border-radius:3px;background:#1a2738}
+.sa-range::-moz-range-progress{height:6px;border-radius:3px;background:var(--sa-blue)}
+.sa-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-5px;border-radius:50%;background:#e6fbff;border:2px solid var(--sa-cyan);box-shadow:0 0 10px rgba(0,229,255,.5)}
+.sa-range::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#e6fbff;border:2px solid var(--sa-cyan)}
+.sa-range:disabled{opacity:.35;cursor:not-allowed}
+.sa-range:focus-visible{outline:1px dashed var(--sa-cyan);outline-offset:2px}
+.sa-mv{width:7px;height:7px;border-radius:50%;background:#3a4756;flex:none}
+.sa-mv.on{background:var(--sa-cyan);box-shadow:0 0 8px var(--sa-cyan)}
+.sa-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.sa-btn{height:40px;border-radius:9px;border:1px solid var(--sa-line);background:#0b1626;color:var(--sa-white);font:700 .74rem var(--sa-font);letter-spacing:.14em;cursor:pointer;transition:.2s}
+.sa-btn:hover,.sa-btn:focus-visible{border-color:var(--sa-cyan);color:var(--sa-cyan);outline:none}
+.sa-btn.pri{background:linear-gradient(180deg,#0077e6,#0059ad);border-color:rgba(0,229,255,.5)}
+.sa-btn.pri:hover{color:#fff;filter:brightness(1.1)}
+.sa-btn.stop{background:repeating-linear-gradient(-45deg,#b91c1c 0 10px,#991b1b 10px 20px);border-color:#ef4444;color:#fff}
+.sa-btn.stop.on{background:#78350f;border-color:var(--sa-warn);animation:saPulseBg 1.2s infinite}
+.sa-btn:disabled{opacity:.4;cursor:not-allowed}
+.sa-feed{margin-top:10px;padding:9px 11px;border-radius:9px;border:1px solid var(--sa-line);background:#060b12;font:600 .72rem var(--sa-mono);color:#9fb3c6;min-height:38px;line-height:1.45}
+.sa-feed b{color:var(--sa-cyan)}
+.sa-feed.pulse{animation:saFeed .6s var(--sa-ease)}
+@keyframes saFeed{0%{border-color:var(--sa-cyan)}100%{border-color:var(--sa-line)}}
+.sa-note{font-size:.7rem;color:#6b7b8c;line-height:1.45;margin-top:10px}
+
+/* monitoramento */
+.sa-mon{display:grid;grid-template-columns:1fr;gap:6px}
+.sa-mon div{display:grid;grid-template-columns:122px 1fr;gap:10px;align-items:center;padding:9px 11px;border-radius:9px;border:1px solid var(--sa-line);background:rgba(12,27,46,.45)}
+.sa-mon dt{font:700 .62rem var(--sa-font);letter-spacing:.16em;color:var(--sa-gray);display:flex;align-items:center;gap:7px}
+.sa-mon dd{font:600 .78rem var(--sa-font);color:var(--sa-white);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sa-mon dd.na{color:#6b7b8c;font-weight:400;font-style:italic}
+.sa-safe{margin-top:12px;padding:11px 12px;border-radius:9px;border:1px solid rgba(251,191,36,.35);background:rgba(69,26,3,.25);font-size:.72rem;color:#e5d4a8;line-height:1.5}
+.sa-safe b{color:var(--sa-warn);letter-spacing:.12em;font-size:.66rem;display:block;margin-bottom:4px}
+
+/* painéis originais restilizados (mesmos ids, agora dentro das abas) */
+#sa-dock #dui,#sa-dock #atl{position:static;width:auto;max-width:none;max-height:none;overflow:visible;background:transparent;border:0;padding:0;border-radius:0}
+#sa-dock #dui h3,#sa-dock #dsl,#sa-dock #dui>small{display:none}
+#sa-dock #dui .b{gap:8px;margin-top:8px}
+#sa-dock #dui button,#sa-dock #atl button.k{height:38px;border-radius:9px;border:1px solid var(--sa-line);background:#0b1626;color:var(--sa-white);font:700 .7rem var(--sa-font);letter-spacing:.1em;transition:.2s}
+#sa-dock #dui button:hover,#sa-dock #atl button.k:hover{border-color:var(--sa-cyan);color:var(--sa-cyan);filter:none}
+#sa-dock #dui .nxl-st{margin-top:10px;font-size:.72rem}
+#sa-dock #atl .h{display:none}
+#sa-dock #atl .chips span{border-color:var(--sa-line);font-size:.7rem}
+#sa-dock #atl .ax{grid-template-columns:110px 1fr 46px;border-bottom-color:#16212e}
+#sa-dock #atl .ax b{font-size:.8rem;letter-spacing:.08em}
+#sa-dock #atl input[type=range]{accent-color:var(--sa-cyan)}
+#sa-dock #atl-stop{border-radius:9px;height:42px;letter-spacing:.2em}
+#sa-dock #atl details{border-color:var(--sa-line)}
+#sa-dock #atl-log{background:#03060a;border-color:var(--sa-line);color:#7ee0b5;height:130px}
+.sa-legacy{margin-top:10px;font-size:.7rem;color:#6b7b8c}
+
+/* ---------- treinamento (computador) ---------- */
+#sa-train{position:absolute;left:12px;bottom:12px;width:380px;max-height:calc(100% - 94px);z-index:945;display:none;flex-direction:column;border-radius:14px;overflow:hidden;
+  background:rgba(5,7,10,.9);border:1px solid var(--sa-line2);backdrop-filter:blur(10px);font-family:var(--sa-font);animation:saRise .45s var(--sa-ease) backwards}
+#sa-train.on{display:flex}
+#sa-train .hd{padding:12px 14px 10px;border-bottom:1px solid var(--sa-line);background:linear-gradient(180deg,rgba(0,140,255,.10),transparent)}
+#sa-train .hd small{display:flex;justify-content:space-between;font:700 .62rem var(--sa-font);letter-spacing:.24em;color:var(--sa-cyan)}
+#sa-train .hd h3{margin-top:6px;font-size:1.02rem;letter-spacing:.06em;color:var(--sa-white)}
+#sa-train .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+#sa-train .steps button{height:6px;border:0;border-radius:3px;background:#1a2738;cursor:pointer;padding:0}
+#sa-train .steps button.done{background:var(--sa-ok)}
+#sa-train .steps button.cur{background:var(--sa-cyan);box-shadow:0 0 8px rgba(0,229,255,.6)}
+#sa-train .bd{padding:12px 14px;overflow-y:auto;flex:1}
+#sa-train .obj{padding:9px 11px;border-radius:9px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.22);font-size:.8rem;color:#dff9ff;line-height:1.45}
+#sa-train .obj b{display:block;font:700 .6rem var(--sa-font);letter-spacing:.22em;color:var(--sa-cyan);margin-bottom:3px}
+#sa-train ol{margin:10px 0 0 18px;font-size:.78rem;color:#c3cfdb;line-height:1.55}
+#sa-train .ck{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:5px}
+#sa-train .ck li{display:flex;align-items:center;gap:9px;font-size:.76rem;color:#93a3b4;padding:6px 9px;border-radius:7px;background:rgba(255,255,255,.02);border:1px solid transparent;transition:.3s}
+#sa-train .ck li i{width:16px;height:16px;border-radius:50%;border:1.5px solid #3a4756;flex:none;display:grid;place-items:center;font:700 .6rem var(--sa-font);color:#05070A;font-style:normal}
+#sa-train .ck li.ok{color:#d1fae5;border-color:rgba(52,211,153,.25)}
+#sa-train .ck li.ok i{background:var(--sa-ok);border-color:var(--sa-ok)}
+#sa-train .ck li.now{border-color:rgba(0,229,255,.35);color:#e6fbff}
+#sa-train .ck li.now i{border-color:var(--sa-cyan)}
+#sa-train .how{margin-top:10px;font-size:.72rem;color:#8d99a6;line-height:1.5;padding:8px 10px;border-radius:8px;background:#060b12;border:1px solid var(--sa-line)}
+#sa-train .how b{color:#cbd5e1}
+#sa-train .assist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#sa-train .assist button{flex:1 1 auto;height:32px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,140,255,.45);background:rgba(0,140,255,.10);color:#cfe9ff;font:700 .66rem var(--sa-font);letter-spacing:.08em;cursor:pointer}
+#sa-train .assist button:hover{border-color:var(--sa-cyan);color:var(--sa-cyan)}
+#sa-train .assist button:disabled{opacity:.4;cursor:not-allowed}
+#sa-train .warn{margin-top:10px;padding:9px 11px;border-radius:9px;border:1px solid rgba(251,191,36,.45);background:rgba(69,26,3,.4);font-size:.72rem;color:#fde68a;line-height:1.45;display:none}
+#sa-train .warn button{margin-top:7px;height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--sa-warn);background:transparent;color:var(--sa-warn);font:700 .64rem var(--sa-font);letter-spacing:.1em;cursor:pointer}
+#sa-train .done-msg{display:none;margin-top:10px;padding:10px 12px;border-radius:9px;background:rgba(6,78,59,.45);border:1px solid rgba(52,211,153,.5);color:#d1fae5;font:600 .8rem var(--sa-font);animation:saRise .4s var(--sa-ease)}
+#sa-train .ft{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 14px 12px;border-top:1px solid var(--sa-line)}
+#sa-train .ft .sa-btn{height:36px}
+
+/* ajuda de teclado */
+#sa-keys{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:960;display:none;width:min(560px,calc(100% - 24px));padding:16px 18px;border-radius:12px;background:rgba(5,7,10,.95);border:1px solid var(--sa-line2);font:500 .78rem var(--sa-font);color:#c3cfdb}
+#sa-keys.on{display:block;animation:saFade .25s}
+#sa-keys h4{font-size:.68rem;letter-spacing:.22em;color:var(--sa-cyan);margin-bottom:8px}
+#sa-keys dl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px}
+#sa-keys kbd{font:700 .7rem var(--sa-mono);padding:2px 6px;border-radius:5px;border:1px solid var(--sa-line);color:#fff;background:#0b1626}
+
+/* avisos (faixa original #error-message) */
+#error-message{border-radius:10px;font-family:var(--sa-font);font-weight:600;backdrop-filter:blur(6px);bottom:18px}
+#nx-load{top:auto;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(5,7,10,.85);border:1px solid var(--sa-line2);color:var(--sa-cyan);letter-spacing:.12em;font-weight:600}
+
+/* telas menores */
+@media (max-width:1100px){#sa-dock{width:340px}#sa-train{width:330px}}
+@media (max-width:820px){
+  #sa-top .brand small,#sa-top .sa-chip.opt{display:none}
+  #sa-dock{left:8px;right:8px;width:auto;top:auto;height:52%;bottom:8px}
+  #sa-train{left:8px;right:8px;width:auto;bottom:auto;top:66px;max-height:34%}
+  .sa-modes{grid-template-columns:1fr}
+  .intro-card{padding:28px 20px}
+  .intro-card h1{font-size:2.3rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+
+/* avisos no modo computador: entre os dois painéis, sem cobrir nenhum deles */
+body.sa-desk #error-message{left:12px;right:416px;transform:none;max-width:none;width:auto;margin:0 auto;display:none;justify-self:center}
+body.sa-desk.sa-tr #error-message{left:404px}
+body.sa-desk.sa-nodock #error-message{right:12px}
+@media (max-width:1100px){body.sa-desk #error-message{right:364px}body.sa-desk.sa-tr #error-message{left:354px}}
+@media (max-width:820px){body.sa-desk #error-message,body.sa-desk.sa-tr #error-message{left:8px;right:8px;top:66px;bottom:auto}
+  body.sa-desk.sa-tr #error-message{top:auto;bottom:calc(44% + 14px)}#sa-dock{height:44%}#sa-lost{top:auto;bottom:calc(44% + 16px)}}
+#sa-top{overflow:hidden}#sa-top .brand b{white-space:nowrap}
+@media (max-width:820px){#sa-top{gap:8px;padding:0 8px 0 12px}#sa-top .brand b{font-size:.8rem;letter-spacing:.16em}#sa-top .sep{display:none}}
+@media (max-width:600px){#sa-top .sa-chip{display:none}#sa-b-train{font-size:0!important;width:36px}#sa-b-train::after{content:'T';font-size:.8rem}}
+</style>
+
+<script>
+/* =====================================================================
+   SynchroArm v4 · CAMADAS NOVAS (visual · interação · simulação de treinamento)
+   ---------------------------------------------------------------------
+   Regras deste bloco:
+   - NÃO altera a CAMADA DE COMUNICAÇÃO (NX_LINK) nem a de HARDWARE (firmware):
+     só LÊ o estado dela (rotulo, connected, kit, info, logs…) e usa as mesmas
+     funções públicas que os painéis antigos já usavam (NX.set, NX.stop/resume,
+     NexusArm.*, NX_LINK.liga quando o próprio usuário clica).
+   - NÃO altera o modelo, os pivôs, os limites (AXES) nem o mapeamento dos eixos.
+   - Nada se move sozinho ao abrir a página: o assistente do treinamento só anda
+     quando o usuário toca num botão dele.
+   ===================================================================== */
+
+const SA={
+  mode:'explorar',modoAnt:'explorar',sel:-1,selT:0,som:true,dockOn:true,tab:'eixos',
+  ROT:{explorar:'EXPLORAÇÃO',treino:'TREINAMENTO',operacao:'OPERAÇÃO'},
+  // J1–J5 seguem a ordem de AXES (o mapeamento motor ↔ articulação não muda): nome exibido + junta do braco-rig
+  J:[{n:'BASE',d:'rotação da cintura',j:['j_base'],dy:-.02,ly:-.085},{n:'OMBRO',d:'elevação do braço',j:['j_ombro']},{n:'COTOVELO',d:'dobra do antebraço',j:['j_cotovelo']},
+     {n:'PUNHO',d:'inclinação · eixo "pulso"',j:['j_pulso']},{n:'GARRA',d:'abertura dos dedos',j:['j_engrenagem_1','j_engrenagem_2']}],
+  $:id=>document.getElementById(id),
+  fmt(v,sg){return (sg&&v>0?'+':'')+v.toFixed(1).replace('.',',')+'°'},
+
+  /* ---------------- entrada ---------------- */
+  entrar(m){
+    enterExperience(false);                       // mesma entrada de antes ("Explorar no computador")
+    this.mode=this.modoAnt=m==='treino'?'explorar':m;
+    if(m==='explorar'){this.setDock(false);setTimeout(()=>UI_TOAST('Explore o laboratório · botão PAINEL abre os controles'),900)}
+    else{this.setDock(true);this.aba('eixos')}
+    if(m==='treino')this.T.abrir(0);
+    this.play('enter')},
+
+  /* ---------------- sons (desligáveis; só tocam depois de um clique) ---------------- */
+  tone(f,d,tp,vol,t0){if(!this.som||typeof NX_AC==='undefined'||!NX_AC||NX_AC.state!=='running')return;const a=NX_AC,o=a.createOscillator(),g=a.createGain(),t=a.currentTime+(t0||0);
+    o.type=tp||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.05,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.02)},
+  play(k){({enter:()=>{this.tone(392,.25,'sine',.04);this.tone(587,.35,'sine',.035,.08)},sel:()=>this.tone(1175,.06,'triangle',.035),
+    ok:()=>{this.tone(784,.14,'sine',.05);this.tone(1175,.28,'sine',.045,.11)},tab:()=>this.tone(880,.04,'triangle',.025)}[k]||(()=>{}))()},
+  setSom(on){this.som=on;try{localStorage.setItem('sa-som',on?'1':'0')}catch(e){}const b=this.$('sa-b-snd');if(b){b.setAttribute('aria-pressed',on);b.textContent=on?'SOM':'SEM SOM'}if(!on)this.hum(0)},
+  // ruído de servo: só na SIMULAÇÃO (braço físico não conectado), proporcional à velocidade do gêmeo
+  hum(v){if(typeof NX_AC==='undefined'||!NX_AC||NX_AC.state!=='running')return;const a=NX_AC;
+    if(!this.hn){if(!v)return;const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain();o.type='sawtooth';o.frequency.value=140;f.type='lowpass';f.frequency.value=900;g.gain.value=0;o.connect(f);f.connect(g);g.connect(a.destination);o.start();this.hn={o,g}}
+    const t=a.currentTime;this.hn.g.gain.setTargetAtTime(this.som?Math.min(.012,v*.0006):0,t,.08);this.hn.o.frequency.setTargetAtTime(120+Math.min(160,v*4),t,.1)},
+
+  /* ---------------- painel lateral ---------------- */
+  setDock(on){this.dockOn=on;const d=this.$('sa-dock'),b=this.$('sa-b-dock');if(d)d.classList.toggle('hide',!on);if(b)b.setAttribute('aria-pressed',on)},
+  aba(t){this.tab=t;document.querySelectorAll('#sa-dock [role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+    document.querySelectorAll('#sa-dock .sa-pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===t))},
+  seleciona(i,src){if(i===this.sel&&src!=='tour'){this.selT=performance.now();return}this.sel=i;this.selT=performance.now();if(i>=0){this.T.visto(i);if(src!=='tour')this.play('sel')}},
+  feed(i,extra){const a=AXES[i],L=NX_LINK,f=this.$('sa-feed');if(!f)return;
+    const fis=!L.cfg.ativo?'braço físico desligado':L.connected?'enviado ao braço físico ('+(L.wsOk?'WebSocket':'MQTT')+')':'braço físico não conectado: só o gêmeo';
+    f.innerHTML='<b>J'+(i+1)+' '+this.J[i].n+'</b> → alvo '+this.fmt(NX.t[a.id],a.id!=='grip')+(extra?' · '+extra:'')+'<br>'+fis;f.classList.remove('pulse');void f.offsetWidth;f.classList.add('pulse')},
+  // valor de um eixo do braço FÍSICO em graus do gêmeo (só com telemetria real; senão null)
+  fisico(a){const L=NX_LINK,k=L.kit;if(!L.connected||!k||!k.atual||typeof k.atual[a.id]!=='number')return null;return L.gemeo(a,k.atual[a.id])},
+
+  montaHud(){
+    const box=this.$('sa-axes');if(!box||box.dataset.ok)return;box.dataset.ok=1;
+    this.ax=AXES.map((a,i)=>{const J=this.J[i],c=document.createElement('div');c.className='sa-ax';c.dataset.i=i;
+      c.innerHTML='<div class="id" role="button" tabindex="0" aria-label="Selecionar J'+(i+1)+' '+J.n+'"><b>J'+(i+1)+'</b><small>EIXO</small></div>'+
+        '<div class="nm"><b>'+J.n+'</b><span><i class="sa-mv"></i><em class="st">EM POSIÇÃO</em></span></div>'+
+        '<div class="val"><b>0,0°</b><small class="tg">alvo 0,0°</small></div>'+
+        '<div class="ctl"><button type="button" aria-label="Diminuir J'+(i+1)+'">−</button><input class="sa-range" type="range" min="'+a.min+'" max="'+a.max+'" step="0.5" value="'+a.home+'" aria-label="J'+(i+1)+' '+J.n+' (graus)"><button type="button" aria-label="Aumentar J'+(i+1)+'">+</button><button type="button" class="h" title="Este eixo à origem (0°)" aria-label="J'+(i+1)+' à origem">0°</button></div>';
+      box.appendChild(c);
+      const r=c.querySelector('input'),[bm,bp,b0]=c.querySelectorAll('.ctl button'),o={c,r,v:c.querySelector('.val b'),tg:c.querySelector('.tg'),st:c.querySelector('.st'),mv:c.querySelector('.sa-mv')};
+      c.addEventListener('pointerdown',()=>this.seleciona(i));c.querySelector('.id').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();this.seleciona(i)}});
+      c.addEventListener('focusin',()=>this.seleciona(i));
+      r.addEventListener('input',()=>{if(NX.halt){UI_TOAST('Parada ativa: libere a PARADA antes de mover');r.value=NX.t[a.id];return}NX.set(a.id,+r.value,'painel');this.feed(i)});
+      // ± : um toque = 2° × sensibilidade (igual ao painel 3D); segurando, anda contínuo a 25°/s × sensibilidade
+      const jog=d=>{if(NX.halt)return UI_TOAST('Parada ativa: libere a PARADA antes de mover');NexusArm.moverEixo(a.id,d*2*NX.sens,'painel');this.feed(i)};
+      for(const[b,d]of[[bm,-1],[bp,1]]){let h=null,t0=0;
+        b.addEventListener('pointerdown',e=>{e.preventDefault();jog(d);t0=performance.now();clearInterval(h);h=setInterval(()=>{if(performance.now()-t0>350&&!NX.halt){NX.set(a.id,NX.t[a.id]+d*25*NX.sens*.04,'painel');this.feed(i)}},40)});
+        const fim=()=>{clearInterval(h);h=null};b.addEventListener('pointerup',fim);b.addEventListener('pointerleave',fim);b.addEventListener('pointercancel',fim);
+        b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();jog(d)}})}
+      b0.addEventListener('click',()=>{NexusArm.origemEixo(a.id,'painel');this.feed(i,'origem')});
+      return o});
+    this.$('sa-home').onclick=()=>{if(NX.halt)return UI_TOAST('Parada ativa: libere a PARADA antes de voltar à posição inicial');NexusArm.todosOrigem();const f=this.$('sa-feed');if(f)f.innerHTML='<b>POSIÇÃO INICIAL</b> → J1 a J5 em 0°'};
+    this.$('sa-stop').onclick=()=>{NX.halt?NX.resume():NX.stop()};   // mesma ação do ■ Parar e do E-STOP antigos
+    document.querySelectorAll('#sa-dock [role=tab]').forEach(b=>b.onclick=()=>{this.aba(b.dataset.tab);this.play('tab')});
+    this.$('sa-b-dock').onclick=()=>this.setDock(!this.dockOn);
+    this.$('sa-b-snd').onclick=()=>{NX_AUDIO(true);this.setSom(!this.som)};
+    this.$('sa-b-keys').onclick=()=>{const k=this.$('sa-keys'),on=k.classList.toggle('on');this.$('sa-b-keys').setAttribute('aria-pressed',on)};
+    this.$('sa-b-train').onclick=()=>this.T.on?this.T.sair():this.T.abrir();
+    this.$('sa-t-prev').onclick=()=>this.T.ir(this.T.i-1);this.$('sa-t-next').onclick=()=>this.T.i<6?this.T.ir(this.T.i+1):this.T.sair(true);
+    this.$('sa-t-exit').onclick=()=>this.T.sair();
+    this.$('sa-t-off').onclick=()=>{if(NX_LINK.cfg.ativo){NX_LINK.liga(false);this.T.desligou=true}else{NX_LINK.liga(true);this.T.desligou=false}};
+    const mon=this.$('sa-mon');this.monK=['ESP32-C3 MINI','CONEXÃO','ESTADO DO SISTEMA','COMANDOS','BRAÇO VIRTUAL','BRAÇO FÍSICO','SINCRONIZAÇÃO'];
+    this.mon=this.monK.map(k=>{const d=document.createElement('div');d.innerHTML='<dt><span class="sa-dot"></span>'+k+'</dt><dd></dd>';mon.appendChild(d);return{dot:d.querySelector('.sa-dot'),dd:d.querySelector('dd')}});
+    try{this.setSom(localStorage.getItem('sa-som')!=='0')}catch(e){}
+    // depois de um clique, botões e sliders devolvem o teclado à cena (setas não mexem o braço sem querer)
+    document.addEventListener('pointerup',e=>{const el=e.target&&e.target.closest&&e.target.closest('#sa-dock button,#sa-dock input[type=range],#sa-train button,#sa-top button');if(el&&!el.classList.contains('sa-range'))setTimeout(()=>el.blur(),0)});
+    window.addEventListener('keydown',e=>{if(e.repeat||(e.target&&/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)))return;if(e.code==='KeyT'&&!document.querySelector('a-scene').is('vr-mode'))this.T.on?this.T.sair():this.T.abrir();if(e.code==='Escape'){this.$('sa-keys').classList.remove('on')}})},
+
+  // estado comum (HUD, monitor 3D)
+  estado(){const mv=AXES.some(a=>Math.abs(NX.t[a.id]-NX.v[a.id])>.05);return NX.halt?['PARADO','bad']:DEMO.running?['DEMONSTRAÇÃO','cy']:mv?['MOVENDO','warn']:['PRONTO','ok']},
+  monitor(){const L=NX_LINK,k=L.kit,viv=L.connected,na=(t)=>({t,c:'',na:true}),Jv=o=>AXES.map((a,i)=>'J'+(i+1)+' '+(o[a.id]>0&&a.id!=='grip'?'+':'')+Math.round(o[a.id])).join('  ');
+    const out=[];
+    out.push(!L.cfg.ativo?na('Não utilizado (braço físico desligado)'):L.info&&L.info.fw?{t:L.info.fw+(L.info.ip?' · IP '+L.info.ip:''),c:viv?'ok':'warn'}:na('Aguardando comunicação'));
+    out.push({t:L.rotulo+(viv&&L.wsOk&&L.rtt!=null?' · '+L.rtt+' ms':'')+(viv&&k&&k.rssi?' · Wi-Fi '+k.rssi+' dBm':''),c:viv?'ok':L.fora?'bad':L.rotulo==='KIT SEM RESPOSTA'?'warn':''});
+    const e=this.estado();out.push({t:e[0]+(L.estopKit?' · E-STOP no kit':''),c:e[1]});
+    let lc=null;for(let i=L.logs.length-1;i>=0;i--)if(L.logs[i].indexOf('→')>0){lc=L.logs[i];break}
+    out.push(lc?{t:lc.replace(/\s+/,' '),c:'cy'}:na(L.cfg.ativo?'Nenhum comando enviado ao kit':'Não disponível'));
+    out.push({t:Jv(NX.v),c:'cy'});
+    out.push(viv&&k&&k.atual?{t:AXES.map((a,i)=>'J'+(i+1)+' '+(typeof k.atual[a.id]==='number'?(k.atual[a.id]>0?'+':'')+k.atual[a.id]:'–')).join('  ')+' (kit)',c:'ok'}:na('Não disponível'));
+    if(!viv)out.push(na(L.cfg.ativo?'Aguardando comunicação':'Não disponível'));
+    else if(NX.halt)out.push({t:'Congelado (parada ativa)',c:'bad'});
+    else if(k&&k.rel){const ok=AXES.every(a=>typeof k.rel[a.id]!=='number'||Math.abs(k.rel[a.id]-L.kv(a,NX.v[a.id]))<=1);out.push(ok?{t:'Gêmeo e braço físico sincronizados',c:'ok'}:{t:'Sincronizando…',c:'warn'})}
+    else out.push(na('Kit sem posição de eixos na telemetria'));
+    return out},
+
+  hudTick(t){
+    const desk=this.$('atl')&&this.$('atl').style.display==='block';
+    if(desk!==this.desk){this.desk=desk;['sa-top','sa-dock'].forEach(id=>{const e=this.$(id);if(e)e.style.display=desk?'flex':'none'});const tr=this.$('sa-train');if(tr)tr.style.display=desk&&this.T.on?'flex':'none'}
+    const bc=document.body.classList;bc.toggle('sa-desk',!!desk);bc.toggle('sa-tr',!!(desk&&this.T.on));bc.toggle('sa-nodock',!this.dockOn);
+    if(!desk||t-(this.ht||0)<90)return;this.ht=t;
+    const L=NX_LINK,e=this.estado(),set=(id,p,v)=>{const el=this.$(id);if(el&&el[p]!==v)el[p]=v};
+    set('sa-mode','textContent',this.ROT[this.T.on?'treino':this.mode]);set('sa-st','textContent',e[0]);set('sa-st-d','className','sa-dot '+e[1]);
+    const ec=L.connected?'ok':L.fora?'bad':L.rotulo==='KIT SEM RESPOSTA'?'warn':'';set('sa-esp','textContent',L.rotulo);set('sa-esp-d','className','sa-dot '+ec);
+    const td=this.$('sa-tab-dot');if(td)td.style.background=L.cor;
+    const h=this.$('sa-halt');if(h)h.style.display=NX.halt?'inline-flex':'none';
+    const tb=this.$('sa-b-train');if(tb)tb.setAttribute('aria-pressed',this.T.on);
+    // perda de comunicação: só depois de já ter havido contato com o kit
+    const lost=L.cfg.ativo&&!L.connected&&(L.fora||L.visto>0),lb=this.$('sa-lost');
+    if(lb){lb.style.display=lost?'flex':'none';if(lost)set('sa-lost-t','textContent',L.fora?'Kit fora do ar: perdeu o Wi-Fi ou a energia (veja o LCD do kit)':'Comunicação com o braço físico perdida há '+L.dur((Date.now()-L.visto)/1000)+' · tentando reconectar')}
+    if(this.ax)AXES.forEach((a,i)=>{const o=this.ax[i],v=NX.v[a.id],tg=NX.t[a.id],mv=Math.abs(tg-v)>.05,held=a.id==='grip'&&CUBO.held,fx=this.fisico(a);
+      o.c.classList.toggle('sel',this.sel===i);
+      const vs=this.fmt(v,a.id!=='grip');if(o.v.textContent!==vs)o.v.textContent=vs;
+      const ts='alvo '+this.fmt(tg,a.id!=='grip')+(fx!==null?' · físico '+this.fmt(fx,a.id!=='grip'):'');if(o.tg.textContent!==ts)o.tg.textContent=ts;
+      const ss=held?'SEGURANDO O CUBO':NX.halt?'PARADO':mv?'MOVENDO':'EM POSIÇÃO';if(o.st.textContent!==ss)o.st.textContent=ss;o.mv.classList.toggle('on',mv);
+      if(document.activeElement!==o.r&&+o.r.value!==tg)o.r.value=tg;o.r.disabled=NX.halt;o.r.style.setProperty('--p',((+o.r.value-a.min)/(a.max-a.min)*100).toFixed(1)+'%')});
+    const sb=this.$('sa-stop');if(sb){sb.classList.toggle('on',NX.halt);const s=NX.halt?'▶ LIBERAR PARADA':'■ PARADA';if(sb.textContent!==s)sb.textContent=s}
+    if(this.tab==='missao'){set('sa-m-st','textContent',DEMO.stage+(DEMO.running?' · '+(DEMO.step().i)+'/'+DEMO.step().n:''));set('sa-m-cubo','textContent',CUBO.held?'Preso na garra':CUBO.at==='A'?'Área de COLETA':CUBO.at==='B'?'Área de ENTREGA':'Fora das áreas')}
+    if(this.tab==='sistema'&&this.mon)this.monitor().forEach((m,i)=>{const r=this.mon[i];if(r.dd.textContent!==m.t)r.dd.textContent=m.t;r.dd.classList.toggle('na',!!m.na);r.dot.className='sa-dot '+(m.c||'')});
+    this.T.hud()},
+};
+
+/* =====================================================================
+   CAMADA DE SIMULAÇÃO · MODO DE TREINAMENTO (7 etapas) + MISSÃO PRÁTICA
+   Funciona só com o gêmeo. Se o braço físico estiver ligado, o painel avisa e
+   oferece desligá-lo (botão do usuário → NX_LINK.liga(false), a mesma função do
+   botão "Desconectar" do painel ATLAS). O assistente move o gêmeo por NX.set,
+   como qualquer painel, e só quando o usuário pede.
+   ===================================================================== */
+SA.T={on:false,i:0,done:[0,0,0,0,0,0,0],m:[0,0,0,0,0,0,0,0],seen:[0,0,0,0,0],snap:null,yaw:0,src:'A',dst:'B',ai:0,anim:null,tour:null,desligou:false,v:new THREE.Vector3(),w:new THREE.Vector3(),
+  MISSAO:['Selecionar o objeto','Posicionar a garra acima do cubo','Abrir a garra','Aproximar o braço','Fechar a garra','Levantar o objeto','Transportar até o destino','Soltar o objeto no destino'],
+  STEPS:[
+   {t:'Conhecendo o laboratório',obj:'Explore o laboratório e localize a célula robótica, os painéis e a estação de treinamento.',
+    inst:['A célula robótica 01 fica no centro: bancada, braço SynchroArm e áreas COLETA e ENTREGA.','À esquerda da bancada está o painel 3D de eixos; à direita, o console de demonstração.','A estação de treinamento (direita, ao fundo) mostra esta etapa também no óculos.'],
+    pc:'<b>W A S D</b> andam · <b>setas</b> giram · <b>arraste o mouse</b> para olhar.',vr:'<b>Analógico esquerdo</b> anda · <b>direito</b> gira · <b>clique no direito</b> teleporta.'},
+   {t:'Identificando os cinco eixos',obj:'Conheça as articulações J1 a J5 e onde cada uma fica no braço.',
+    inst:['Selecione cada eixo: a articulação correspondente acende no braço.','J1 gira a base, J2 e J3 levantam e dobram o braço, J4 inclina a garra e J5 abre e fecha os dedos.','Use o TOUR DOS EIXOS para ver os cinco em sequência.'],
+    pc:'Clique no número <b>J1…J5</b> do painel EIXOS.',vr:'Toque ou arraste um eixo no painel 3D, ou use <b>ASSISTENTE</b> na estação.'},
+   {t:'Movimentando as articulações',obj:'Mova J1, J2, J3 e J4 pelo menos 15° cada.',
+    inst:['Arraste o controle deslizante ou segure os botões − e +.','Observe o destaque na articulação e o valor angular.','Movimentos suaves: o gêmeo acelera e freia sozinho até o alvo.'],
+    pc:'Sliders e ± do painel EIXOS, ou o painel 3D com o mouse.',vr:'Pinça ou toque nos sliders do painel 3D de eixos.'},
+   {t:'Controlando a garra',obj:'Feche a garra e depois abra-a novamente.',
+    inst:['J5 vai de 0° (aberta) a 60° (dedos encostando).','No Quest, a mão direita fechada fecha a garra; aberta, abre (modo gestos).'],
+    pc:'<b>E</b> fecha · <b>Q</b> abre · ou o slider de J5.',vr:'Feche e abra a mão direita, ou aperte o <b>GRIP</b> do controle.'},
+   {t:'Pegando um objeto',obj:'Pegue o cubo NX na área de COLETA com a garra.',
+    inst:['Selecione o cubo e leve a garra para cima dele.','Abra a garra, desça até o cubo e feche.','O cubo fica preso quando os dedos encostam nas faces.'],
+    pc:'Clique no cubo para selecioná-lo · eixos no painel EIXOS.',vr:'Painel 3D de eixos ou ASSISTENTE na estação de treinamento.',mis:[0,1,2,3,4]},
+   {t:'Transportando o objeto',obj:'Levante o cubo e leve-o até acima da área de ENTREGA.',
+    inst:['Suba o braço antes de girar a base, para não arrastar o cubo na bancada.','Gire J1 até a garra ficar sobre a área de destino.'],
+    pc:'J2/J3 para subir · J1 para girar.',vr:'Painel 3D de eixos ou ASSISTENTE.',mis:[5,6]},
+   {t:'Posicionando o objeto no destino',obj:'Desça o cubo sobre a área de ENTREGA e solte-o.',
+    inst:['Desça devagar até o cubo encostar na bancada.','Abra a garra para soltar e afaste o braço.'],
+    pc:'J2/J3 para descer · <b>Q</b> abre a garra.',vr:'Painel 3D de eixos, mão aberta ou ASSISTENTE.',mis:[7]}],
+
+  abrir(i){this.on=true;this.desligou=this.desligou&&!NX_LINK.cfg.ativo;SA.modoAnt=SA.mode;SA.mode='treino';this.ir(typeof i==='number'?i:this.i);const e=SA.$('sa-train');if(e&&SA.desk)e.style.display='flex';SA.play('enter')},
+  sair(fim){this.on=false;this.anim=null;this.tour=null;SA.mode=SA.modoAnt==='treino'?'explorar':SA.modoAnt;const e=SA.$('sa-train');if(e)e.style.display='none';
+    UI_TOAST(fim?'Treinamento concluído: '+this.done.filter(Boolean).length+' de 7 etapas':'Modo de treinamento encerrado')},
+  ir(i){if(i<0||i>6)return;this.i=i;this.ai=0;this.anim=null;this.tour=null;this.snap=null;this.render=1;
+    if(i===4||(i>4&&!this.mOk)){this.mOk=1;   // missão: origem = área onde o cubo está (ou a de coleta); destino = a outra
+      if(CUBO.held){this.src=CUBO.from||'A';for(let k=0;k<5;k++)this.m[k]=1}
+      else{if(!CUBO.at){CUBO.place('A');UI_TOAST('Cubo recolocado na área de COLETA')}this.src=CUBO.at;for(let k=0;k<8;k++)this.m[k]=0}
+      this.dst=this.src==='A'?'B':'A'}
+    if(i>4&&CUBO.held)for(let k=0;k<5;k++)this.m[k]=1;
+    if(i===1)this.seen=[0,0,0,0,0]},
+  visto(i){if(this.on&&this.i===1&&i>=0)this.seen[i]=1},
+  selCubo(){if(!this.on||this.i!==4)return;this.m[0]=1;SA.play('sel');UI_TOAST('Cubo selecionado: leve a garra até ele')},
+  pad(k){return CUBO.pads[k]},
+  // ---- assistente: anima o gêmeo entre poses da cinemática inversa da demonstração (DEMO.P), só sob pedido ----
+  pose(k,n){return DEMO.ready&&DEMO.P[k]?DEMO.P[k][n]:null},
+  vai(seq,label){if(NX.halt)return UI_TOAST('Parada ativa: libere a PARADA');if(seq.some(s=>!s))return UI_TOAST('A cinemática ainda está carregando');this.anim={seq:seq.map(s=>Object.assign({},s)),k:0,t:0,q0:null};UI_TOAST('Assistente: '+label)},
+  ASSIST:[
+    [],
+    [{t:'TOUR DOS EIXOS',f(){this.tour={i:0,t:0};UI_TOAST('Tour dos eixos J1 → J5')}}],
+    [{t:'POSIÇÃO INICIAL',f(){if(NX.halt)return UI_TOAST('Parada ativa: libere a PARADA');NexusArm.todosOrigem()}}],
+    [{t:'FECHAR GARRA',f(){NexusArm.fecharGarra('treino')}},{t:'ABRIR GARRA',f(){NexusArm.abrirGarra('treino')}}],
+    [{t:'SELECIONAR CUBO',f(){this.selCubo()}},{t:'GARRA ACIMA DO CUBO',f(){const p=this.pose(this.src,'acima');this.vai([p&&Object.assign({grip:GARRA.ABERTA},p)],'garra acima do cubo')}},
+     {t:'DESCER ATÉ O CUBO',f(){this.vai([this.pose(this.src,'meio'),this.pose(this.src,'pega')],'descendo até o cubo')}},{t:'FECHAR GARRA',f(){NexusArm.fecharGarra('treino')}}],
+    [{t:'LEVANTAR',f(){this.vai([this.pose(this.src,'meio'),this.pose(this.src,'acima')],'levantando o cubo')}},{t:'LEVAR AO DESTINO',f(){this.vai([this.pose(this.dst,'acima')],'transportando')}}],
+    [{t:'DESCER NO DESTINO',f(){this.vai([this.pose(this.dst,'meio'),this.pose(this.dst,'pega')],'descendo no destino')}},{t:'ABRIR GARRA',f(){NexusArm.abrirGarra('treino')}},
+     {t:'AFASTAR',f(){this.vai([this.pose(this.dst,'meio'),this.pose(this.dst,'acima')],'afastando')}}]],
+  assist(j){const A=this.ASSIST[this.i];if(!A.length)return;const a=A[j===undefined?this.ai%A.length:j];this.ai=(j===undefined?this.ai:j)+1;a.f.call(this);SA.play('sel')},
+
+  // ---- verificação de cada etapa (só leitura do estado real do gêmeo) ----
+  checks(){const i=this.i,r=[];
+    if(i===0){const s=this.snap;r.push({t:'Desloque-se pelo laboratório (0,5 m)',ok:s&&s.mov>=.5},{t:'Olhe ao redor (gire a visão 30°)',ok:s&&s.gir>=30},{t:'Olhe para a estação de treinamento',ok:s&&s.est})}
+    else if(i===1)AXES.forEach((a,k)=>r.push({t:'J'+(k+1)+' · '+SA.J[k].n,ok:!!this.seen[k]}));
+    else if(i===2)AXES.slice(0,4).forEach((a,k)=>r.push({t:'J'+(k+1)+' '+SA.J[k].n+' · 15°',ok:this.snap&&this.snap.mx[a.id]>=15,p:this.snap?Math.min(1,this.snap.mx[a.id]/15):0}));
+    else if(i===3){const s=this.snap||{};r.push({t:'Feche a garra (J5 ≥ 45°'+(CUBO.held?' ou cubo preso':'')+')',ok:!!s.fechou},{t:'Abra a garra novamente (J5 ≤ 5°)',ok:!!s.abriu})}
+    else this.STEPS[i].mis.forEach(k=>r.push({t:(k+1)+'. '+this.MISSAO[k],ok:!!this.m[k]}));
+    return r},
+  update(dt){
+    // tour dos eixos (só destaque visual)
+    if(this.tour){const u=this.tour;u.t+=dt;const k=Math.floor(u.t/2);if(k>4){this.tour=null;SA.sel=-1}else if(k!==u.i||u.t<dt*1.5){u.i=k;SA.seleciona(k,'tour')}}
+    // assistente
+    const A=this.anim;if(A&&!NX.halt){const s=A.seq[A.k];
+      if(!A.q0){A.q0={};let mx=0;for(const id in s){A.q0[id]=NX.t[id];mx=Math.max(mx,Math.abs(s[id]-NX.t[id]))}A.dur=Math.max(.5,mx/24);A.t=0}
+      // alguém mexeu num eixo durante o assistente: ele para e devolve o controle
+      if(A.last&&AXES.some(a=>a.id in A.last&&Math.abs(NX.t[a.id]-A.last[a.id])>.6)){this.anim=null}
+      else{A.t+=dt;const u=Math.min(1,A.t/A.dur),e=u*u*u*(u*(u*6-15)+10);A.last={};for(const id in s){NX.set(id,A.q0[id]+(s[id]-A.q0[id])*e,'treino');A.last[id]=NX.t[id]}
+        if(u>=1&&AXES.every(a=>!(a.id in s)||Math.abs(NX.t[a.id]-NX.v[a.id])<.4)){A.k++;A.q0=null;A.last=null;if(A.k>=A.seq.length)this.anim=null}}}
+    if(!this.on)return;
+    const cam=document.querySelector('a-scene').camera;if(!cam)return;
+    const P=cam.getWorldPosition(this.v),d=cam.getWorldDirection(this.w),yaw=Math.atan2(d.x,d.z)*R2D;
+    if(!this.snap){this.snap={p:P.clone(),yaw0:yaw,mov:0,gir:0,est:false,mx:{},v0:Object.assign({},NX.v),fechou:false,abriu:false};AXES.forEach(a=>this.snap.mx[a.id]=0)}
+    const s=this.snap;
+    if(this.i===0){s.mov=Math.max(s.mov,Math.hypot(P.x-s.p.x,P.z-s.p.z));let dy=Math.abs(((yaw-s.yaw0+540)%360)-180);s.gir=Math.max(s.gir,dy);
+      const st=SA.st&&SA.st.pos;if(st){const tx=st.x-P.x,tz=st.z-P.z,l=Math.hypot(tx,tz)||1;if((d.x*tx+d.z*tz)/(Math.hypot(d.x,d.z)||1)/l>.94)s.est=true}}
+    if(this.i===2)AXES.forEach(a=>s.mx[a.id]=Math.max(s.mx[a.id],Math.abs(NX.v[a.id]-s.v0[a.id])));
+    if(this.i===3){if(NX.v.grip>=45||CUBO.held)s.fechou=true;if(s.fechou&&NX.v.grip<=5)s.abriu=true}
+    if(this.i>=4&&NX_IK.ready&&CUBO.mesh){   // missão: cada passo só vale depois do anterior
+      const m=this.m,c=CUBO.mesh.getWorldPosition(this.cw||(this.cw=new THREE.Vector3())),tcp=NX_IK.tcp(this.v),dh=Math.hypot(tcp.x-c.x,tcp.z-c.z),dyv=tcp.y-c.y,S=CUBO.S,pd=this.pad(this.dst),pdS=this.pad(this.src);
+      const L=k=>k===0||m[k-1];
+      if(L(1)&&!m[1]&&dh<.035&&dyv>.025&&dyv<.24)m[1]=1;
+      if(L(2)&&!m[2]&&NX.v.grip<=5)m[2]=1;
+      if(L(3)&&!m[3]&&tcp.distanceTo(c)<.03)m[3]=1;
+      if(L(4)&&!m[4]&&CUBO.held)m[4]=1;
+      if(L(5)&&!m[5]&&CUBO.held&&c.y>pdS.y+S/2+.04)m[5]=1;
+      if(L(6)&&!m[6]&&CUBO.held&&Math.hypot(c.x-pd.x,c.z-pd.z)<.05)m[6]=1;
+      if(L(7)&&!m[7]&&!CUBO.held&&CUBO.at===this.dst)m[7]=1}
+    const ck=this.checks(),ok=ck.length&&ck.every(x=>x.ok);
+    if(ok&&!this.done[this.i]){this.done[this.i]=1;SA.play('ok');UI_TOAST('Etapa '+String(this.i+1).padStart(2,'0')+' concluída');this.flash=performance.now()}},
+
+  hud(){if(!this.on)return;const g=SA.$,i=this.i,S=this.STEPS[i];
+    if(this.render){this.render=0;g('sa-t-n').textContent='ETAPA '+String(i+1).padStart(2,'0')+' / 07';g('sa-t-title').textContent=S.t;g('sa-t-obj').textContent=S.obj;
+      g('sa-t-inst').innerHTML=S.inst.map(x=>'<li>'+x+'</li>').join('');g('sa-t-how').innerHTML='<b>Computador:</b> '+S.pc+'<br><b>Meta Quest:</b> '+S.vr;
+      const st=g('sa-t-steps');st.innerHTML='';this.STEPS.forEach((x,k)=>{const b=document.createElement('button');b.type='button';b.title='Etapa '+(k+1)+' · '+x.t;b.setAttribute('aria-label',b.title);b.onclick=()=>this.ir(k);st.appendChild(b)});
+      const as=g('sa-t-assist');as.innerHTML='';this.ASSIST[i].forEach((a,k)=>{const b=document.createElement('button');b.type='button';b.textContent=a.t;b.onclick=()=>this.assist(k);as.appendChild(b)});this.ck='';
+      g('sa-t-prev').disabled=i===0;g('sa-t-next').textContent=i===6?'CONCLUIR ✓':'PRÓXIMA ▶'}
+    g('sa-t-steps').querySelectorAll('button').forEach((b,k)=>b.className=(this.done[k]?'done':'')+(k===i?' cur':''));
+    const ck=this.checks(),key=ck.map(x=>+x.ok).join()+(this.i>=4?'|'+this.m.filter(Boolean).length:'');
+    if(key!==this.ck){this.ck=key;let first=true;g('sa-t-ck').innerHTML=(this.i>=4?'<li style="justify-content:space-between;background:none;padding:0 2px;font-size:.66rem;letter-spacing:.18em;color:#00E5FF">MISSÃO PRÁTICA<span>'+this.m.filter(Boolean).length+' / 8</span></li>':'')+
+      ck.map(x=>{const now=!x.ok&&first;if(now)first=false;return '<li class="'+(x.ok?'ok':now?'now':'')+'"><i>'+(x.ok?'✓':'')+'</i>'+x.t+'</li>'}).join('')}
+    const dn=g('sa-t-done');dn.style.display=this.done[i]?'block':'none';dn.textContent=i===6&&this.done[i]?'✓ Missão concluída: o cubo foi posicionado no destino':'✓ Etapa concluída · avance quando quiser';
+    const L=NX_LINK,w=g('sa-t-warn'),con=L.cfg.ativo&&(L.connected||L.wsOk||L.mqOk());
+    w.style.display=con||this.desligou?'block':'none';
+    if(con){w.firstChild.textContent='O braço físico está conectado: tudo o que você fizer no treinamento será repetido no braço real.';g('sa-t-off').textContent='TREINAR SÓ NO GÊMEO (DESLIGAR BRAÇO FÍSICO)'}
+    else if(this.desligou){w.firstChild.textContent='Braço físico desligado durante o treinamento: só o gêmeo se move.';g('sa-t-off').textContent='RELIGAR BRAÇO FÍSICO'}
+    const ab=g('sa-t-assist').querySelectorAll('button');ab.forEach(b=>b.disabled=NX.halt||(i>=4&&!DEMO.ready&&b.textContent!=='SELECIONAR CUBO'))}
+};
+
+/* =====================================================================
+   CAMADA VISUAL 3D · destaques, sinalização, luz de recorte, estação de
+   treinamento/monitoramento (VR) e retorno visual das mãos.
+   Componente próprio, numa entidade nova: não muda nenhum componente antigo.
+   ===================================================================== */
+AFRAME.registerComponent('sa-3d',{
+ init(){
+  const T=THREE,sc=this.el.sceneEl,root=new T.Group();root.name='sa-3d';this.el.setObject3D('sa',root);this.root=root;const F='"Titillium Web",Arial,sans-serif';this.F=F;
+  const cv=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;return[c.getContext('2d'),t,c]};
+  this.cv=cv;this.v=new T.Vector3();this.v2=new T.Vector3();this.q=new T.Quaternion();
+  // --- luz de recorte ciano atrás do braço (destaca o contorno das articulações; sem sombra = barato no Quest) ---
+  const rim=new T.SpotLight(0x7feaff,9,0,.42,.85,2);rim.name='sa-recorte';rim.position.set(-.8,2.9,-1.9);rim.target.position.set(.05,1.25,0);root.add(rim,rim.target);
+  // qualidade baixa (?q=low ou tecla 1) desliga a luz de recorte: custo zero no Quest se precisar
+  window.addEventListener('keydown',e=>{if(/Digit[123]/.test(e.code))rim.visible=e.code!=='Digit1'});if(new URLSearchParams(location.search).get('q')==='low')rim.visible=false;
+  // --- destaques das articulações (sprites aditivos, não tocam no modelo) ---
+  const[gx,gt]=cv(128,128),gr=gx.createRadialGradient(64,64,4,64,64,62);gr.addColorStop(0,'rgba(180,250,255,.95)');gr.addColorStop(.25,'rgba(0,229,255,.55)');gr.addColorStop(1,'rgba(0,140,255,0)');gx.fillStyle=gr;gx.fillRect(0,0,128,128);gt.needsUpdate=true;
+  const[rx,rtx]=cv(128,128);rx.strokeStyle='rgba(0,229,255,.95)';rx.lineWidth=5;rx.beginPath();rx.arc(64,64,54,0,7);rx.stroke();rx.setLineDash([10,9]);rx.lineWidth=3;rx.beginPath();rx.arc(64,64,42,0,7);rx.stroke();rtx.needsUpdate=true;
+  const spr=(map,s,add)=>{const m=new T.Sprite(new T.SpriteMaterial({map,transparent:true,depthTest:false,depthWrite:false,toneMapped:false,blending:add?T.AdditiveBlending:T.NormalBlending}));m.scale.set(s,s,1);m.renderOrder=1001;m.visible=false;root.add(m);return m};
+  this.halo=AXES.map(()=>({g:spr(gt,.095,1),r:spr(rtx,.075),l:null}));
+  AXES.forEach((a,i)=>{const[x,t]=cv(256,72);x.fillStyle='rgba(5,7,10,.88)';x.beginPath();x.roundRect?x.roundRect(2,2,252,68,12):x.rect(2,2,252,68);x.fill();x.strokeStyle='#00E5FF';x.lineWidth=3;x.stroke();
+    x.font='700 34px '+F;x.fillStyle='#00E5FF';x.textBaseline='middle';x.fillText('J'+(i+1),16,37);x.fillStyle='#F5F7FA';x.font='700 28px '+F;x.fillText(SA.J[i].n,74,38);t.needsUpdate=true;
+    const l=spr(t,1);l.scale.set(.15,.042,1);this.halo[i].l=l});
+  // --- marcadores da missão: anel no cubo selecionado e farol na área de destino ---
+  const ringM=new T.MeshBasicMaterial({color:'#00E5FF',transparent:true,opacity:.9,toneMapped:false,depthWrite:false});
+  this.cubeRing=new T.Mesh(new T.RingGeometry(.07,.078,48),ringM);this.cubeRing.rotation.x=-Math.PI/2;this.cubeRing.visible=false;root.add(this.cubeRing);
+  this.dstRing=new T.Mesh(new T.RingGeometry(.075,.085,48),new T.MeshBasicMaterial({color:'#34d399',transparent:true,opacity:.9,toneMapped:false,depthWrite:false}));this.dstRing.rotation.x=-Math.PI/2;this.dstRing.visible=false;root.add(this.dstRing);
+  const bg=new T.CylinderGeometry(.06,.06,.5,24,1,true);bg.translate(0,.25,0);
+  this.beam=new T.Mesh(bg,new T.MeshBasicMaterial({color:'#34d399',transparent:true,opacity:.12,side:T.DoubleSide,depthWrite:false,toneMapped:false,blending:T.AdditiveBlending}));this.beam.visible=false;root.add(this.beam);
+  // --- retorno visual das mãos (Quest): anel na pinça; ciano = rastreada, âmbar = estabilizando, verde = pinça ---
+  this.hr={};for(const k of['left','right']){const m=new T.Mesh(new T.TorusGeometry(.013,.0022,8,28),new T.MeshBasicMaterial({color:'#00E5FF',transparent:true,opacity:.85,toneMapped:false,depthWrite:false}));m.visible=false;m.renderOrder=1002;root.add(m);this.hr[k]={m,p:0}}
+  sc.addEventListener('nx-pinch',e=>{const h=this.hr[e.detail.hand];if(h&&e.detail.type==='start')h.p=1});
+  // --- sinalização das áreas (1 textura, 1 material) ---
+  this.placas();
+  // --- estação de treinamento + monitoramento (visível no VR e no computador) ---
+  this.estacao();
+  // seleção do cubo com o mouse (modo computador)
+  this.rc=new T.Raycaster();
+  window.addEventListener('pointerdown',e=>{this.pd=e.target===sc.canvas&&!sc.is('vr-mode')?[e.clientX,e.clientY]:null});
+  window.addEventListener('pointerup',e=>{const d=this.pd;this.pd=null;if(!d||Math.hypot(e.clientX-d[0],e.clientY-d[1])>6||!CUBO.mesh||!sc.camera)return;const r=sc.canvas.getBoundingClientRect();
+    this.rc.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},sc.camera);if(this.rc.intersectObject(CUBO.mesh,false).length)SA.T.selCubo()});
+ },
+
+ placas(){
+  const T=THREE,[x,t]=this.cv(1024,512),F=this.F,S=[['CÉLULA ROBÓTICA 01','SYNCHROARM · 5 EIXOS'],['ESTAÇÃO DE TREINAMENTO','MONITORAMENTO · VR'],['BANCADA DE ELETRÔNICA','ÁREA ESD'],['PAINEL ELÉTRICO','CLP · ESP32 · REDE']];
+  S.forEach(([a,b],i)=>{const y=i*128;const g=x.createLinearGradient(0,y,0,y+128);g.addColorStop(0,'#0c1b2e');g.addColorStop(1,'#081321');x.fillStyle=g;x.fillRect(0,y,1024,128);
+   x.fillStyle='#00E5FF';x.fillRect(0,y,10,128);x.fillRect(10,y+124,1014,4);x.fillStyle='#F5F7FA';x.font='700 54px '+F;x.textBaseline='middle';x.fillText(a,40,y+50);x.fillStyle='#8D99A6';x.font='600 30px '+F;x.fillText(b,42,y+98);
+   x.fillStyle='#00E5FF';x.font='700 30px '+F;x.textAlign='right';x.fillText(String(i+1).padStart(2,'0'),996,y+50);x.textAlign='left'});
+  t.needsUpdate=true;t.anisotropy=8;const mat=new T.MeshBasicMaterial({map:t,toneMapped:false}),frame=new T.MeshStandardMaterial({color:'#11161d',roughness:.4,metalness:.7});
+  const geos=[],fg=[],U=i=>[0,1-(i+1)/4,1,1-i/4];
+  const add=(i,px,py,pz,ry,w)=>{const h=w/8;const g=new T.PlaneGeometry(w,h),u=g.attributes.uv,uv=U(i);for(let k=0;k<u.count;k++)u.setXY(k,uv[0]+u.getX(k)*(uv[2]-uv[0]),uv[1]+u.getY(k)*(uv[3]-uv[1]));
+    const m=new T.Matrix4().compose(new T.Vector3(px,py,pz),new T.Quaternion().setFromEuler(new T.Euler(0,ry*D2R,0)),new T.Vector3(1,1,1));g.applyMatrix4(m);geos.push(g);
+    const b=new T.BoxGeometry(w+.03,h+.03,.02);b.translate(0,0,-.012);b.applyMatrix4(m);fg.push(b);
+    for(const s of[-1,1]){const c=new T.CylinderGeometry(.004,.004,4.8-py-h/2,6);c.translate(s*w*.4,py+h/2+(4.8-py-h/2)/2,-.012);c.applyMatrix4(new T.Matrix4().compose(new T.Vector3(px,0,pz),new T.Quaternion().setFromEuler(new T.Euler(0,ry*D2R,0)),new T.Vector3(1,1,1)));c.translate(-px*0,0,0);fg.push(c)}};
+  add(0,0,3.45,-2.6,0,1.6);      // sobre a célula, atrás do braço e acima do painel de comandos: não cobre o robô
+  add(1,3.15,2.55,.95,-56,1.1);  // estação de treinamento
+  add(2,-4.95,2.75,-2.2,90,1.3); // bancada de eletrônica (parede esquerda)
+  add(3,4.95,2.75,-2.0,-90,1.3); // painel elétrico (parede direita)
+  const M=T.BufferGeometryUtils.mergeGeometries,a=new T.Mesh(M(geos),mat),b=new T.Mesh(M(fg),frame);a.name='sa-placas';b.name='sa-placas-moldura';this.root.add(b,a)},
+
+ estacao(){
+  const T=THREE,g=new T.Group();g.position.set(3.1,0,.9);g.rotation.y=-56*D2R;this.root.add(g);SA.st={pos:new T.Vector3(3.1,1.4,.9)};
+  const std=(c,r,m)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m}),dark=std('#151b23',.45,.6),navy=std('#0c1b2e',.5,.3),alu=std('#c4ccd4',.35,.85);
+  const add=(geo,mat,x,y,z,p)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;(p||g).add(m);return m};
+  add(new T.BoxGeometry(.7,.03,.45),dark,0,.015,0);add(new T.BoxGeometry(.12,2.05,.1),navy,0,1.05,-.12);
+  add(new T.BoxGeometry(.012,1.9,.012),new T.MeshBasicMaterial({color:'#00E5FF',toneMapped:false}),0,1.02,-.064);
+  // tela de monitoramento (superior) e tela de treinamento (inferior, inclinada)
+  const scr=(w,h,y,tilt,W,H)=>{const f=new T.Group();f.position.set(0,y,-.05);f.rotation.x=tilt*D2R;g.add(f);add(new T.BoxGeometry(w+.04,h+.04,.035),dark,0,0,-.02,f);
+    const[x,t]=this.cv(W,H);t.generateMipmaps=false;t.minFilter=T.LinearFilter;const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:t,toneMapped:false}));m.position.z=.0;f.add(m);return{x,t,W,H}};
+  this.mon=scr(.92,.5,1.95,-8,1024,556);this.tr=scr(.92,.56,1.36,-14,1024,624);
+  // apoio inclinado com 4 botões físicos 3D (toque, pinça, apontar, raio do controle e clique: tudo pelo nexus-control)
+  const tilt=new T.Group();tilt.position.set(0,1.0,.1);tilt.rotation.x=35*D2R;g.add(tilt);add(new T.BoxGeometry(.7,.05,.24),dark,0,-.01,0,tilt);add(new T.BoxGeometry(.72,.012,.26),alu,0,-.04,0,tilt);
+  const L=[[-.25,'ANTERIOR','#2563eb',()=>SA.T.on&&SA.T.ir(SA.T.i-1)],[-.085,'PRÓXIMA','#0891b2',()=>SA.T.on&&(SA.T.i<6?SA.T.ir(SA.T.i+1):SA.T.sair(true))],[.085,'ASSISTENTE','#7c3aed',()=>SA.T.on?SA.T.assist():UI_TOAST('Toque em TREINO para começar')],[.25,'TREINO','#16a34a',()=>SA.T.on?SA.T.sair():SA.T.abrir(0)]];
+  const[fx,ft]=this.cv(512,176);fx.fillStyle='#1b222b';fx.fillRect(0,0,512,176);fx.fillStyle='#00E5FF';fx.fillRect(0,0,512,4);fx.textAlign='center';fx.textBaseline='middle';
+  for(const[x,l]of L){const cx=(x/.7+.5)*512;fx.fillStyle='#0f141a';fx.beginPath();fx.arc(cx,72,40,0,7);fx.fill();fx.strokeStyle='#3a4756';fx.lineWidth=2;fx.stroke();fx.font='700 19px '+this.F;fx.fillStyle='#e2e8f0';fx.fillText(l,cx,142)}ft.needsUpdate=true;
+  const face=add(new T.PlaneGeometry(.7,.24),new T.MeshStandardMaterial({map:ft,roughness:.55}),0,.0155,0,tilt);face.rotation.x=-Math.PI/2;
+  for(const[x,l,c,f]of L){add(new T.CylinderGeometry(.036,.036,.006,24),alu,x,.018,-.025,tilt);NX_BUTTON(tilt,{x,z:-.025,y:.021,r:.029,h:.016,color:c,label:l,action:f})}
+  NX_COL.add(3.1,.9,.75,.5,-56);   // obstáculo para o movimento e o teletransporte (mesma função dos outros móveis)
+  this.rt=0},
+
+ // ---------- telas da estação ----------
+ tela(x,W,H,titulo){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#081321');g.addColorStop(1,'#05070A');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle='#0c1b2e';x.fillRect(0,0,W,70);x.fillStyle='#00E5FF';x.fillRect(0,70,W,3);x.textBaseline='middle';x.textAlign='left';x.font='700 34px '+this.F;x.fillStyle='#F5F7FA';x.fillText(titulo,28,36);
+  x.textAlign='right';x.font='700 22px '+this.F;x.fillStyle='#00E5FF';x.fillText('NEXUS ATLAS · SYNCHROARM',W-28,37);x.textAlign='left'},
+ desenhaMon(){const{x,t,W,H}=this.mon,F=this.F,C={ok:'#34d399',warn:'#fbbf24',bad:'#f87171',cy:'#00E5FF'};this.tela(x,W,H,'MONITORAMENTO');
+  SA.monitor().forEach((m,i)=>{const y=110+i*62;x.fillStyle='rgba(12,27,46,.75)';x.fillRect(24,y-26,W-48,52);x.fillStyle=C[m.c]||'#475569';x.beginPath();x.arc(48,y,8,0,7);x.fill();
+   x.font='700 20px '+F;x.fillStyle='#8D99A6';x.fillText(SA.monK[i]||'',68,y);x.textAlign='right';x.font=(m.na?'italic 400 ':'700 ')+'24px '+F;x.fillStyle=m.na?'#6b7b8c':'#F5F7FA';x.fillText(m.t,W-40,y,620);x.textAlign='left'});
+  t.needsUpdate=true},
+ desenhaTr(){const{x,t,W,H}=this.tr,F=this.F,TT=SA.T;this.tela(x,W,H,'MODO DE TREINAMENTO');
+  const wrap=(s,x0,y,mw,lh,sz,c,max)=>{x.font='400 '+sz+'px '+F;x.fillStyle=c;const w=s.split(' ');let l='',n=0;for(const p of w){const tt=l?l+' '+p:p;if(x.measureText(tt).width>mw&&l){x.fillText(l,x0,y+n*lh);l=p;if(++n>=max)return n}else l=tt}if(l){x.fillText(l,x0,y+n*lh);n++}return n};
+  if(!TT.on){x.font='700 40px '+F;x.fillStyle='#F5F7FA';x.fillText('Aprenda a operar o SynchroArm',28,124);wrap('Sete etapas guiadas: conhecer o laboratório, identificar J1–J5, mover as articulações, controlar a garra e a missão de pegar, transportar e posicionar o cubo.',28,178,W-56,36,26,'#c3cfdb',3);
+   TT.STEPS.forEach((s,k)=>{const y=310+k*40;x.fillStyle=TT.done[k]?'#34d399':'#1a2738';x.beginPath();x.arc(44,y,11,0,7);x.fill();x.font='600 24px '+F;x.fillStyle='#c3cfdb';x.fillText(String(k+1).padStart(2,'0')+'  '+s.t,68,y)});
+   x.font='700 24px '+F;x.fillStyle='#34d399';x.textAlign='right';x.fillText('Toque em TREINO para começar ▼',W-28,H-24);x.textAlign='left';t.needsUpdate=true;return}
+  const S=TT.STEPS[TT.i];x.font='700 22px '+F;x.fillStyle='#00E5FF';x.fillText('ETAPA '+String(TT.i+1).padStart(2,'0')+' / 07',28,104);
+  for(let k=0;k<7;k++){x.fillStyle=TT.done[k]?'#34d399':k===TT.i?'#00E5FF':'#1a2738';x.fillRect(W-28-(7-k)*58,98,50,8)}
+  x.font='700 38px '+F;x.fillStyle='#F5F7FA';x.fillText(S.t,28,150,W-56);
+  const n=wrap(S.obj,28,196,W-56,32,26,'#a5f3fc',2);let y=200+n*32+16;
+  TT.checks().forEach(c=>{x.fillStyle=c.ok?'#34d399':'#1a2738';x.beginPath();x.arc(44,y,12,0,7);x.fill();if(c.ok){x.strokeStyle='#05070A';x.lineWidth=4;x.beginPath();x.moveTo(37,y);x.lineTo(42,y+6);x.lineTo(51,y-6);x.stroke()}
+   x.font='600 24px '+F;x.fillStyle=c.ok?'#d1fae5':'#c3cfdb';x.fillText(c.t,68,y,W-100);y+=40});
+  const A=TT.ASSIST[TT.i];x.font='700 22px '+F;x.textAlign='right';
+  if(TT.done[TT.i]){x.fillStyle='#34d399';x.fillText('✓ ETAPA CONCLUÍDA · toque em PRÓXIMA',W-28,H-26)}else if(A.length){x.fillStyle='#c4b5fd';x.fillText('ASSISTENTE: '+A[TT.ai%A.length].t,W-28,H-26)}
+  x.textAlign='left';const L=NX_LINK;if(L.cfg.ativo&&L.connected){x.fillStyle='#fbbf24';x.font='700 20px '+F;x.fillText('⚠ BRAÇO FÍSICO CONECTADO: os movimentos vão para o braço real',28,H-26,W*.55)}
+  t.needsUpdate=true},
+
+ tick(t,dtm){
+  const dt=Math.min((dtm||16)/1000,.05),sc=this.el.sceneEl,vr=sc.is('vr-mode');
+  // seleção vinda do painel 3D (arrastar slider / segurar ±), no computador e no óculos
+  const ap=document.getElementById('axisPanel'),pc=ap&&ap.components['axis-panel'],di=pc?(pc.drag?pc.drag.i:pc.hold?pc.hold.i:-1):-1;if(di>=0)SA.seleciona(di,'painel3d');
+  SA.T.update(dt);SA.hudTick(t);
+  const arm=document.getElementById('synchroarm'),rig=arm&&arm.components['braco-rig'];
+  // destaques das articulações
+  if(rig&&rig.ready){if(!this.jn)this.jn=SA.J.map(J=>J.j.map(n=>rig.stage.getObjectByName(n)));
+    const lab=SA.T.on&&SA.T.i===1,sel=SA.sel,pul=.85+.15*Math.sin(t*.006);
+    if(sel>=0&&!SA.T.tour&&performance.now()-SA.selT>8000&&!(SA.T.on&&SA.T.i<=2))SA.sel=-1;   // destaque some sozinho depois de 8 s sem uso
+    AXES.forEach((a,i)=>{const h=this.halo[i],on=SA.sel===i,show=on||lab;h.g.visible=on;h.r.visible=on;h.l.visible=show;if(!show)return;
+     const js=this.jn[i];this.v.set(0,0,0);js.forEach(j=>this.v.add(j.getWorldPosition(this.v2)));this.v.multiplyScalar(1/js.length);this.v.y+=SA.J[i].dy||0;
+     h.g.position.copy(this.v);h.r.position.copy(this.v);h.l.position.copy(this.v);h.l.position.y+=SA.J[i].ly||.07;
+     if(on){h.g.material.opacity=pul;h.r.material.rotation=t*.0012;const s=.075*(1+.08*Math.sin(t*.005));h.r.scale.set(s,s,1)}
+     h.l.material.opacity=on?1:.75})}
+  // missão: cubo selecionado e destino
+  const TT=SA.T,mis=TT.on&&TT.i>=4&&CUBO.mesh;
+  this.cubeRing.visible=!!(mis&&TT.m[0]&&!TT.m[7]);if(this.cubeRing.visible){const c=CUBO.mesh.getWorldPosition(this.v2);this.cubeRing.position.set(c.x,c.y-CUBO.S/2+.002,c.z);this.cubeRing.material.opacity=.6+.3*Math.sin(t*.008)}
+  const pd=mis?CUBO.pads[TT.dst]:null;this.dstRing.visible=this.beam.visible=!!(mis&&TT.m[4]&&!TT.m[7]);
+  if(this.dstRing.visible){this.dstRing.position.set(pd.x,pd.y+.0025,pd.z);this.beam.position.set(pd.x,pd.y,pd.z);const s=1+.12*Math.sin(t*.006);this.dstRing.scale.set(s,s,1);this.beam.material.opacity=.08+.05*Math.sin(t*.004)}
+  // mãos
+  const HS=sc.components['nexus-hands']&&sc.components['nexus-hands'].h;
+  for(const k of['left','right']){const r=this.hr[k],H=HS&&HS[k];r.m.visible=!!(vr&&H&&H.tr);if(!r.m.visible)continue;r.m.position.copy(H.f);if(sc.camera)r.m.lookAt(sc.camera.getWorldPosition(this.v));
+   r.p=Math.max(0,r.p-dt*3);const c=H.pin?'#34d399':H.ok?'#00E5FF':'#fbbf24';if(r.c!==c){r.c=c;r.m.material.color.set(c)}const s=1+(H.pin?.35:0)+r.p*.5;r.m.scale.setScalar(s)}
+  // telas da estação (no máximo 4×/s, e só quando algo mudou)
+  if(t-this.rt>250){this.rt=t;const mk=SA.monitor().map(m=>m.t+m.c).join('|');if(mk!==this.mk){this.mk=mk;this.desenhaMon()}
+   const tk=[TT.on,TT.i,TT.ai,TT.done.join(),TT.checks().map(c=>+c.ok).join(),NX_LINK.connected].join();if(tk!==this.tk){this.tk=tk;this.desenhaTr()}}
+  // som de servo só na simulação
+  if(SA.som&&!NX_LINK.connected){let sp=0;for(const a of AXES){const d=Math.abs(NX.v[a.id]-(this.pv?this.pv[a.id]:NX.v[a.id]));sp=Math.max(sp,d/dt)}SA.hum(sp>2?sp:0)}else SA.hum(0);
+  this.pv=Object.assign({},NX.v);
+ }
+});
+
+/* som dos botões antigos: mesma função NX_CLICK, agora respeitando o botão SOM */
+(function(){const orig=NX_CLICK;NX_CLICK=function(f){if(SA.som)orig(f)}})();
+
+/* painéis antigos (#dui, #atl) passam para as abas MISSÃO e BRAÇO FÍSICO: mesmos ids, mesmos eventos */
+document.addEventListener('DOMContentLoaded',()=>{
+  const mv=(id,slot)=>{const e=SA.$(id),s=SA.$(slot);if(e&&s)s.appendChild(e)};mv('dui','sa-slot-dui');mv('atl','sa-slot-atl');
+  const lg=document.createElement('p');lg.className='sa-legacy';lg.textContent='Os sliders deste painel foram unificados na aba EIXOS (mesmo comando NX.set).';const d=SA.$('sa-slot-dui');if(d)d.appendChild(lg);
+  SA.montaHud()});
+</script>
+
 </head>
 
 <body>
 
-<div id="intro-screen"><div class="intro-card">
+<div id="intro-screen"><div class="intro-card" role="dialog" aria-labelledby="sa-title">
 
- <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
+ <span class="badge-senai">SENAI SÃO CARLOS — MECATRÔNICA</span>
 
- <h1>NEXUS ATLAS</h1><h2>SISTEMA DE MANIPULAÇÃO ROBÓTICA EM VR</h2>
+ <div class="sa-kicker"><i></i>SENAI SÃO CARLOS · MECATRÔNICA<i></i></div>
 
- <p>Bem-vindo ao ambiente virtual de testes do projeto <strong>NEXUS ATLAS</strong>. Este laboratório foi desenvolvido para testar navegação em realidade virtual, rastreamento de mãos e, a integração entre o braço robótico virtual e o braço físico utilizando ESP32.</p>
+ <h1 id="sa-title">NEXUS ATLAS</h1>
 
- <button class="btn-enter-vr" id="btnVR" onclick="enterExperience(true)" disabled><span>🥽</span> <span id="btnVRtxt">CARREGANDO LABORATÓRIO…</span></button><br>
+ <div class="sa-product">SYNCHROARM</div>
 
- <button class="btn-enter-vr btn-pc" onclick="enterExperience(false)">Explorar no computador</button>
+ <h2>LABORATÓRIO DE ROBÓTICA IMERSIVA</h2>
+
+ <p class="sa-lead">Gêmeo digital do braço robótico de 5 eixos, com treinamento guiado, controle por mãos no Meta Quest e integração com o braço físico (ESP32-C3 Mini).</p>
+
+ <div class="sa-modes">
+  <button class="sa-mode" type="button" onclick="SA.entrar('explorar')"><em>01</em><b>EXPLORAR LABORATÓRIO</b><span>Navegue livremente e opere o gêmeo digital pelos painéis.</span></button>
+  <button class="sa-mode" type="button" onclick="SA.entrar('treino')"><em>02</em><b>MODO DE TREINAMENTO</b><span>7 etapas guiadas: dos eixos até pegar e posicionar o cubo.</span></button>
+  <button class="sa-mode" type="button" onclick="SA.entrar('operacao')"><em>03</em><b>MODO DE OPERAÇÃO</b><span>Eixos J1–J5, E-STOP e ligação com o braço físico.</span></button>
+ </div>
+
+ <button class="btn-enter-vr" id="btnVR" onclick="enterExperience(true)" disabled><span>🥽</span> <span id="btnVRtxt">CARREGANDO LABORATÓRIO…</span></button>
 
  <p id="xr-note"></p>
 
@@ -2514,10 +3164,10 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
   <label for="nxl-top">Tópico MQTT · igual ao MQTT_TOPIC do kit e ao site ATLAS</label>
   <input type="text" id="nxl-top" value="senai-sao-carlos/nexusatlas-tcc-r7q2" spellcheck="false">
   <button type="button" onclick="NX_LINK.aplica()">Salvar e conectar</button>
-  <small>No óculos a página é https: o comando vai pela internet (MQTT). O braço físico repete os movimentos do gêmeo, inclusive a demonstração, e o gêmeo acompanha o que o site ATLAS mexer; o E-STOP do laboratório para o braço real. Controle: no computador, painel ATLAS (canto superior esquerdo); no óculos, aba BRAÇO FÍSICO do painel de eixos.</small>
+  <small>No óculos a página é https: o comando vai pela internet (MQTT). O braço físico repete os movimentos do gêmeo, inclusive a demonstração, e o gêmeo acompanha o que o site ATLAS mexer; o E-STOP do laboratório para o braço real. Controle: no computador, aba BRAÇO FÍSICO do painel lateral; no óculos, aba BRAÇO FÍSICO do painel de eixos.</small>
  </details>
 
- <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo</div><div><strong>GIRAR</strong>Analógico direito</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>GARRA</strong>Abra / feche a mão ou GRIP</div><div><strong>BOTÕES</strong>Toque, pinça ou gatilho</div></div>
+ <div class="controls-guide"><div><strong>ANDAR</strong>Analógico esquerdo · W A S D</div><div><strong>GIRAR</strong>Analógico direito · setas</div><div><strong>TELEPORTE</strong>Clique no stick direito</div><div><strong>GARRA</strong>Mão aberta/fechada · GRIP · Q/E</div><div><strong>BOTÕES</strong>Toque, pinça, gatilho ou clique</div></div>
 
 </div></div>
 
@@ -2554,6 +3204,98 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
  </div>
 </div>
 
+
+
+
+<!-- ================= CAMADA VISUAL · HUD do computador (SynchroArm v4) =================
+     Só lê o estado (NX, DEMO, CUBO, NX_LINK) e chama as funções públicas que já existiam
+     (NX.set, NX.stop/resume, NexusArm.*). Os painéis originais #dui e #atl são MOVIDOS para as
+     abas MISSÃO e BRAÇO FÍSICO, com os mesmos ids e os mesmos eventos. -->
+
+<header id="sa-top" role="banner">
+ <div class="brand"><b>NEXUS ATLAS</b><small>SYNCHROARM</small></div>
+ <span class="sep"></span>
+ <span class="sa-chip" title="Modo selecionado"><span class="sa-dot cy"></span>MODO <b id="sa-mode">EXPLORAÇÃO</b></span>
+ <span class="sa-chip" title="Estado do gêmeo digital"><span class="sa-dot" id="sa-st-d"></span>SISTEMA <b id="sa-st">PRONTO</b></span>
+ <span class="sa-chip opt" title="Ligação com o braço físico (ESP32-C3 Mini)"><span class="sa-dot" id="sa-esp-d"></span>ESP32 <b id="sa-esp">—</b></span>
+ <span id="sa-halt" role="status">■ PARADA ATIVA</span>
+ <span class="grow"></span>
+ <button class="sa-ibtn" id="sa-b-train" type="button" aria-pressed="false" title="Modo de treinamento (T)">TREINAMENTO</button>
+ <button class="sa-ibtn" id="sa-b-snd" type="button" aria-pressed="true" title="Sons da interface">SOM</button>
+ <button class="sa-ibtn" id="sa-b-keys" type="button" aria-pressed="false" title="Atalhos de teclado">?</button>
+ <button class="sa-ibtn" id="sa-b-dock" type="button" aria-pressed="true" title="Mostrar / ocultar o painel lateral">PAINEL</button>
+</header>
+
+<div id="sa-lost" role="alert">⚠ <span id="sa-lost-t">Comunicação com o braço físico perdida</span></div>
+
+<aside id="sa-dock" aria-label="Painel de controle do SynchroArm" onkeydown="NX_TECLA(event)">
+ <nav class="sa-tabs" role="tablist">
+  <button role="tab" data-tab="eixos" aria-selected="true">EIXOS</button>
+  <button role="tab" data-tab="missao" aria-selected="false">MISSÃO</button>
+  <button role="tab" data-tab="fisico" aria-selected="false"><i id="sa-tab-dot"></i>FÍSICO</button>
+  <button role="tab" data-tab="sistema" aria-selected="false">SISTEMA</button>
+ </nav>
+
+ <section class="sa-pane on" data-pane="eixos" role="tabpanel">
+  <div class="sa-h"><b>CONTROLE DE EIXOS</b><small>graus do gêmeo · alvo</small></div>
+  <div id="sa-axes"></div>
+  <div class="sa-row"><button class="sa-btn pri" id="sa-home" type="button">⟲ POSIÇÃO INICIAL</button><button class="sa-btn stop" id="sa-stop" type="button">■ PARADA</button></div>
+  <div class="sa-feed" id="sa-feed" aria-live="polite">Aguardando comando.</div>
+  <p class="sa-note">Selecione um eixo para destacá-lo no braço. A PARADA congela o gêmeo e, com o braço físico ligado, aciona o E-STOP por software do kit — não substitui a parada física de segurança.</p>
+ </section>
+
+ <section class="sa-pane" data-pane="missao" role="tabpanel">
+  <div class="sa-h"><b>MISSÃO · DEMONSTRAÇÃO</b><small>cubo NX</small></div>
+  <div class="sa-mon" style="margin-bottom:10px">
+   <div><dt>ETAPA</dt><dd id="sa-m-st">—</dd></div>
+   <div><dt>CUBO</dt><dd id="sa-m-cubo">—</dd></div>
+  </div>
+  <div id="sa-slot-dui"></div>
+  <p class="sa-note">Demonstração automática de pegar, transportar e posicionar o cubo. Com o braço físico ligado, ele repete a demonstração. Esta atividade é didática: não é validação industrial nem teste de precisão mecânica.</p>
+ </section>
+
+ <section class="sa-pane" data-pane="fisico" role="tabpanel">
+  <div class="sa-h"><b>BRAÇO FÍSICO · ESP32-C3</b><small>controle ATLAS</small></div>
+  <div id="sa-slot-atl"></div>
+ </section>
+
+ <section class="sa-pane" data-pane="sistema" role="tabpanel">
+  <div class="sa-h"><b>MONITORAMENTO</b><small>estado real do sistema</small></div>
+  <dl class="sa-mon" id="sa-mon"></dl>
+  <div class="sa-safe"><b>ORIENTAÇÕES DE SEGURANÇA</b>Antes de ligar o braço físico, confira a fonte externa de 5 V dos servos e o GND comum com o ESP32. Mantenha a área do robô livre. O E-STOP deste laboratório é por software e não substitui um sistema de parada certificado (NR-12 / ISO 13850).</div>
+ </section>
+</aside>
+
+<section id="sa-train" aria-label="Modo de treinamento" onkeydown="NX_TECLA(event)">
+ <div class="hd">
+  <small><span>MODO DE TREINAMENTO</span><span id="sa-t-n">ETAPA 01 / 07</span></small>
+  <h3 id="sa-t-title">—</h3>
+  <div class="steps" id="sa-t-steps"></div>
+ </div>
+ <div class="bd">
+  <div class="obj"><b>OBJETIVO</b><span id="sa-t-obj"></span></div>
+  <ol id="sa-t-inst"></ol>
+  <ul class="ck" id="sa-t-ck"></ul>
+  <div class="how" id="sa-t-how"></div>
+  <div class="assist" id="sa-t-assist"></div>
+  <div class="warn" id="sa-t-warn">O braço físico está conectado: tudo o que você fizer no treinamento será repetido no braço real.<br><button type="button" id="sa-t-off">TREINAR SÓ NO GÊMEO (DESLIGAR BRAÇO FÍSICO)</button></div>
+  <div class="done-msg" id="sa-t-done">✓ Etapa concluída</div>
+ </div>
+ <div class="ft"><button class="sa-btn" id="sa-t-prev" type="button">◀ ANTERIOR</button><button class="sa-btn" id="sa-t-exit" type="button">SAIR</button><button class="sa-btn pri" id="sa-t-next" type="button">PRÓXIMA ▶</button></div>
+</section>
+
+<div id="sa-keys" role="dialog" aria-label="Atalhos de teclado">
+ <h4>ATALHOS DE TECLADO (inalterados)</h4>
+ <dl>
+  <dt><kbd>W A S D</kbd> <kbd>setas</kbd></dt><dd>Andar e girar · <kbd>Espaço</kbd> pular</dd>
+  <dt><kbd>Q</kbd> <kbd>E</kbd></dt><dd>Abrir / fechar a garra</dd>
+  <dt><kbd>I</kbd> <kbd>R</kbd></dt><dd>Demonstração · reiniciar</dd>
+  <dt><kbd>C</kbd> <kbd>X</kbd> <kbd>M</kbd></dt><dd>Pegar cubo · soltar · automático/manual</dd>
+  <dt><kbd>G</kbd> <kbd>V</kbd> <kbd>L</kbd></dt><dd>Gestos/controles · andar pelo olhar · andar por gestos</dd>
+  <dt><kbd>P</kbd> <kbd>1</kbd>–<kbd>3</kbd></dt><dd>Pivôs (depuração) · qualidade gráfica</dd>
+  <dt><kbd>T</kbd></dt><dd>Abrir / fechar o modo de treinamento (novo)</dd>
+ </dl>
+</div>
 
 
 <a-scene light="defaultLightsEnabled:false" renderer="antialias:true;colorManagement:true;exposure:1.0;toneMapping:ACESFilmic;physicallyCorrectLights:true;maxCanvasWidth:-1;maxCanvasHeight:-1;foveationLevel:0.5" shadow="type:pcfsoft;autoUpdate:true" vr-mode-ui="enabled:true" webxr="optionalFeatures:local-floor,bounded-floor,hand-tracking" nexus-hands nexus-quality nexus-desktop-ui nexus-control nexus-link nexus-atlas-ui>
@@ -2626,6 +3368,12 @@ setTimeout(()=>{if(document.getElementById('nx-load'))fail('O braço demorou a c
 <!-- CONSOLE DE DEMONSTRAÇÃO (iniciar/pausar/reiniciar, garra e modo de controle) -->
 
 <a-entity id="demoConsole" demo-console position="1.6 0 1.15" rotation="0 -41 0" data-colisor=".56 .45"></a-entity>
+
+
+
+<!-- CAMADA VISUAL 3D NOVA (destaques dos eixos, placas, luz de recorte, estação de treinamento/monitoramento, retorno das mãos) -->
+
+<a-entity id="saLayer" sa-3d></a-entity>
 
 
 
